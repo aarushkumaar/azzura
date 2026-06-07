@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Azzura | Payment Failed</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode:"class",
+    theme:{
+      extend:{
+        colors:{
+          "primary":"#003674","secondary":"#0051d5",
+          "background":"#f9f9ff","surface":"#f9f9ff","on-surface":"#151c27","on-surface-variant":"#424751",
+          "outline-variant":"#c2c6d3", "error": "#ba1a1a"
+        },
+        fontFamily:{
+          "headline-lg":["Manrope"],"title-md":["Manrope"],"body-md":["Inter"]
+        }
+      }
+    }
+  }
+</script>
+<link rel="stylesheet" href="failure.css"/>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-x-hidden min-h-screen flex flex-col">
+
+<nav class="w-full bg-surface/80 backdrop-blur-xl border-b border-outline-variant/20 shadow-sm py-4 z-10 relative">
+  <div class="flex justify-center items-center px-4">
+    <a href="prototype.html" class="font-headline-lg text-[28px] font-semibold tracking-tighter text-primary">Azzura</a>
+  </div>
+</nav>
+
+<main class="flex-grow flex items-center justify-center py-12 px-4 relative z-10">
+  <div class="w-full">
+    
+    <div class="failure-card">
+      <div class="error-ring">
+        <span class="material-symbols-outlined text-[48px] text-[#ba1a1a] font-bold" style="font-variation-settings:'wght' 700">close</span>
+      </div>
+      
+      <h1 class="font-headline-lg text-[28px] text-primary mb-2">Payment Failed</h1>
+      <p class="text-on-surface-variant text-[15px]">We couldn't process your payment at this time.</p>
+
+      <div class="reason-box">
+        <span class="material-symbols-outlined reason-box__icon">info</span>
+        <div class="reason-box__text" id="failure-reason">
+          Transaction declined by the issuing bank. Please check your card details or try a different payment method.
+        </div>
+      </div>
+
+      <div class="ref-id">
+        Order Ref: <span id="order-id" class="font-semibold text-primary">--</span>
+      </div>
+
+      <div class="action-buttons flex flex-col gap-3">
+        <a href="checkout.html" class="action-btn primary w-full">
+          <span class="material-symbols-outlined">refresh</span> Retry Payment
+        </a>
+        <a href="cart.html" class="action-btn ghost w-full">
+          <span class="material-symbols-outlined">shopping_cart</span> Return to Cart
+        </a>
+      </div>
+
+      <div class="mt-8 pt-6 border-t border-outline-variant/20">
+        <h3 class="font-title-md text-primary text-sm mb-4 text-left">Helpful Tips</h3>
+        <div class="tip-card">
+          <div class="tip-row">
+            <span class="material-symbols-outlined">credit_card</span>
+            Ensure your card is enabled for online e-commerce transactions.
+          </div>
+          <div class="tip-row">
+            <span class="material-symbols-outlined">wifi_tethering</span>
+            Check your internet connection and avoid refreshing during payment.
+          </div>
+          <div class="tip-row mt-2">
+            <span class="material-symbols-outlined">support_agent</span>
+            Still having trouble? <a href="#" class="text-secondary font-semibold ml-1 hover:underline">Contact Support</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</main>
+
+<footer class="bg-white w-full py-6 border-t border-outline-variant/10 relative z-10 text-center text-sm text-on-surface-variant">
+  © 2024 Azzura Healthcare. Nurturing Human Lives.
+</footer>
+
+<script src="failure.js"></script>
+</body>
+</html>
