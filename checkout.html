@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Checkout — Azzurra Pharmaconutrition</title>
+  <meta name="description" content="Secure checkout for Azzurra biotech wellness products. Powered by Razorpay." />
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <link rel="stylesheet" href="assets/css/shop.css" />
+  <link rel="stylesheet" href="assets/css/checkout.css" />
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar navbar--solid" id="navbar" aria-label="Main navigation">
+    <a href="index.html" class="navbar__logo" aria-label="Azzurra Home">
+      <span class="navbar__logo-name">AZZURRA</span>
+      <span class="navbar__logo-tag">Nurturing Human Lives</span>
+    </a>
+    <ul class="navbar__links" role="list">
+      <li><a href="index.html"     class="navbar__link">Home</a></li>
+      <li><a href="about.html"     class="navbar__link">About</a></li>
+      <li><a href="science.html"   class="navbar__link">Science</a></li>
+      <li><a href="productss.html" class="navbar__link navbar__link--shop">Shop</a></li>
+      <li><a href="contact.html"   class="navbar__link">Contact</a></li>
+    </ul>
+    <button class="navbar__hamburger" id="navbar-hamburger" aria-label="Open menu"><span></span><span></span><span></span></button>
+  </nav>
+  <div class="navbar__overlay" id="navbar-overlay"></div>
+  <nav class="navbar__drawer" id="navbar-drawer" aria-label="Mobile navigation">
+    <button class="navbar__drawer-close" id="drawer-close">&times;</button>
+    <a href="index.html"     class="navbar__drawer-link">Home</a>
+    <a href="about.html"     class="navbar__drawer-link">About</a>
+    <a href="science.html"   class="navbar__drawer-link">Science</a>
+    <a href="productss.html" class="navbar__drawer-link">Shop</a>
+    <a href="contact.html"   class="navbar__drawer-link">Contact</a>
+  </nav>
+
+  <!-- CHECKOUT MAIN -->
+  <main class="checkout-page" role="main">
+    <div class="checkout-inner">
+
+      <!-- Breadcrumb -->
+      <nav class="page-hero__breadcrumb" aria-label="Breadcrumb">
+        <a href="productss.html">Shop</a>
+        <span aria-hidden="true">›</span>
+        <span>Checkout</span>
+      </nav>
+      <h1 class="checkout-heading">Secure Checkout</h1>
+      <p class="checkout-sub">Your order is protected by 256-bit SSL encryption.</p>
+
+      <div class="checkout-grid">
+
+        <!-- LEFT: Shipping Form -->
+        <section class="checkout-form-section" aria-labelledby="shipping-heading">
+          <h2 class="checkout-section-title" id="shipping-heading">
+            <span class="checkout-step-num">1</span> Shipping Information
+          </h2>
+
+          <form id="checkout-form" class="checkout-form" novalidate>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="ch-name">Full Name *</label>
+                <input class="form-input" type="text" id="ch-name" name="name" placeholder="Priya Sharma" required autocomplete="name" />
+                <span class="form-error" id="err-name">Please enter your full name.</span>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="ch-phone">Phone *</label>
+                <input class="form-input" type="tel" id="ch-phone" name="phone" placeholder="+91 98765 43210" required autocomplete="tel" />
+                <span class="form-error" id="err-phone">Please enter a valid phone number.</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="ch-email">Email Address *</label>
+              <input class="form-input" type="email" id="ch-email" name="email" placeholder="priya@example.com" required autocomplete="email" />
+              <span class="form-error" id="err-email">Please enter a valid email address.</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="ch-address">Address *</label>
+              <input class="form-input" type="text" id="ch-address" name="address" placeholder="House No., Street, Area" required autocomplete="street-address" />
+              <span class="form-error" id="err-address">Please enter your address.</span>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="ch-city">City *</label>
+                <input class="form-input" type="text" id="ch-city" name="city" placeholder="New Delhi" required autocomplete="address-level2" />
+                <span class="form-error" id="err-city">Please enter your city.</span>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="ch-state">State *</label>
+                <input class="form-input" type="text" id="ch-state" name="state" placeholder="Haryana" required autocomplete="address-level1" />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="ch-pincode">PIN Code *</label>
+                <input class="form-input" type="text" id="ch-pincode" name="pincode" placeholder="121006" pattern="[0-9]{6}" required autocomplete="postal-code" />
+                <span class="form-error" id="err-pincode">Please enter a valid 6-digit PIN code.</span>
+              </div>
+            </div>
+
+            <h2 class="checkout-section-title" style="margin-top: 40px;" id="payment-heading">
+              <span class="checkout-step-num">2</span> Payment Method
+            </h2>
+
+            <div class="payment-options" role="radiogroup" aria-labelledby="payment-heading">
+              <!-- Razorpay (primary) -->
+              <label class="payment-option payment-option--active" for="pay-razorpay">
+                <input type="radio" id="pay-razorpay" name="gateway" value="razorpay" checked />
+                <div class="payment-option__icon">💳</div>
+                <div>
+                  <div class="payment-option__name">Razorpay</div>
+                  <div class="payment-option__desc">UPI, Cards, Net Banking, Wallets</div>
+                </div>
+                <span class="payment-option__badge">Recommended</span>
+              </label>
+            </div>
+
+            <p class="checkout-security-note">
+              🔒 Your payment is secured by Razorpay. We never store your card details.
+            </p>
+
+            <!-- Error banner shown if Edge Function fails -->
+            <div class="checkout-error" id="checkout-error" role="alert" aria-live="polite"></div>
+
+            <button type="submit" class="btn btn--primary checkout-submit-btn" id="checkout-submit-btn">
+              Place Order &amp; Pay
+            </button>
+          </form>
+        </section>
+
+        <!-- RIGHT: Order Summary -->
+        <aside class="checkout-summary" aria-label="Order summary">
+          <h2 class="checkout-section-title" id="summary-heading">Order Summary</h2>
+          <div class="summary-items" id="summary-items">
+            <!-- Populated by checkout.js -->
+          </div>
+          <div class="summary-divider"></div>
+          <div class="summary-row">
+            <span>Subtotal</span>
+            <span id="summary-subtotal">₹0</span>
+          </div>
+          <div class="summary-row">
+            <span>Shipping</span>
+            <span id="summary-shipping">FREE</span>
+          </div>
+          <div class="summary-divider"></div>
+          <div class="summary-row summary-row--total">
+            <span>Total</span>
+            <span id="summary-total">₹0</span>
+          </div>
+          <p class="summary-note">Inclusive of all taxes. Free shipping on all orders.</p>
+        </aside>
+
+      </div><!-- /checkout-grid -->
+    </div><!-- /checkout-inner -->
+  </main>
+
+  <!-- FOOTER (simplified) -->
+  <footer class="footer" role="contentinfo" style="margin-top: 0;">
+    <div class="footer__bottom" style="max-width:1200px;margin:0 auto;padding:24px 40px;">
+      <p class="footer__copy">&copy; 2025 Azzurra Pharmaconutrition Pvt. Ltd.</p>
+      <a href="#" class="footer__legal">Privacy Policy</a>
+    </div>
+  </footer>
+
+  <!-- Razorpay checkout SDK -->
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script src="config.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/shop.js"></script>
+  <script src="assets/js/checkout.js"></script>
+</body>
+</html>

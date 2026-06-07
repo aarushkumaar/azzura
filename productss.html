@@ -1,420 +1,290 @@
 <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shop — Azzurra Pharmaconutrition | Biotech Wellness Products</title>
+  <meta name="description" content="Explore Azzurra's clinically formulated biotech wellness products — molecular serums, cellular kits, bio-devices, and advanced supplements. Precision nutrition for biological peak performance." />
 
-<html class="light" lang="en"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<style>
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-            display: inline-block;
-            line-height: 1;
-            text-transform: none;
-            letter-spacing: normal;
-            word-wrap: normal;
-            white-space: nowrap;
-            direction: ltr;
-        }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.75);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 8px 32px 0 rgba(10, 77, 155, 0.04);
-        }
-        .inner-glow {
-            box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.5);
-        }
-    </style>
-<script id="tailwind-config">
-        tailwind.config = {
-          darkMode: "class",
-          theme: {
-            extend: {
-              "colors": {
-                      "on-secondary-fixed-variant": "#003ea8",
-                      "on-primary-fixed-variant": "#00458f",
-                      "inverse-surface": "#2a313d",
-                      "on-error-container": "#93000a",
-                      "outline-variant": "#c2c6d3",
-                      "on-primary": "#ffffff",
-                      "on-primary-fixed": "#001b3f",
-                      "surface-container": "#e7eefe",
-                      "on-surface-variant": "#424751",
-                      "on-primary-container": "#a1c1ff",
-                      "inverse-on-surface": "#ebf1ff",
-                      "tertiary-fixed-dim": "#bec8d2",
-                      "primary-fixed": "#d7e2ff",
-                      "on-secondary-fixed": "#00174b",
-                      "surface-tint": "#265dac",
-                      "secondary-fixed-dim": "#b4c5ff",
-                      "primary-container": "#0a4d9b",
-                      "tertiary-fixed": "#dae4ee",
-                      "on-background": "#151c27",
-                      "error-container": "#ffdad6",
-                      "surface-variant": "#dce2f3",
-                      "error": "#ba1a1a",
-                      "on-secondary-container": "#fefcff",
-                      "surface-container-high": "#e2e8f8",
-                      "on-surface": "#151c27",
-                      "tertiary-container": "#465059",
-                      "on-error": "#ffffff",
-                      "surface-dim": "#d3daea",
-                      "surface": "#f9f9ff",
-                      "surface-container-highest": "#dce2f3",
-                      "on-tertiary-fixed": "#131d24",
-                      "on-tertiary-fixed-variant": "#3e4851",
-                      "secondary": "#0051d5",
-                      "outline": "#737782",
-                      "secondary-fixed": "#dbe1ff",
-                      "primary-fixed-dim": "#abc7ff",
-                      "on-secondary": "#ffffff",
-                      "tertiary": "#2f3941",
-                      "inverse-primary": "#abc7ff",
-                      "on-tertiary": "#ffffff",
-                      "primary": "#003674",
-                      "surface-container-lowest": "#ffffff",
-                      "surface-bright": "#f9f9ff",
-                      "secondary-container": "#316bf3",
-                      "on-tertiary-container": "#b8c2cc",
-                      "background": "#f9f9ff",
-                      "surface-container-low": "#f0f3ff"
-              },
-              "borderRadius": {
-                      "DEFAULT": "0.25rem",
-                      "lg": "0.5rem",
-                      "xl": "0.75rem",
-                      "full": "9999px"
-              },
-              "spacing": {
-                      "gutter-desktop": "24px",
-                      "margin-mobile": "20px",
-                      "margin-desktop": "80px",
-                      "unit": "4px",
-                      "gutter-mobile": "16px",
-                      "container-max": "1280px"
-              },
-              "fontFamily": {
-                      "title-md": ["Manrope"],
-                      "body-md": ["Inter"],
-                      "body-lg": ["Inter"],
-                      "label-sm": ["Inter"],
-                      "display-lg": ["Manrope"],
-                      "headline-lg-mobile": ["Manrope"],
-                      "headline-lg": ["Manrope"]
-              },
-              "fontSize": {
-                      "title-md": ["20px", {"lineHeight": "1.4", "fontWeight": "600"}],
-                      "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
-                      "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
-                      "label-sm": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
-                      "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}],
-                      "headline-lg-mobile": ["28px", {"lineHeight": "1.2", "fontWeight": "600"}],
-                      "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "600"}]
-              }
-            },
-          },
-        }
-      </script>
+  <!-- Design system stylesheet (shared with all pages) -->
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <!-- Shop-specific styles -->
+  <link rel="stylesheet" href="assets/css/shop.css" />
 </head>
-<body class="bg-background text-on-surface font-body-md overflow-x-hidden">
-<!-- TopNavBar -->
-<nav class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-xl border-b border-outline-variant/20 shadow-sm shadow-primary/5">
-<div class="flex justify-between items-center h-20 px-margin-desktop max-w-container-max mx-auto">
-<div class="font-headline-lg text-headline-lg tracking-tighter text-primary dark:text-inverse-primary">Azzura</div>
-<div class="hidden md:flex items-center gap-8">
-<a class="font-title-md text-title-md text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-inverse-primary transition-colors" href="prototype.html">Home</a>
-<a class="font-title-md text-title-md text-primary dark:text-inverse-primary border-b-2 border-primary dark:border-inverse-primary pb-1" href="productss.html">Shop</a>
-<a class="font-title-md text-title-md text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-inverse-primary transition-colors" href="#">About Us</a>
-</div>
-<div class="flex items-center gap-4">
-<button class="material-symbols-outlined text-primary p-2">search</button>
-<button class="material-symbols-outlined text-primary p-2">shopping_bag</button>
-<button class="bg-primary-container text-on-primary-container px-6 py-2 rounded-full font-title-md hover:opacity-90 transition-all duration-300 active:scale-95">Shop Now</button>
-</div>
-</div>
-</nav>
-<!-- Main Content Content -->
-<main class="pt-32 pb-24 px-margin-desktop max-w-container-max mx-auto">
-<!-- Header Section -->
-<header class="mb-16">
-<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-container-high text-primary font-label-sm text-label-sm mb-4">
-<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
-                CLINICAL EXCELLENCE
-            </div>
-<h1 class="font-display-lg text-display-lg text-primary mb-4 max-w-2xl">Elevated Biotech Wellness Solutions</h1>
-<p class="font-body-lg text-body-lg text-on-surface-variant max-w-xl">Precision-engineered formulations and state-of-the-art health devices designed for your biological peak performance.</p>
-</header>
-<!-- Product Grid Layout -->
-<div class="grid grid-cols-1 lg:grid-cols-4 gap-gutter-desktop">
-<!-- Sidebar Filters -->
-<aside class="lg:col-span-1 space-y-10">
-<div>
-<h3 class="font-title-md text-title-md text-primary mb-6">Categories</h3>
-<ul class="space-y-4">
-<li><button class="flex items-center justify-between w-full group"><span class="text-primary font-title-md">All Products</span><span class="text-on-surface-variant font-label-sm">24</span></button></li>
-<li><button class="flex items-center justify-between w-full group"><span class="text-on-surface-variant hover:text-primary transition-colors">Molecular Serums</span><span class="text-outline font-label-sm">8</span></button></li>
-<li><button class="flex items-center justify-between w-full group"><span class="text-on-surface-variant hover:text-primary transition-colors">Cellular Kits</span><span class="text-outline font-label-sm">4</span></button></li>
-<li><button class="flex items-center justify-between w-full group"><span class="text-on-surface-variant hover:text-primary transition-colors">Bio-Devices</span><span class="text-outline font-label-sm">6</span></button></li>
-<li><button class="flex items-center justify-between w-full group"><span class="text-on-surface-variant hover:text-primary transition-colors">Advanced Supplements</span><span class="text-outline font-label-sm">6</span></button></li>
-</ul>
-</div>
-<div>
-<h3 class="font-title-md text-title-md text-primary mb-6">Refine by Need</h3>
-<div class="flex flex-wrap gap-2">
-<button class="px-4 py-2 rounded-full border border-outline-variant text-on-surface-variant hover:bg-surface-container transition-colors text-label-sm">Longevity</button>
-<button class="px-4 py-2 rounded-full border border-outline-variant text-on-surface-variant hover:bg-surface-container transition-colors text-label-sm">Cognition</button>
-<button class="px-4 py-2 rounded-full border border-outline-variant text-on-surface-variant hover:bg-surface-container transition-colors text-label-sm">Recovery</button>
-<button class="px-4 py-2 rounded-full border border-outline-variant text-on-surface-variant hover:bg-surface-container transition-colors text-label-sm">Radiance</button>
-</div>
-</div>
-<div class="p-6 rounded-xl bg-primary-container text-white">
-<h4 class="font-title-md mb-2">Expert Consultation</h4>
-<p class="text-body-md opacity-80 mb-4">Not sure where to start? Speak with our biotech advisors.</p>
-<button class="w-full py-3 bg-white text-primary rounded-lg font-title-md hover:bg-surface transition-colors">Book Now</button>
-</div>
-</aside>
-<!-- Grid Content -->
-<div class="lg:col-span-3">
-<div class="flex justify-between items-center mb-8 pb-4 border-b border-outline-variant/10">
-<span class="font-body-md text-on-surface-variant">Showing 12 of 24 products</span>
-<div class="flex items-center gap-2">
-<span class="text-on-surface-variant text-label-sm">Sort by:</span>
-<select class="bg-transparent border-none focus:ring-0 font-title-md text-primary pr-8">
-<option>Newest Arrivals</option>
-<option>Price: High to Low</option>
-<option>Customer Rating</option>
-</select>
-</div>
-</div>
-<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-gutter-desktop">
-<!-- Product Card 1 -->
-<div class="group relative flex flex-col glass-card rounded-[1.5rem] overflow-hidden transition-all duration-500 hover:-translate-y-2 hover:shadow-xl hover:shadow-primary/10 cursor-pointer" onclick="location.href='product-detail.html?id=1'">
-<div class="relative aspect-[4/5] overflow-hidden bg-surface-container-low">
-<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" data-alt="A minimalist clinical product shot of a sleek glass dropper bottle containing a clear molecular serum. The lighting is high-key and surgical, reflecting off the glass surfaces to create a premium laboratory aesthetic. The background is a soft, ethereal white with subtle blue undertones, emphasizing purity and advanced biotechnology. The product rests on a polished white marble surface with light shadows." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC1bvDaEd5DGmZuiTT1QmFruSxCSnfEJt7MR68h9PHPDBxtxWakponagCtJSQgOJlQI0HjWoObcVj-YEEfBjSW8VK5TNg3A1QOfMF1lE9D00ayT0ZN7qXda1XSF83XKNQNBEPH9Tg_F9QqZbbM_D6Ue_tMa8e0S5-TxE32eXeEGdQc7B3ngspNaRD_O4wfoGkapds6vEy-j8fu8sxNaTNxdcxkMgyKwOVupXkF8rFVvOF1h2BIaDkGH7uESYNZbcqfYqj6Lind1Zpnf"/>
-<div class="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-4">
-<button onclick="event.stopPropagation(); location.href='product-detail.html?id=1'" class="bg-white text-primary px-4 py-2 rounded-lg font-title-md text-label-sm inner-glow shadow-lg transition-transform hover:scale-105">Quick View</button>
-</div>
-<div class="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full font-label-sm text-primary text-[10px] tracking-widest uppercase">New Release</div>
-</div>
-<div class="p-6 flex flex-col flex-grow">
-<div class="flex items-center gap-1 mb-2">
-<span class="material-symbols-outlined text-[14px] text-secondary" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-[14px] text-secondary" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-[14px] text-secondary" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-[14px] text-secondary" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-[14px] text-secondary" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="text-on-surface-variant text-[12px] ml-1">(48)</span>
-</div>
-<h3 class="font-title-md text-primary mb-1">Luminary Molecular Serum</h3>
-<p class="text-on-surface-variant text-body-md mb-4 flex-grow">Adaptive DNA repair complex with high-potency Vitamin C.</p>
-<div class="flex items-center justify-between">
-<span class="font-title-md text-primary text-xl">$185.00</span>
-<button class="w-10 h-10 rounded-full border border-primary text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-colors">
-<span class="material-symbols-outlined text-xl">add</span>
-</button>
-</div>
-</div>
-</div>
-<!-- Product Card 2 -->
-<div class="group relative flex flex-col glass-card rounded-[1.5rem] overflow-hidden transition-all duration-500 hover:-translate-y-2 hover:shadow-xl hover:shadow-primary/10 cursor-pointer" onclick="location.href='product-detail.html?id=2'">
-<div class="relative aspect-[4/5] overflow-hidden bg-surface-container-low">
-<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" data-alt="A high-end metallic wellness device with a matte silver finish and a small glowing OLED display. The device is ergonomic and futuristic, sitting on a translucent acrylic block. Ambient medical blue lighting creates a sophisticated atmosphere. Soft shadows and a clean clinical environment suggest a high-tech health facility. The aesthetic is extremely clean and focused on precision engineering." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBWw7ZbjM0N6rllwIT_zAWRnWDFErCKtf57USrnHiMjQMIxTZ4aloSOTmO__SRU-k7hoxNB1ptiFkoFQ8QlRpf3288cpIWQhrV6O10uDcv6ofxps_gyFJ_fCoqQ6AAUOAkMmBBnRQkaeckZxXJMwpT2v4d27vFIjEZC4cN9WY0wmIkMcqLa96kfekidJVILNXsV313Ml7qe0-3QL9jKXB0hpT84RPcqC6OxSUayegokjjRUijTXXdYFiwvvq009_DhZ3UPbs6fZXCkg"/>
-<div class="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-4">
-<button onclick="event.stopPropagation(); location.href='product-detail.html?id=2'" class="bg-white text-primary px-4 py-2 rounded-lg font-title-md text-label-sm inner-glow shadow-lg transition-transform hover:scale-105">Quick View</button>
-</div>
-</div>
-<div class="p-6 flex flex-col flex-grow">
-<div class="flex items-center gap-1 mb-2">
-<span class="material-symbols-outlined text-[14px] text-secondary" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-[14px] text-secondary" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-[14px] text-secondary" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-[14px] text-secondary" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-[14px] text-secondary" style="font-variation-settings: 'FILL' 0;">star</span>
-<span class="text-on-surface-variant text-[12px] ml-1">(124)</span>
-</div>
-<h3 class="font-title-md text-primary mb-1">CellSync Pulse Device</h3>
-<p class="text-on-surface-variant text-body-md mb-4 flex-grow">Non-invasive cellular resonance for rapid muscle recovery.</p>
-<div class="flex items-center justify-between">
-<span class="font-title-md text-primary text-xl">$499.00</span>
-<button class="w-10 h-10 rounded-full border border-primary text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-colors">
-<span class="material-symbols-outlined text-xl">add</span>
-</button>
-</div>
-</div>
-</div>
-<!-- Product Card 3 -->
-<div class="group relative flex flex-col glass-card rounded-[1.5rem] overflow-hidden transition-all duration-500 hover:-translate-y-2 hover:shadow-xl hover:shadow-primary/10 cursor-pointer" onclick="location.href='product-detail.html?id=3'">
-<div class="relative aspect-[4/5] overflow-hidden bg-surface-container-low">
-<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" data-alt="A collection of minimalist white supplement containers with elegant typography and metallic foil accents. The bottles are arranged asymmetrically on a frosted glass surface. The lighting is diffused and warm, creating a sense of natural wellness combined with clinical precision. A soft depth of field effect keeps the focus on the primary container. The color palette consists of soft grays, whites, and metallic silver." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDQASqE32XHSerfpv51PJ-p9p1uLKMCUqPxKj3GJBvRb6LPefq-mermuRJlhm1JhWaMB5ppgswnbThxsMAIzORm9OzF0ssYjycTHT7BBos-bFq7IAZAyjUisCkgJqFHRYIAeANA-gfMRB4M1jQue7MuFoxcxQhGnfk0MB6Q5MESbJceqCj4DLgE3C1mjzVEp6pNMt5jZ6cCdOgEp4httinzk_Agq7XgAxEYw9doDxheZNrx0nU5qtL4ihthDKegLfnSTVsgE99Bpgpi"/>
-<div class="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-4">
-<button onclick="event.stopPropagation(); location.href='product-detail.html?id=3'" class="bg-white text-primary px-4 py-2 rounded-lg font-title-md text-label-sm inner-glow shadow-lg transition-transform hover:scale-105">Quick View</button>
-</div>
-</div>
-<div class="p-6 flex flex-col flex-grow">
-<div class="flex items-center gap-1 mb-2">
-<span class="material-symbols-outlined text-[14px] text-secondary" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-[14px] text-secondary" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-[14px] text-secondary" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-[14px] text-secondary" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-[14px] text-secondary" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="text-on-surface-variant text-[12px] ml-1">(210)</span>
-</div>
-<h3 class="font-title-md text-primary mb-1">Neuro-Prime Catalyst</h3>
-<p class="text-on-surface-variant text-body-md mb-4 flex-grow">Advanced nootropic complex for cognitive clarity and focus.</p>
-<div class="flex items-center justify-between">
-<span class="font-title-md text-primary text-xl">$120.00</span>
-<button class="w-10 h-10 rounded-full border border-primary text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-colors">
-<span class="material-symbols-outlined text-xl">add</span>
-</button>
-</div>
-</div>
-</div>
-<!-- Product Card 4 -->
-<div class="group relative flex flex-col glass-card rounded-[1.5rem] overflow-hidden transition-all duration-500 hover:-translate-y-2 hover:shadow-xl hover:shadow-primary/10 cursor-pointer" onclick="location.href='product-detail.html?id=4'">
-<div class="relative aspect-[4/5] overflow-hidden bg-surface-container-low">
-<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" data-alt="A luxury wellness gift set featuring multiple glass bottles and jars tucked into a premium velvet-lined box. The box has a minimalist white exterior with a debossed logo. The setting is a bright, modern interior with soft natural light streaming in. The image evokes a feeling of ultimate care and exclusivity. The color palette remains neutral with pops of deep indigo and pure white." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAgiBNvYuEHOc_wkLry4_aIdMm0QD_gv8N9DHfgVGbHttjsb0tKBGpJ-7NlnYfGcqT14GuLpWr4gLov8zbKe6YlbQ-MyyMvGpk00rcEQxIEIBU53wQq73KSsc05PFXdEm73u-4Tug-8tIOOet45ONae25YNEJdaUIUe-3JfLgF8jLiqXja839q4VMCsRc6IMgRZXunCR_qOHRE1K8-nQDNLa6p7nIMdxkQqBRljW4LqzgFssF6ETesipKPLKjb4WU5FSqnafQ2l95V3"/>
-<div class="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-4">
-<button onclick="event.stopPropagation(); location.href='product-detail.html?id=4'" class="bg-white text-primary px-4 py-2 rounded-lg font-title-md text-label-sm inner-glow shadow-lg transition-transform hover:scale-105">Quick View</button>
-</div>
-</div>
-<div class="p-6 flex flex-col flex-grow">
-<div class="flex items-center gap-1 mb-2">
-<span class="material-symbols-outlined text-[14px] text-secondary" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-[14px] text-secondary" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-[14px] text-secondary" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-[14px] text-secondary" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-[14px] text-secondary" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="text-on-surface-variant text-[12px] ml-1">(56)</span>
-</div>
-<h3 class="font-title-md text-primary mb-1">The Genesis System</h3>
-<p class="text-on-surface-variant text-body-md mb-4 flex-grow">Complete 30-day biological reset kit with multi-stage treatments.</p>
-<div class="flex items-center justify-between">
-<span class="font-title-md text-primary text-xl">$650.00</span>
-<button class="w-10 h-10 rounded-full border border-primary text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-colors">
-<span class="material-symbols-outlined text-xl">add</span>
-</button>
-</div>
-</div>
-</div>
-<!-- Product Card 5 -->
-<div class="group relative flex flex-col glass-card rounded-[1.5rem] overflow-hidden transition-all duration-500 hover:-translate-y-2 hover:shadow-xl hover:shadow-primary/10 cursor-pointer" onclick="location.href='product-detail.html?id=5'">
-<div class="relative aspect-[4/5] overflow-hidden bg-surface-container-low">
-<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" data-alt="A modern, high-tech supplement bottle made of tinted semi-transparent dark blue glass, resting on a glowing platform. The label is ultra-minimal with thin geometric lines. The background is a dark, sophisticated medical-grade laboratory space with blurred equipment. The lighting is focused, creating a dramatic halo effect around the product. It conveys a sense of high-potency, pharmaceutical-grade quality." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCRmHiqfEVOl_hmwWQLOGetv56jxm-cei6vQ1wdzv9g3Yi3Ysdv9-w4XdhhqPFt7WPDP_jwQeJMSuFehN5e191_RLDBVjpQsrmdc4kSYRr-Gg3LcNdIaJqhjPVOsUXPljyG4T13jQ4MmJ3r2Kgup3ByAWHOI4COoNGzG0P3RlgVOcX9fkZO079CgAz87RSbiz_TvY9_bmC3Zb2tGnsJEHGLXhqEqCj7GVwjNsgYlsGwSYOj65kac0KPX_GXAwjc1SJPKCu3fQbnPq9E"/>
-<div class="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-4">
-<button onclick="event.stopPropagation(); location.href='product-detail.html?id=5'" class="bg-white text-primary px-4 py-2 rounded-lg font-title-md text-label-sm inner-glow shadow-lg transition-transform hover:scale-105">Quick View</button>
-</div>
-</div>
-<div class="p-6 flex flex-col flex-grow">
-<div class="flex items-center gap-1 mb-2">
-<span class="material-symbols-outlined text-[14px] text-secondary" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-[14px] text-secondary" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-[14px] text-secondary" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-[14px] text-secondary" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-[14px] text-secondary" style="font-variation-settings: 'FILL' 0;">star</span>
-<span class="text-on-surface-variant text-[12px] ml-1">(34)</span>
-</div>
-<h3 class="font-title-md text-primary mb-1">Telomere Elixir</h3>
-<p class="text-on-surface-variant text-body-md mb-4 flex-grow">Liquid supplement targeting cellular aging markers.</p>
-<div class="flex items-center justify-between">
-<span class="font-title-md text-primary text-xl">$215.00</span>
-<button class="w-10 h-10 rounded-full border border-primary text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-colors">
-<span class="material-symbols-outlined text-xl">add</span>
-</button>
-</div>
-</div>
-</div>
-<!-- Product Card 6 -->
-<div class="group relative flex flex-col glass-card rounded-[1.5rem] overflow-hidden transition-all duration-500 hover:-translate-y-2 hover:shadow-xl hover:shadow-primary/10 cursor-pointer" onclick="location.href='product-detail.html?id=6'">
-<div class="relative aspect-[4/5] overflow-hidden bg-surface-container-low">
-<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" data-alt="A macro shot of a single, elegantly designed health sensor patch being applied to skin. The sensor is transparent with microscopic golden circuitry visible. The lighting is soft and clinical, with a shallow depth of field focusing on the intricate technological details. The overall image is bright and professional, highlighting the integration of biotechnology and human wellness." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCe5EggS4Z193saSuq7VRqo_32dtNBC_DBUyhO1BFqgoDrqC5bN46Lh0I3TTbqpuvBIebY_jk-Yn8IujM825DrhNYUrr1W-p-RVpNK5WcKmfyMmPNzlvMAtvL3qOFUn8p6Gk2IbzZmCSUAMKBYAY31pivIjtIuNWiblLtEorwEdYUXFiNsVRsycXmuifkDNJnrdMq-s1a8lcdcd1DhEtB900wpsE5ZGYO5FiGHGjjGHvSRNew-_H6Mv0jSGgPJcUjtvPRS5sbsSOuGz"/>
-<div class="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-4">
-<button onclick="event.stopPropagation(); location.href='product-detail.html?id=6'" class="bg-white text-primary px-4 py-2 rounded-lg font-title-md text-label-sm inner-glow shadow-lg transition-transform hover:scale-105">Quick View</button>
-</div>
-</div>
-<div class="p-6 flex flex-col flex-grow">
-<div class="flex items-center gap-1 mb-2">
-<span class="material-symbols-outlined text-[14px] text-secondary" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-[14px] text-secondary" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-[14px] text-secondary" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-[14px] text-secondary" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-[14px] text-secondary" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="text-on-surface-variant text-[12px] ml-1">(18)</span>
-</div>
-<h3 class="font-title-md text-primary mb-1">Azzura Bio-Patch</h3>
-<p class="text-on-surface-variant text-body-md mb-4 flex-grow">Real-time nutrient absorption monitor with AI integration.</p>
-<div class="flex items-center justify-between">
-<span class="font-title-md text-primary text-xl">$89.00</span>
-<button class="w-10 h-10 rounded-full border border-primary text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-colors">
-<span class="material-symbols-outlined text-xl">add</span>
-</button>
-</div>
-</div>
-</div>
-</div>
-<!-- Pagination -->
-<div class="mt-16 flex justify-center items-center gap-4">
-<button class="w-12 h-12 rounded-full border border-outline-variant flex items-center justify-center text-on-surface-variant hover:bg-surface-container transition-colors">
-<span class="material-symbols-outlined">chevron_left</span>
-</button>
-<button class="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center font-title-md">1</button>
-<button class="w-12 h-12 rounded-full border border-outline-variant flex items-center justify-center text-on-surface-variant hover:bg-surface-container transition-colors font-title-md">2</button>
-<button class="w-12 h-12 rounded-full border border-outline-variant flex items-center justify-center text-on-surface-variant hover:bg-surface-container transition-colors font-title-md">3</button>
-<button class="w-12 h-12 rounded-full border border-outline-variant flex items-center justify-center text-on-surface-variant hover:bg-surface-container transition-colors">
-<span class="material-symbols-outlined">chevron_right</span>
-</button>
-</div>
-</div>
-</div>
-</main>
-<!-- Footer -->
-<footer class="bg-surface-container-lowest dark:bg-inverse-surface w-full py-16 px-margin-desktop border-t border-outline-variant/10">
-<div class="grid grid-cols-1 md:grid-cols-4 gap-gutter-desktop max-w-container-max mx-auto">
-<div class="md:col-span-1">
-<span class="font-headline-lg text-headline-lg text-primary dark:text-inverse-primary mb-4 block">Azzura</span>
-<p class="text-on-surface-variant dark:text-surface-variant font-body-md mb-6">Redefining health through the precision of biotechnology and the elegance of wellness.</p>
-<div class="flex gap-4">
-<span class="material-symbols-outlined text-primary">language</span>
-<span class="material-symbols-outlined text-primary">public</span>
-<span class="material-symbols-outlined text-primary">token</span>
-</div>
-</div>
-<div>
-<h4 class="font-title-md text-primary dark:text-inverse-primary mb-6">Platform</h4>
-<ul class="space-y-4">
-<li><a class="text-on-surface-variant dark:text-surface-variant hover:text-secondary dark:hover:text-secondary-fixed-dim transition-colors" href="#">Clinical Trials</a></li>
-<li><a class="text-on-surface-variant dark:text-surface-variant hover:text-secondary dark:hover:text-secondary-fixed-dim transition-colors" href="#">Science &amp; Tech</a></li>
-<li><a class="text-on-surface-variant dark:text-surface-variant hover:text-secondary dark:hover:text-secondary-fixed-dim transition-colors" href="#">Product Safety</a></li>
-<li><a class="text-on-surface-variant dark:text-surface-variant hover:text-secondary dark:hover:text-secondary-fixed-dim transition-colors" href="#">Global Logistics</a></li>
-</ul>
-</div>
-<div>
-<h4 class="font-title-md text-primary dark:text-inverse-primary mb-6">Company</h4>
-<ul class="space-y-4">
-<li><a class="text-on-surface-variant dark:text-surface-variant hover:text-secondary dark:hover:text-secondary-fixed-dim transition-colors" href="#">About Us</a></li>
-<li><a class="text-on-surface-variant dark:text-surface-variant hover:text-secondary dark:hover:text-secondary-fixed-dim transition-colors" href="#">Contact Us</a></li>
-<li><a class="text-on-surface-variant dark:text-surface-variant hover:text-secondary dark:hover:text-secondary-fixed-dim transition-colors" href="#">Support</a></li>
-<li><a class="text-on-surface-variant dark:text-surface-variant hover:text-secondary dark:hover:text-secondary-fixed-dim transition-colors" href="#">Careers</a></li>
-</ul>
-</div>
-<div>
-<h4 class="font-title-md text-primary dark:text-inverse-primary mb-6">Newsletter</h4>
-<p class="text-on-surface-variant dark:text-surface-variant font-body-md mb-4">Subscribe for breakthrough clinical updates.</p>
-<div class="flex flex-col gap-3">
-<input class="bg-surface border border-outline-variant/30 px-4 py-3 rounded-lg focus:ring-2 focus:ring-primary/20 outline-none transition-all" placeholder="Email address" type="email"/>
-<button class="bg-primary text-white py-3 rounded-lg font-title-md hover:opacity-90 transition-opacity">Subscribe</button>
-</div>
-</div>
-</div>
-<div class="max-w-container-max mx-auto mt-16 pt-8 border-t border-outline-variant/10 flex flex-col md:flex-row justify-between items-center gap-4">
-<p class="text-on-surface-variant dark:text-surface-variant font-body-md">© 2024 Azzura Healthcare. Nurturing Human Lives.</p>
-<div class="flex gap-6">
-<a class="text-on-surface-variant dark:text-surface-variant hover:text-secondary transition-colors" href="#">Privacy Policy</a>
-<a class="text-on-surface-variant dark:text-surface-variant hover:text-secondary transition-colors" href="#">Terms of Service</a>
-<a class="text-on-surface-variant dark:text-surface-variant hover:text-secondary transition-colors" href="#">Sitemap</a>
-</div>
-</div>
-</footer>
-</body></html>
+<body class="shop-page">
+
+  <!-- ========================================================
+       NAVBAR — Exact copy from index.html, Shop link active
+       ======================================================== -->
+  <nav class="navbar navbar--solid" id="navbar" aria-label="Main navigation">
+    <!-- Logo -->
+    <a href="index.html" class="navbar__logo" aria-label="Azzurra Home">
+      <span class="navbar__logo-name">AZZURRA</span>
+      <span class="navbar__logo-tag">Nurturing Human Lives</span>
+    </a>
+
+    <!-- Desktop links — "Shop" is active -->
+    <ul class="navbar__links" role="list">
+      <li><a href="index.html"    class="navbar__link">Home</a></li>
+      <li><a href="about.html"    class="navbar__link">About</a></li>
+      <li><a href="science.html"  class="navbar__link">Science</a></li>
+      <li><a href="productss.html" class="navbar__link navbar__link--shop active" aria-current="page">Shop</a></li>
+      <li><a href="contact.html"  class="navbar__link">Contact</a></li>
+    </ul>
+
+    <!-- Mobile hamburger -->
+    <button class="navbar__hamburger" id="navbar-hamburger" aria-label="Open menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <!-- Mobile overlay + drawer -->
+  <div class="navbar__overlay" id="navbar-overlay"></div>
+  <nav class="navbar__drawer" id="navbar-drawer" aria-label="Mobile navigation">
+    <button class="navbar__drawer-close" id="drawer-close" aria-label="Close menu">&times;</button>
+    <a href="index.html"     class="navbar__drawer-link">Home</a>
+    <a href="about.html"     class="navbar__drawer-link">About</a>
+    <a href="science.html"   class="navbar__drawer-link">Science</a>
+    <a href="productss.html" class="navbar__drawer-link" style="color:var(--color-primary);font-weight:700;">Shop</a>
+    <a href="contact.html"   class="navbar__drawer-link">Contact</a>
+  </nav>
+
+  <!-- ========================================================
+       HERO HEADER
+       "Clinical Excellence" badge + headline + subtitle
+       ======================================================== -->
+  <header class="shop-hero" aria-labelledby="shop-heading">
+    <div class="shop-hero__inner">
+      <div class="shop-hero__badge" aria-hidden="true">
+        <span class="shop-hero__badge-dot"></span>
+        Clinical Excellence
+      </div>
+      <h1 class="shop-hero__heading" id="shop-heading">
+        Elevated Biotech Wellness Solutions
+      </h1>
+      <p class="shop-hero__sub">
+        Precision-engineered formulations and state-of-the-art health devices designed
+        for your biological peak performance.
+      </p>
+    </div>
+  </header>
+
+  <!-- ========================================================
+       MAIN SHOP LAYOUT — Sidebar + Product Grid
+       ======================================================== -->
+  <div class="shop-layout" role="main">
+
+    <!-- ---- LEFT SIDEBAR ---- -->
+    <aside class="shop-sidebar" aria-label="Product filters">
+
+      <!-- 1. Categories -->
+      <div class="sidebar-section">
+        <h2 class="sidebar-section__title">Categories</h2>
+        <ul class="category-list" role="list">
+          <li>
+            <button class="category-btn active" data-category="all" id="cat-all">
+              All Products
+              <span class="category-btn__count">24</span>
+            </button>
+          </li>
+          <li>
+            <button class="category-btn" data-category="molecular_serums" id="cat-serums">
+              Molecular Serums
+              <span class="category-btn__count">8</span>
+            </button>
+          </li>
+          <li>
+            <button class="category-btn" data-category="cellular_kits" id="cat-kits">
+              Cellular Kits
+              <span class="category-btn__count">4</span>
+            </button>
+          </li>
+          <li>
+            <button class="category-btn" data-category="bio_devices" id="cat-devices">
+              Bio-Devices
+              <span class="category-btn__count">6</span>
+            </button>
+          </li>
+          <li>
+            <button class="category-btn" data-category="advanced_supplements" id="cat-supplements">
+              Advanced Supplements
+              <span class="category-btn__count">6</span>
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      <!-- 2. Refine by Need -->
+      <div class="sidebar-section">
+        <h2 class="sidebar-section__title">Refine by Need</h2>
+        <div class="need-pills" role="group" aria-label="Filter by wellness need">
+          <button class="need-pill" data-need="longevity" id="need-longevity">Longevity</button>
+          <button class="need-pill" data-need="cognition" id="need-cognition">Cognition</button>
+          <button class="need-pill" data-need="recovery"  id="need-recovery">Recovery</button>
+          <button class="need-pill" data-need="radiance"  id="need-radiance">Radiance</button>
+        </div>
+      </div>
+
+      <!-- 3. Expert Consultation -->
+      <div class="consultation-card" aria-label="Book expert consultation">
+        <h3 class="consultation-card__title">Expert Consultation</h3>
+        <p class="consultation-card__text">
+          Not sure where to start? Speak with our biotech advisors for a personalised protocol.
+        </p>
+        <a href="contact.html" class="consultation-card__btn">Book Now</a>
+      </div>
+
+    </aside>
+
+    <!-- ---- MAIN GRID AREA ---- -->
+    <div class="shop-main">
+
+      <!-- Offline warning banner -->
+      <div class="offline-banner" id="offline-banner" role="alert">
+        ⚠️ <span>Operating in offline mode — showing sample product data. Connect to internet to see live catalogue.</span>
+      </div>
+
+      <!-- Toolbar: count + sort -->
+      <div class="shop-toolbar" role="toolbar" aria-label="Product sorting and count">
+        <p class="shop-toolbar__count" id="product-count" aria-live="polite">
+          Loading products…
+        </p>
+        <div class="shop-toolbar__sort">
+          <label for="sort-select">Sort by:</label>
+          <select class="sort-select" id="sort-select" aria-label="Sort products">
+            <option value="newest">Newest Arrivals</option>
+            <option value="price_low">Price: Low to High</option>
+            <option value="price_high">Price: High to Low</option>
+            <option value="rating">Customer Rating</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Product grid — populated by shop.js -->
+      <div class="products-grid stagger" id="products-grid" aria-label="Products" role="list">
+        <!-- Skeleton loaders injected by JS on load -->
+      </div>
+
+    </div><!-- /shop-main -->
+  </div><!-- /shop-layout -->
+
+  <!-- ========================================================
+       CART DRAWER — slide-in panel from right
+       ======================================================== -->
+  <div class="cart-overlay" id="cart-overlay" aria-hidden="true"></div>
+  <aside class="cart-drawer" id="cart-drawer" aria-label="Shopping cart" role="dialog" aria-modal="true">
+    <div class="cart-drawer__header">
+      <div>
+        <div class="cart-drawer__title">Your Cart</div>
+        <div class="cart-drawer__count" id="cart-item-count">0 items</div>
+      </div>
+      <button class="cart-drawer__close" id="cart-close-btn" aria-label="Close cart">&times;</button>
+    </div>
+
+    <!-- Scrollable item list -->
+    <div class="cart-drawer__items" id="cart-items" role="list">
+      <!-- Rendered by shop.js renderCartDrawer() -->
+    </div>
+
+    <!-- Footer: subtotal + checkout -->
+    <div class="cart-drawer__footer">
+      <div class="cart-subtotal">
+        <span class="cart-subtotal__label">Subtotal</span>
+        <span class="cart-subtotal__amount" id="cart-total">₹0</span>
+      </div>
+      <p class="cart-subtotal__note">Shipping and taxes calculated at checkout.</p>
+      <button class="cart-checkout-btn" id="cart-checkout-btn" disabled>
+        Proceed to Checkout →
+      </button>
+      <button class="cart-continue-btn" id="cart-continue-btn">
+        Continue Shopping
+      </button>
+    </div>
+  </aside>
+
+  <!-- ========================================================
+       FOOTER — exact copy from index.html
+       ======================================================== -->
+  <footer class="footer" role="contentinfo">
+    <div class="footer__grid">
+
+      <div>
+        <div class="footer__logo-name">AZZURRA</div>
+        <div class="footer__logo-tag">Nurturing Human Lives</div>
+        <p class="footer__tagline">
+          Reaching globally and understanding locally — innovation and research
+          to bring happiness to life.
+        </p>
+        <p class="footer__collab">Technical Collaboration: Azzurra Pharmaconutrition, USA</p>
+      </div>
+
+      <div>
+        <h3 class="footer__col-title">Quick Links</h3>
+        <ul class="footer__links" role="list">
+          <li><a href="index.html"     class="footer__link">Home</a></li>
+          <li><a href="about.html"     class="footer__link">About</a></li>
+          <li><a href="science.html"   class="footer__link">Science</a></li>
+          <li><a href="productss.html" class="footer__link">Shop</a></li>
+          <li><a href="contact.html"   class="footer__link">Contact</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 class="footer__col-title">Product Series</h3>
+        <ul class="footer__links" role="list">
+          <li><a href="productss.html" class="footer__link">Essential Series</a></li>
+          <li><a href="productss.html" class="footer__link">Vital Series</a></li>
+          <li><a href="productss.html" class="footer__link">Max Series</a></li>
+          <li><a href="productss.html" class="footer__link">Provit Series</a></li>
+          <li><a href="productss.html" class="footer__link">Lifeline Series</a></li>
+          <li><a href="productss.html" class="footer__link">Oral Series</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 class="footer__col-title">Contact</h3>
+        <div class="footer__contact-item">
+          <span class="footer__contact-icon" aria-hidden="true">📍</span>
+          <p class="footer__contact-text">
+            F-31, Sector 10, DLF,<br />
+            Faridabad (NCR-Delhi) — 121006, India
+          </p>
+        </div>
+        <div class="footer__contact-item">
+          <span class="footer__contact-icon" aria-hidden="true">📞</span>
+          <p class="footer__contact-text">
+            <a href="tel:+919818999863">+91 9818999863</a>
+          </p>
+        </div>
+        <div class="footer__contact-item">
+          <span class="footer__contact-icon" aria-hidden="true">✉️</span>
+          <p class="footer__contact-text">
+            <a href="mailto:info@azzurrapharmaconutrition.com">
+              info@azzurrapharmaconutrition.com
+            </a>
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="footer__bottom">
+      <p class="footer__copy">
+        &copy; 2025 Azzurra Pharmaconutrition Pvt. Ltd. All Rights Reserved.
+      </p>
+      <a href="#" class="footer__legal">Privacy Policy</a>
+    </div>
+  </footer>
+
+  <!-- ========================================================
+       SCRIPTS — config first, then shared, then shop-specific
+       ======================================================== -->
+  <!-- Supabase + Razorpay config (gitignored — fill in your keys) -->
+  <script src="config.js"></script>
+  <!-- Shared JS: navbar scroll, mobile drawer, fade-up animations -->
+  <script src="assets/js/main.js"></script>
+  <!-- Shop-specific: product loading, filtering, cart -->
+  <script src="assets/js/shop.js"></script>
+
+</body>
+</html>

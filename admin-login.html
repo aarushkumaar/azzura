@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Login — Azzurra</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <style>
+    body { background: var(--color-primary-light); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+
+    .login-card {
+      background: var(--color-white);
+      border: 1.5px solid var(--color-border);
+      border-radius: 20px;
+      padding: 48px 40px;
+      max-width: 440px;
+      width: 100%;
+      box-shadow: 0 12px 48px rgba(26,95,168,0.1);
+    }
+
+    .login-logo { text-align: center; margin-bottom: 32px; }
+    .login-logo-name { font-size: 26px; font-weight: 700; letter-spacing: 0.06em; color: var(--color-primary); display: block; }
+    .login-logo-tag  { font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--color-gold); font-weight: 600; display: block; margin-top: 2px; }
+
+    .login-title { font-family: var(--font-heading); font-size: 26px; color: var(--color-dark); font-weight: 400; margin-bottom: 6px; text-align: center; }
+    .login-sub   { font-size: 14px; color: var(--color-grey); text-align: center; margin-bottom: 32px; }
+
+    .login-form { display: flex; flex-direction: column; gap: 16px; }
+
+    .login-btn {
+      width: 100%;
+      padding: 14px;
+      background: var(--color-primary);
+      color: var(--color-white);
+      border: none;
+      border-radius: 100px;
+      font-family: var(--font-body);
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background var(--ease), transform var(--ease);
+      margin-top: 4px;
+    }
+    .login-btn:hover { background: var(--color-primary-dark); transform: scale(1.02); }
+    .login-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .login-error {
+      background: #fff5f5;
+      border: 1.5px solid #fc8181;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: #c53030;
+      display: none;
+    }
+    .login-error.show { display: block; }
+
+    .login-success {
+      background: #f0fff4;
+      border: 1.5px solid #68d391;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: #276749;
+      display: none;
+      text-align: center;
+    }
+    .login-success.show { display: block; }
+
+    .login-divider { height: 1px; background: var(--color-border); margin: 8px 0; }
+    .login-back { display: block; text-align: center; font-size: 13px; color: var(--color-grey); margin-top: 20px; }
+    .login-back a { color: var(--color-primary); font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <div class="login-logo">
+      <span class="login-logo-name">AZZURRA</span>
+      <span class="login-logo-tag">Admin Portal</span>
+    </div>
+
+    <h1 class="login-title">Admin Sign In</h1>
+    <p class="login-sub">Enter your admin email to receive a secure login link.</p>
+
+    <form class="login-form" id="login-form" novalidate>
+      <div class="form-group">
+        <label class="form-label" for="admin-email">Admin Email</label>
+        <input
+          class="form-input"
+          type="email"
+          id="admin-email"
+          name="email"
+          placeholder="admin@azzurra.com"
+          required
+          autocomplete="email"
+        />
+        <span class="form-error" id="err-email">Please enter a valid email address.</span>
+      </div>
+
+      <div class="login-error" id="login-error"></div>
+      <div class="login-success" id="login-success">
+        ✅ Magic link sent! Check your email inbox and click the link to sign in.
+      </div>
+
+      <button type="submit" class="login-btn" id="login-btn">Send Login Link</button>
+    </form>
+
+    <p class="login-back">
+      <a href="index.html">← Back to website</a>
+    </p>
+  </div>
+
+  <script src="config.js"></script>
+  <script>
+    /* ============================================================
+       Admin Login — Supabase Magic Link Auth
+       On submit: calls Supabase Auth signInWithOtp to send a
+       magic link to the provided email. If the email exists in
+       admin_users, auth will succeed; otherwise the admin.html
+       page will deny access.
+       ============================================================ */
+    document.getElementById('login-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const emailInput = document.getElementById('admin-email');
+      const email      = emailInput.value.trim();
+      const errEl      = document.getElementById('login-error');
+      const successEl  = document.getElementById('login-success');
+      const btn        = document.getElementById('login-btn');
+      const emailErrEl = document.getElementById('err-email');
+
+      // Clear previous state
+      errEl.classList.remove('show');
+      successEl.classList.remove('show');
+      emailErrEl.classList.remove('show');
+      emailInput.classList.remove('error');
+
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        emailInput.classList.add('error');
+        emailErrEl.classList.add('show');
+        return;
+      }
+
+      btn.disabled    = true;
+      btn.textContent = 'Sending…';
+
+      try {
+        /* Supabase Auth REST API — signInWithOtp */
+        const res = await fetch(`${SUPABASE_URL}/auth/v1/otp`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey':       SUPABASE_ANON_KEY,
+          },
+          body: JSON.stringify({
+            email:            email,
+            create_user:      false,  // Don't create new users — only existing admins
+            redirect_to:      `${window.location.origin}/admin.html`,
+          }),
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.error_description || err.msg || 'Failed to send login link.');
+        }
+
+        successEl.classList.add('show');
+        btn.textContent = 'Link Sent ✓';
+
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.classList.add('show');
+        btn.disabled    = false;
+        btn.textContent = 'Send Login Link';
+      }
+    });
+
+    /* If already logged in, redirect straight to admin dashboard */
+    (async function checkExistingSession() {
+      try {
+        const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+          headers: {
+            'apikey':       SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${localStorage.getItem('sb-access-token') || ''}`,
+          }
+        });
+        if (res.ok) {
+          const user = await res.json();
+          if (user?.id) window.location.href = 'admin.html';
+        }
+      } catch (_) { /* no session — show login form */ }
+    })();
+  </script>
+</body>
+</html>

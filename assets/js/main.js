@@ -69,34 +69,55 @@
    Uses IntersectionObserver to watch elements with the
    class "fade-up" or "stagger". When they enter the viewport,
    "visible" is added which triggers the CSS transition.
+
+   initFadeUp() is exposed on window so that shop.js can call
+   it again after dynamically injecting product cards into the DOM.
    ============================================================ */
-(function initFadeUp() {
-  // Exit if IntersectionObserver is not supported (very old browsers)
-  if (!('IntersectionObserver' in window)) {
-    // Fallback: make all elements visible immediately
-    document.querySelectorAll('.fade-up, .stagger').forEach(function(el) {
-      el.classList.add('visible');
+(function () {
+  // Shared observer — reused across multiple initFadeUp() calls
+  var fadeObserver = null;
+
+  function createObserver() {
+    if (!('IntersectionObserver' in window)) return null;
+    return new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          // Once visible, stop watching — no need to un-animate
+          fadeObserver.unobserve(entry.target);
+        }
+      });
+    }, {
+      threshold: 0.12,         // Trigger when 12% of the element is visible
+      rootMargin: '0px 0px -40px 0px' // Slight bottom offset for a natural feel
     });
-    return;
   }
 
-  var observer = new IntersectionObserver(function(entries) {
-    entries.forEach(function(entry) {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-        // Once visible, stop watching — no need to un-animate
-        observer.unobserve(entry.target);
-      }
-    });
-  }, {
-    threshold: 0.12,        // Trigger when 12% of the element is visible
-    rootMargin: '0px 0px -40px 0px' // Slight bottom offset for a natural feel
-  });
+  /**
+   * Watch all .fade-up and .stagger elements that haven't been
+   * observed yet. Safe to call multiple times (e.g. after dynamic
+   * content is injected by shop.js).
+   */
+  window.initFadeUp = function initFadeUp() {
+    // Fallback for browsers without IntersectionObserver
+    if (!('IntersectionObserver' in window)) {
+      document.querySelectorAll('.fade-up, .stagger').forEach(function(el) {
+        el.classList.add('visible');
+      });
+      return;
+    }
 
-  // Watch all fade-up elements and stagger containers
-  document.querySelectorAll('.fade-up, .stagger').forEach(function(el) {
-    observer.observe(el);
-  });
+    // Create the observer once
+    if (!fadeObserver) fadeObserver = createObserver();
+
+    // Observe any new elements that don't yet have .visible
+    document.querySelectorAll('.fade-up:not(.visible), .stagger:not(.visible)').forEach(function(el) {
+      fadeObserver.observe(el);
+    });
+  };
+
+  // Run on initial page load
+  window.initFadeUp();
 }());
 
 

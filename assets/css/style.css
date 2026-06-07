@@ -183,12 +183,20 @@ input, textarea, select {
   transition: opacity var(--ease-slow), transform var(--ease-slow);
 }
 
-.stagger.visible > *:nth-child(1) { opacity: 1; transform: translateY(0); transition-delay: 0s; }
-.stagger.visible > *:nth-child(2) { opacity: 1; transform: translateY(0); transition-delay: 0.1s; }
-.stagger.visible > *:nth-child(3) { opacity: 1; transform: translateY(0); transition-delay: 0.2s; }
-.stagger.visible > *:nth-child(4) { opacity: 1; transform: translateY(0); transition-delay: 0.3s; }
-.stagger.visible > *:nth-child(5) { opacity: 1; transform: translateY(0); transition-delay: 0.4s; }
-.stagger.visible > *:nth-child(6) { opacity: 1; transform: translateY(0); transition-delay: 0.5s; }
+.stagger.visible > *:nth-child(1)  { opacity: 1; transform: translateY(0); transition-delay: 0s; }
+.stagger.visible > *:nth-child(2)  { opacity: 1; transform: translateY(0); transition-delay: 0.08s; }
+.stagger.visible > *:nth-child(3)  { opacity: 1; transform: translateY(0); transition-delay: 0.16s; }
+.stagger.visible > *:nth-child(4)  { opacity: 1; transform: translateY(0); transition-delay: 0.24s; }
+.stagger.visible > *:nth-child(5)  { opacity: 1; transform: translateY(0); transition-delay: 0.32s; }
+.stagger.visible > *:nth-child(6)  { opacity: 1; transform: translateY(0); transition-delay: 0.40s; }
+.stagger.visible > *:nth-child(7)  { opacity: 1; transform: translateY(0); transition-delay: 0.48s; }
+.stagger.visible > *:nth-child(8)  { opacity: 1; transform: translateY(0); transition-delay: 0.56s; }
+.stagger.visible > *:nth-child(9)  { opacity: 1; transform: translateY(0); transition-delay: 0.60s; }
+.stagger.visible > *:nth-child(10) { opacity: 1; transform: translateY(0); transition-delay: 0.60s; }
+.stagger.visible > *:nth-child(11) { opacity: 1; transform: translateY(0); transition-delay: 0.60s; }
+.stagger.visible > *:nth-child(12) { opacity: 1; transform: translateY(0); transition-delay: 0.60s; }
+/* Items beyond 12 appear immediately without delay */
+.stagger.visible > *:nth-child(n+13) { opacity: 1; transform: translateY(0); }
 
 /* ============================================================
    NAVBAR
@@ -421,6 +429,35 @@ input, textarea, select {
 .btn--text:hover {
   gap: 10px;
   color: var(--color-primary-dark);
+}
+
+/* select dropdown arrow — used on shop sort, admin filter selects */
+select.form-input {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B7280' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 40px;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* Breadcrumb — checkout.html and sub-pages */
+.page-hero__breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--color-grey);
+  margin-bottom: 12px;
+}
+
+.page-hero__breadcrumb a {
+  color: var(--color-primary);
+  font-weight: 500;
+}
+
+.page-hero__breadcrumb a:hover {
+  text-decoration: underline;
 }
 
 /* ============================================================
