@@ -1,7 +1,9 @@
 /* ============================================================
    AZZURRA PHARMACONUTRITION — SHARED JAVASCRIPT
    Handles: Navbar scroll, mobile drawer, fade-up animations,
-            stat counters, and smooth scroll
+            stat counters, smooth scroll, scroll progress bar,
+            back-to-top button, about section parallax,
+            Why section SVG animation, cart badge, toast
    ============================================================ */
 
 /* ============================================================
@@ -17,7 +19,6 @@
     if (window.scrollY > 60) {
       navbar.classList.add('scrolled');
     } else {
-      // Only remove if it's not a solid-by-default navbar (inner pages)
       if (!navbar.classList.contains('navbar--solid')) {
         navbar.classList.remove('scrolled');
       }
@@ -25,7 +26,7 @@
   }
 
   window.addEventListener('scroll', onScroll, { passive: true });
-  onScroll(); // Run once on load to set correct state
+  onScroll();
 }());
 
 
@@ -44,7 +45,7 @@
   function openDrawer() {
     drawer.classList.add('open');
     overlay.classList.add('show');
-    document.body.style.overflow = 'hidden'; // Prevent background scroll
+    document.body.style.overflow = 'hidden';
   }
 
   function closeDrawer() {
@@ -57,7 +58,6 @@
   if (closeBtn)  closeBtn.addEventListener('click', closeDrawer);
   if (overlay)   overlay.addEventListener('click', closeDrawer);
 
-  // Close drawer if a link is clicked
   drawer.querySelectorAll('a').forEach(function(link) {
     link.addEventListener('click', closeDrawer);
   });
@@ -69,12 +69,8 @@
    Uses IntersectionObserver to watch elements with the
    class "fade-up" or "stagger". When they enter the viewport,
    "visible" is added which triggers the CSS transition.
-
-   initFadeUp() is exposed on window so that shop.js can call
-   it again after dynamically injecting product cards into the DOM.
    ============================================================ */
 (function () {
-  // Shared observer — reused across multiple initFadeUp() calls
   var fadeObserver = null;
 
   function createObserver() {
@@ -83,23 +79,20 @@
       entries.forEach(function(entry) {
         if (entry.isIntersecting) {
           entry.target.classList.add('visible');
-          // Once visible, stop watching — no need to un-animate
           fadeObserver.unobserve(entry.target);
         }
       });
     }, {
-      threshold: 0.12,         // Trigger when 12% of the element is visible
-      rootMargin: '0px 0px -40px 0px' // Slight bottom offset for a natural feel
+      threshold: 0.12,
+      rootMargin: '0px 0px -40px 0px'
     });
   }
 
   /**
    * Watch all .fade-up and .stagger elements that haven't been
-   * observed yet. Safe to call multiple times (e.g. after dynamic
-   * content is injected by shop.js).
+   * observed yet. Safe to call multiple times.
    */
   window.initFadeUp = function initFadeUp() {
-    // Fallback for browsers without IntersectionObserver
     if (!('IntersectionObserver' in window)) {
       document.querySelectorAll('.fade-up, .stagger').forEach(function(el) {
         el.classList.add('visible');
@@ -107,32 +100,26 @@
       return;
     }
 
-    // Create the observer once
     if (!fadeObserver) fadeObserver = createObserver();
 
-    // Observe any new elements that don't yet have .visible
     document.querySelectorAll('.fade-up:not(.visible), .stagger:not(.visible)').forEach(function(el) {
       fadeObserver.observe(el);
     });
   };
 
-  // Run on initial page load
   window.initFadeUp();
 }());
 
 
 /* ============================================================
    4. STAT COUNTER ANIMATION
-   Finds all elements with [data-count-to] attribute.
-   When they scroll into view, animates the number from 0
-   up to the target value over ~1.5 seconds.
+   Animates numbers from 0 up to their target on scroll.
    ============================================================ */
 (function initCounters() {
   var counters = document.querySelectorAll('[data-count-to]');
   if (!counters.length) return;
 
   if (!('IntersectionObserver' in window)) {
-    // Fallback: just show final numbers
     counters.forEach(function(el) {
       el.textContent = el.getAttribute('data-count-to') + (el.getAttribute('data-suffix') || '');
     });
@@ -153,29 +140,24 @@
   });
 
   /**
-   * Animate a single counter element from 0 to its data-count-to value.
-   * @param {HTMLElement} el — the element to animate
+   * Animate a single counter from 0 to data-count-to value.
+   * @param {HTMLElement} el
    */
   function animateCounter(el) {
     var target   = parseInt(el.getAttribute('data-count-to'), 10);
     var suffix   = el.getAttribute('data-suffix') || '';
-    var duration = 1500; // Animation duration in milliseconds
+    var duration = 1500;
     var start    = null;
 
     function step(timestamp) {
       if (!start) start = timestamp;
       var progress = Math.min((timestamp - start) / duration, 1);
-
-      // Use easeOutQuad for a natural deceleration effect
-      var eased = 1 - Math.pow(1 - progress, 2);
-      var current = Math.floor(eased * target);
-
-      el.textContent = current + suffix;
-
+      var eased    = 1 - Math.pow(1 - progress, 2);
+      el.textContent = Math.floor(eased * target) + suffix;
       if (progress < 1) {
         requestAnimationFrame(step);
       } else {
-        el.textContent = target + suffix; // Ensure exact final value
+        el.textContent = target + suffix;
       }
     }
 
@@ -186,24 +168,19 @@
 
 /* ============================================================
    5. CONTACT FORM VALIDATION
-   Basic client-side validation for the contact form.
-   Prevents empty submission; shows inline error messages.
    ============================================================ */
 (function initContactForm() {
   var form = document.getElementById('contact-form');
   if (!form) return;
 
   form.addEventListener('submit', function(e) {
-    e.preventDefault(); // Always prevent actual submission (no backend)
-
+    e.preventDefault();
     var isValid = true;
 
-    // Helper: show or hide an error message
     function setError(inputId, errorId, condition) {
       var input = document.getElementById(inputId);
       var error = document.getElementById(errorId);
       if (!input || !error) return;
-
       if (condition) {
         input.classList.add('error');
         error.classList.add('show');
@@ -218,31 +195,21 @@
     var email   = document.getElementById('cf-email');
     var message = document.getElementById('cf-message');
 
-    // Validate name
-    setError('cf-name', 'err-name', !name || name.value.trim().length < 2);
-
-    // Validate email format using a simple regex
+    setError('cf-name',    'err-name',    !name    || name.value.trim().length < 2);
     var emailOk = email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim());
-    setError('cf-email', 'err-email', !emailOk);
-
-    // Validate message
+    setError('cf-email',   'err-email',   !emailOk);
     setError('cf-message', 'err-message', !message || message.value.trim().length < 10);
 
-    // If all valid, show success message
     if (isValid) {
       var success = document.getElementById('form-success');
       if (success) {
         success.classList.add('show');
         form.reset();
-        // Hide success after 5 seconds
-        setTimeout(function() {
-          success.classList.remove('show');
-        }, 5000);
+        setTimeout(function() { success.classList.remove('show'); }, 5000);
       }
     }
   });
 
-  // Clear error state when user starts typing
   form.querySelectorAll('.form-input, .form-textarea').forEach(function(field) {
     field.addEventListener('input', function() {
       this.classList.remove('error');
@@ -250,4 +217,225 @@
       if (errorEl) errorEl.classList.remove('show');
     });
   });
+}());
+
+
+/* ============================================================
+   6. SCROLL PROGRESS BAR
+   A thin 3px bar at the very top of the page that fills
+   left-to-right as the user scrolls down.
+   ============================================================ */
+(function initScrollProgress() {
+  var bar = document.getElementById('scroll-progress');
+  if (!bar) return;
+
+  function updateProgress() {
+    var scrollTop  = window.scrollY || document.documentElement.scrollTop;
+    var docHeight  = document.documentElement.scrollHeight - window.innerHeight;
+    var pct        = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    bar.style.width = pct + '%';
+  }
+
+  window.addEventListener('scroll', updateProgress, { passive: true });
+  updateProgress();
+}());
+
+
+/* ============================================================
+   7. BACK TO TOP BUTTON
+   Appears after scrolling 200px; smooth scrolls to top on click.
+   ============================================================ */
+(function initBackToTop() {
+  var btn = document.getElementById('back-to-top');
+  if (!btn) return;
+
+  window.addEventListener('scroll', function() {
+    if (window.scrollY > 200) {
+      btn.classList.add('visible');
+    } else {
+      btn.classList.remove('visible');
+    }
+  }, { passive: true });
+
+  btn.addEventListener('click', function() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+}());
+
+
+/* ============================================================
+   8. ABOUT SECTION PARALLAX
+   The molecule visual scrolls slightly slower than the text.
+   ============================================================ */
+(function initParallax() {
+  var visual = document.getElementById('molecule-visual');
+  if (!visual) return;
+
+  function onScroll() {
+    /* Get the section's position relative to the viewport */
+    var rect    = visual.getBoundingClientRect();
+    var viewH   = window.innerHeight;
+    /* Only apply parallax when element is visible */
+    if (rect.bottom < 0 || rect.top > viewH) return;
+    /* Parallax factor 0.15 — subtle drift */
+    var offset  = (rect.top - viewH / 2) * 0.15;
+    visual.style.transform = 'translateY(' + offset + 'px)';
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+}());
+
+
+/* ============================================================
+   9. WHY AZZURRA — SVG CIRCLE DRAW ANIMATION
+   Triggers stroke-dashoffset animation when cards scroll
+   into view, drawing the blue circle around each icon.
+   ============================================================ */
+(function initWhyIcons() {
+  if (!('IntersectionObserver' in window)) return;
+
+  var circles = document.querySelectorAll('.why-icon-circle');
+  if (!circles.length) return;
+
+  var iconObserver = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('draw');
+        iconObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.5 });
+
+  circles.forEach(function(c) { iconObserver.observe(c); });
+}());
+
+
+/* ============================================================
+   10. STATS BAR PROGRESS LINE
+   Triggers the decorative fill animation when the stats
+   section scrolls into view.
+   ============================================================ */
+(function initStatsProgressLine() {
+  var line = document.getElementById('stats-progress-line');
+  if (!line || !('IntersectionObserver' in window)) return;
+
+  var obs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        line.classList.add('animate');
+        obs.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.4 });
+
+  obs.observe(line);
+}());
+
+
+/* ============================================================
+   11. CART BADGE — Reads localStorage and shows item count
+   in the navbar cart icon on every page.
+   ============================================================ */
+/**
+ * Update all navbar cart badges across the page.
+ * Safe to call anytime after DOM is ready.
+ */
+function updateCartBadge() {
+  try {
+    var cart  = JSON.parse(localStorage.getItem('azzurra_cart') || '[]');
+    var total = cart.reduce(function(sum, item) { return sum + (item.quantity || 1); }, 0);
+
+    document.querySelectorAll('.navbar__cart-badge').forEach(function(badge) {
+      if (total > 0) {
+        badge.textContent = total > 99 ? '99+' : total;
+        badge.style.display = 'flex';
+      } else {
+        badge.style.display = 'none';
+      }
+    });
+  } catch (e) {
+    /* localStorage unavailable — silently ignore */
+  }
+}
+
+/* Run on page load */
+document.addEventListener('DOMContentLoaded', updateCartBadge);
+window.updateCartBadge = updateCartBadge; /* Expose for shop.js to call after add-to-cart */
+
+
+/* ============================================================
+   12. ADD TO CART — Shared localStorage helper
+   Used by shop page, product detail pages, and cart page.
+   ============================================================ */
+/**
+ * Add a product to the cart stored in localStorage.
+ * If the product already exists, increments its quantity.
+ *
+ * @param {Object} product - { id, name, price, image, series }
+ * @param {number} quantity - how many to add (default 1)
+ */
+function azzuraAddToCart(product, quantity) {
+  quantity = quantity || 1;
+  try {
+    var cart  = JSON.parse(localStorage.getItem('azzurra_cart') || '[]');
+    var index = cart.findIndex(function(item) { return item.id === product.id; });
+
+    if (index > -1) {
+      cart[index].quantity = (cart[index].quantity || 1) + quantity;
+    } else {
+      cart.push({
+        id:       product.id,
+        name:     product.name,
+        price:    product.price,
+        image:    product.image || product.imagePath || '',
+        series:   product.series || '',
+        quantity: quantity
+      });
+    }
+
+    localStorage.setItem('azzurra_cart', JSON.stringify(cart));
+    updateCartBadge();
+    showToast('✓ ' + product.name + ' added to cart');
+  } catch (e) {
+    /* localStorage unavailable — silently ignore */
+  }
+}
+
+window.azzuraAddToCart = azzuraAddToCart;
+
+
+/* ============================================================
+   13. TOAST NOTIFICATION
+   Shows a slide-in notification at the bottom-right.
+   Disappears automatically after 2 seconds.
+   ============================================================ */
+(function initToast() {
+  /* Create the toast element once and reuse it */
+  var toast = document.createElement('div');
+  toast.id        = 'az-toast';
+  toast.className = 'az-toast';
+  toast.setAttribute('role', 'status');
+  toast.setAttribute('aria-live', 'polite');
+  toast.innerHTML =
+    '<span class="az-toast__icon">🛒</span>' +
+    '<span class="az-toast__text" id="az-toast-text"></span>';
+  document.body.appendChild(toast);
+
+  var hideTimer = null;
+
+  /**
+   * Show a toast message.
+   * @param {string} message - the text to display
+   */
+  window.showToast = function showToast(message) {
+    var textEl = document.getElementById('az-toast-text');
+    if (textEl) textEl.textContent = message;
+    toast.classList.add('show');
+
+    if (hideTimer) clearTimeout(hideTimer);
+    hideTimer = setTimeout(function() {
+      toast.classList.remove('show');
+    }, 2000);
+  };
 }());
