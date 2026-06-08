@@ -44,7 +44,9 @@
   .tab-btn.active { background:#003674; color:#fff; }
   .qty-btn:hover { background:#003674; color:#fff; }
   .thumbnail.active { border-color:#003674; }
+  .cart-badge { position:absolute; top:-4px; right:-4px; background:#0051d5; color:#fff; width:18px; height:18px; border-radius:50%; font-size:10px; font-family:'Manrope',sans-serif; font-weight:700; display:flex; align-items:center; justify-content:center; }
 </style>
+<script src="cart.js"></script>
 </head>
 <body class="bg-background text-on-surface font-body-md overflow-x-hidden">
 
@@ -58,8 +60,11 @@
       <a class="font-title-md text-on-surface-variant hover:text-primary transition-colors" href="#">About Us</a>
     </div>
     <div class="flex items-center gap-4">
-      <button class="material-symbols-outlined text-primary p-2">search</button>
-      <button class="material-symbols-outlined text-primary p-2">shopping_bag</button>
+      <a href="productss.html" class="material-symbols-outlined text-primary p-2">search</a>
+      <a href="cart.html" class="relative text-primary p-2">
+        <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">shopping_bag</span>
+        <span id="nav-cart-count" class="cart-badge" style="display:none">0</span>
+      </a>
       <a href="productss.html" class="bg-primary-container text-on-primary px-6 py-2 rounded-full font-title-md hover:opacity-90 transition-all duration-300 active:scale-95">Shop Now</a>
     </div>
   </div>
@@ -121,10 +126,10 @@
 
       <!-- CTA Buttons -->
       <div class="flex flex-col sm:flex-row gap-4 mb-10">
-        <button class="flex-1 bg-primary text-white px-8 py-4 rounded-full font-title-md hover:bg-secondary transition-all duration-300 active:scale-95 flex items-center justify-center gap-2">
+        <button onclick="handleAddToCart()" class="flex-1 bg-primary text-white px-8 py-4 rounded-full font-title-md hover:bg-secondary transition-all duration-300 active:scale-95 flex items-center justify-center gap-2">
           <span class="material-symbols-outlined">shopping_bag</span> Add to Cart
         </button>
-        <button class="flex-1 border-2 border-primary text-primary px-8 py-4 rounded-full font-title-md hover:bg-primary hover:text-white transition-all duration-300 active:scale-95">
+        <button onclick="handleBuyNow()" class="flex-1 border-2 border-primary text-primary px-8 py-4 rounded-full font-title-md hover:bg-primary hover:text-white transition-all duration-300 active:scale-95">
           Buy Now
         </button>
       </div>
@@ -182,7 +187,7 @@ const PRODUCTS = {
     rating: 5,
     reviews: 48,
     desc: "Adaptive DNA repair complex with high-potency Vitamin C. A breakthrough formulation that works at the cellular level to reverse oxidative damage, restore luminosity, and fortify the skin's natural barrier for long-lasting radiance.",
-    img: "https://lh3.googleusercontent.com/aida-public/AB6AXuC1bvDaEd5DGmZuiTT1QmFruSxCSnfEJt7MR68h9PHPDBxtxWakponagCtJSQgOJlQI0HjWoObcVj-YEEfBjSW8VK5TNg3A1QOfMF1lE9D00ayT0ZN7qXda1XSF83XKNQNBEPH9Tg_F9QqZbbM_D6Ue_tMa8e0S5-TxE32eXeEGdQc7B3ngspNaRD_O4wfoGkapds6vEy-j8fu8sxNaTNxdcxkMgyKwOVupXkF8rFVvOF1h2BIaDkGH7uESYNZbcqfYqj6Lind1Zpnf",
+    img: "images/essential-peptide.png",
     badge: "New Release",
     benefits: ["Repairs DNA oxidative damage at the cellular level","Boosts collagen synthesis by up to 42%","Delivers 72-hour deep hydration lock","Reduces fine lines and visible pores within 4 weeks","Clinically tested — dermatologist approved for all skin types"],
     ingredients: ["L-Ascorbic Acid (20%) — potent antioxidant Vitamin C","Bakuchiol — plant-based retinol alternative","Hyaluronic Acid (3 molecular weights)","Niacinamide (5%) — pore-refining and brightening","Peptide Complex AH-9 — proprietary collagen booster"],
@@ -195,7 +200,7 @@ const PRODUCTS = {
     rating: 4,
     reviews: 124,
     desc: "Non-invasive cellular resonance technology for rapid muscle recovery and deep tissue regeneration. Used by elite athletes and clinical practitioners worldwide.",
-    img: "https://lh3.googleusercontent.com/aida-public/AB6AXuBWw7ZbjM0N6rllwIT_zAWRnWDFErCKtf57USrnHiMjQMIxTZ4aloSOTmO__SRU-k7hoxNB1ptiFkoFQ8QlRpf3288cpIWQhrV6O10uDcv6ofxps_gyFJ_fCoqQ6AAUOAkMmBBnRQkaeckZxXJMwpT2v4d27vFIjEZC4cN9WY0wmIkMcqLa96kfekidJVILNXsV313Ml7qe0-3QL9jKXB0hpT84RPcqC6OxSUayegokjjRUijTXXdYFiwvvq009_DhZ3UPbs6fZXCkg",
+    img: "images/glutamax-el.png",
     badge: "Best Seller",
     benefits: ["Accelerates muscle recovery by 60% post-exercise","Reduces chronic inflammation markers within 2 weeks","Improves circulation and lymphatic drainage","FDA-registered bio-resonance technology","Wireless, rechargeable — 8-hour battery life"],
     ingredients: ["Frequency Range: 0.5Hz – 100Hz bio-resonance","Intensity Levels: 10 precision-calibrated modes","Material: Medical-grade titanium alloy housing","Connectivity: Bluetooth 5.2 with Azzura app","Certifications: CE, FDA-registered, RoHS compliant"],
@@ -208,7 +213,7 @@ const PRODUCTS = {
     rating: 5,
     reviews: 210,
     desc: "Advanced nootropic complex for cognitive clarity and sustained mental focus. Formulated by a board of neuroscientists to enhance neuroplasticity and protect against cognitive decline.",
-    img: "https://lh3.googleusercontent.com/aida-public/AB6AXuDQASqE32XHSerfpv51PJ-p9p1uLKMCUqPxKj3GJBvRb6LPefq-mermuRJlhm1JhWaMB5ppgswnbThxsMAIzORm9OzF0ssYjycTHT7BBos-bFq7IAZAyjUisCkgJqFHRYIAeANA-gfMRB4M1jQue7MuFoxcxQhGnfk0MB6Q5MESbJceqCj4DLgE3C1mjzVEp6pNMt5jZ6cCdOgEp4httinzk_Agq7XgAxEYw9doDxheZNrx0nU5qtL4ihthDKegLfnSTVsgE99Bpgpi",
+    img: "images/essential-peptide.png",
     badge: "Top Rated",
     benefits: ["Enhances working memory and recall speed","Reduces mental fatigue by up to 38%","Supports neuroplasticity and long-term brain health","Zero crash, no jitters — smooth sustained energy","Vegan, non-GMO, third-party lab certified"],
     ingredients: ["Lion's Mane Mushroom Extract (500mg)","Alpha-GPC (300mg) — acetylcholine precursor","Bacopa Monnieri (320mg) — memory adaptogen","Rhodiola Rosea (200mg) — stress resilience","Phosphatidylserine (100mg) — neuroprotective lipid"],
@@ -221,7 +226,7 @@ const PRODUCTS = {
     rating: 5,
     reviews: 56,
     desc: "Complete 30-day biological reset kit with multi-stage treatments targeting cellular renewal, metabolic reset, and systemic inflammation reduction. Your full-body transformation protocol.",
-    img: "https://lh3.googleusercontent.com/aida-public/AB6AXuAgiBNvYuEHOc_wkLry4_aIdMm0QD_gv8N9DHfgVGbHttjsb0tKBGpJ-7NlnYfGcqT14GuLpWr4gLov8zbKe6YlbQ-MyyMvGpk00rcEQxIEIBU53wQq73KSsc05PFXdEm73u-4Tug-8tIOOet45ONae25YNEJdaUIUe-3JfLgF8jLiqXja839q4VMCsRc6IMgRZXunCR_qOHRE1K8-nQDNLa6p7nIMdxkQqBRljW4LqzgFssF6ETesipKPLKjb4WU5FSqnafQ2l95V3",
+    img: "images/glutamax-el.png",
     badge: "Premium Kit",
     benefits: ["Full 30-day cellular renewal protocol","Includes 5 synergistic formulations","Reduces systemic inflammation biomarkers","Improves mitochondrial function and ATP output","Personalised day-by-day instruction guide included"],
     ingredients: ["Phase 1: Cellular Detox Serum (AM)","Phase 2: Mitochondrial Booster Capsules","Phase 3: Collagen Matrix Rebuild Cream (PM)","Phase 4: Gut-Skin Axis Probiotic Blend","Phase 5: NAD+ Precursor Oral Supplement"],
@@ -234,7 +239,7 @@ const PRODUCTS = {
     rating: 4,
     reviews: 34,
     desc: "Liquid supplement targeting cellular aging markers. Designed to slow telomere shortening and extend healthy cellular lifespan through patented molecular delivery technology.",
-    img: "https://lh3.googleusercontent.com/aida-public/AB6AXuCRmHiqfEVOl_hmwWQLOGetv56jxm-cei6vQ1wdzv9g3Yi3Ysdv9-w4XdhhqPFt7WPDP_jwQeJMSuFehN5e191_RLDBVjpQsrmdc4kSYRr-Gg3LcNdIaJqhjPVOsUXPljyG4T13jQ4MmJ3r2Kgup3ByAWHOI4COoNGzG0P3RlgVOcX9fkZO079CgAz87RSbiz_TvY9_bmC3Zb2tGnsJEHGLXhqEqCj7GVwjNsgYlsGwSYOj65kac0KPX_GXAwjc1SJPKCu3fQbnPq9E",
+    img: "images/essential-peptide.png",
     badge: "Anti-Aging",
     benefits: ["Slows telomere attrition — marker of cellular aging","Activates telomerase enzyme expression","Rich in polyphenols and TA-65 precursors","Improves sleep quality and HRV within 3 weeks","Bioavailability-enhanced liquid format absorbs 3x faster"],
     ingredients: ["Astragalus Root Extract — 95% astragaloside IV","Resveratrol (500mg) — sirtuin activator","CoQ10 (200mg) — mitochondrial energiser","Vitamin D3 + K2 — synergistic bone/cellular support","Organic Schisandra Berry — adaptogenic antioxidant"],
@@ -247,7 +252,7 @@ const PRODUCTS = {
     rating: 5,
     reviews: 18,
     desc: "Real-time nutrient absorption monitor with AI integration. A wearable biosensor patch that tracks key biomarkers through the skin and syncs data to the Azzura Health app.",
-    img: "https://lh3.googleusercontent.com/aida-public/AB6AXuCe5EggS4Z193saSuq7VRqo_32dtNBC_DBUyhO1BFqgoDrqC5bN46Lh0I3TTbqpuvBIebY_jk-Yn8IujM825DrhNYUrr1W-p-RVpNK5WcKmfyMmPNzlvMAtvL3qOFUn8p6Gk2IbzZmCSUAMKBYAY31pivIjtIuNWiblLtEorwEdYUXFiNsVRsycXmuifkDNJnrdMq-s1a8lcdcd1DhEtB900wpsE5ZGYO5FiGHGjjGHvSRNew-_H6Mv0jSGgPJcUjtvPRS5sbsSOuGz",
+    img: "images/glutamax-el.png",
     badge: "Wearable Tech",
     benefits: ["Continuous monitoring of glucose, hydration, lactate","AI-powered insights delivered to your phone","Medical-grade accuracy — validated in 3 clinical trials","Waterproof, hypoallergenic adhesive patch","Lasts 7 days per patch — no calibration needed"],
     ingredients: ["Electrochemical biosensor array (gold-circuit)","NFC + Bluetooth dual wireless transmission","Hypoallergenic medical adhesive (latex-free)","Biocompatible polymer substrate","Azzura AI analysis engine — app included"],
@@ -348,6 +353,22 @@ function init() {
 
   renderTabContent();
   renderRelated(id);
+}
+
+function handleAddToCart() {
+  if (!window._product) return;
+  if (typeof AzzuraCart !== 'undefined') {
+    AzzuraCart.addToCart(window._product.id, qty);
+    alert(window._product.name + ' added to cart!');
+  }
+}
+
+function handleBuyNow() {
+  if (!window._product) return;
+  if (typeof AzzuraCart !== 'undefined') {
+    AzzuraCart.addToCart(window._product.id, qty);
+    window.location.href = 'checkout.html';
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
