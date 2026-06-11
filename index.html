@@ -22,11 +22,11 @@
 
     <!-- Desktop links -->
     <ul class="navbar__links" role="list">
-      <li><a href="index.html"   class="navbar__link active">Home</a></li>
-      <li><a href="about.html"   class="navbar__link">About</a></li>
-      <li><a href="science.html" class="navbar__link">Science</a></li>
+      <li><a href="index.html"    class="navbar__link active">Home</a></li>
+      <li><a href="about.html"    class="navbar__link">About</a></li>
+      <li><a href="science.html"  class="navbar__link">Science</a></li>
       <li><a href="productss.html" class="navbar__link navbar__link--shop">Shop</a></li>
-      <li><a href="contact.html" class="navbar__link">Contact</a></li>
+      <li><a href="contact.html"  class="navbar__link">Contact</a></li>
     </ul>
 
     <!-- Mobile hamburger button -->
@@ -49,16 +49,25 @@
 
   <!-- ========================================================
        SECTION 1 — HERO
-       Full-viewport, centered, animated text reveal
+       Two-column: 60% text left, 40% animated visual right
+       Dot-grid background, scroll indicator at bottom
        ======================================================== -->
-  <section class="hero" id="hero" aria-label="Hero">
-    <div class="hero__inner">
-      <!-- Decorative rule above heading -->
-      <div class="hero__rule"></div>
+  <section class="hero hero--split" id="hero" aria-label="Hero">
 
-      <h1 class="hero__heading">
-        <span class="line-1">Precision Nutrition.</span>
-        <span class="line-2">Purposeful Recovery.</span>
+    <!-- Dot-grid background pattern (::before in CSS) -->
+
+    <!-- LEFT COLUMN: Text content -->
+    <div class="hero__text-col">
+
+      <!-- Animated blue rule that draws left-to-right on load -->
+      <div class="hero__rule hero__rule--animated" aria-hidden="true"></div>
+
+      <!-- Heading split into word spans for staggered animation -->
+      <h1 class="hero__heading hero__heading--words">
+        <span class="hw">Precision</span>
+        <span class="hw">Nutrition.</span>
+        <span class="hw hw--break">Purposeful</span>
+        <span class="hw">Recovery.</span>
       </h1>
 
       <p class="hero__sub">
@@ -69,10 +78,55 @@
         <a href="productss.html" class="btn btn--primary">Explore Products</a>
         <a href="science.html"   class="btn btn--outline">Our Science</a>
       </div>
+
+      <!-- 3 inline trust badges below CTAs -->
+      <div class="hero__trust" aria-label="Trust credentials">
+        <span class="hero__trust-badge">✓ Clinically Tested</span>
+        <span class="hero__trust-sep" aria-hidden="true">|</span>
+        <span class="hero__trust-badge">✓ Made in India</span>
+        <span class="hero__trust-sep" aria-hidden="true">|</span>
+        <span class="hero__trust-badge">✓ USA Collaboration</span>
+      </div>
+
+    </div><!-- /hero__text-col -->
+
+    <!-- RIGHT COLUMN: Animated CSS composition -->
+    <div class="hero__visual-col" aria-hidden="true">
+
+      <!-- Large background orb -->
+      <div class="hero-orb"></div>
+
+      <!-- Floating card 1: Main stat card -->
+      <div class="hero-card hero-card--main">
+        <span class="hero-card__pill">CLINICAL GRADE</span>
+        <div class="hero-card__number">98%</div>
+        <div class="hero-card__label">Absorption Rate</div>
+      </div>
+
+      <!-- Floating card 2: Years of research (offset bottom-left) -->
+      <div class="hero-card hero-card--secondary">
+        <div class="hero-card__number hero-card__number--sm">10+</div>
+        <div class="hero-card__label">Years of Research</div>
+      </div>
+
+      <!-- Pill tags scattered around the orb -->
+      <span class="hero-pill hero-pill--1">L-Glutamine</span>
+      <span class="hero-pill hero-pill--2">Whey Peptide</span>
+      <span class="hero-pill hero-pill--3">MCT</span>
+
+    </div><!-- /hero__visual-col -->
+
+    <!-- Bottom-RIGHT floating collab label (CHANGE 1: moved from left) -->
+    <p class="hero__collab label">Technical Collaboration: Azzurra Pharmaconutrition, USA</p>
+
+    <!-- Scroll indicator at bottom-center -->
+    <div class="hero__scroll-indicator" aria-label="Scroll down">
+      <span class="hero__scroll-label">Scroll</span>
+      <div class="hero__scroll-line">
+        <div class="hero__scroll-dot"></div>
+      </div>
     </div>
 
-    <!-- Bottom-left floating label -->
-    <p class="hero__collab label">Technical Collaboration: Azzurra Pharmaconutrition, USA</p>
   </section>
 
 
@@ -109,7 +163,7 @@
 
   <!-- ========================================================
        SECTION 3 — ABOUT AZZURRA
-       Two-column: text left, abstract visual right
+       Two-column: text left, image placeholder right
        ======================================================== -->
   <section class="about-section section" aria-labelledby="about-heading">
     <div class="about-section__grid">
@@ -151,15 +205,17 @@
         <a href="about.html" class="btn btn--outline" style="margin-top: 8px;">Learn More</a>
       </div>
 
-      <!-- Right: abstract blue geometric visual (CSS-only, no stock photos) -->
-      <div class="about-section__visual fade-up" aria-hidden="true">
-        <div class="about-section__shape about-section__shape--1"></div>
-        <div class="about-section__shape about-section__shape--2">
-          <span class="stat-mini-num">2014</span>
-          <span class="stat-mini-label">Founded in Faridabad, India</span>
+      <!-- Right: Image placeholder (replace with real photo later) -->
+      <!-- REPLACE WITH ACTUAL IMAGE: doctor-research-lab -->
+      <div class="about-section__visual fade-up">
+        <div
+          class="img-placeholder img-placeholder--about"
+          data-image-slot="doctor-research-lab"
+          aria-label="Image placeholder: Research team / lab setting"
+        >
+          <span class="img-placeholder__icon" aria-hidden="true">⚕️</span>
+          <span class="img-placeholder__label">Image: Research team / lab setting</span>
         </div>
-        <div class="about-section__shape about-section__shape--3"></div>
-        <div class="about-section__shape about-section__shape--4"></div>
       </div>
 
     </div>
@@ -321,6 +377,17 @@
       <h2 class="heading-xl" id="why-heading">Why Azzurra?</h2>
     </div>
 
+    <!-- Certifications background placeholder strip inside why section -->
+    <!-- REPLACE WITH ACTUAL IMAGE: certifications-strip -->
+    <div
+      class="img-placeholder img-placeholder--certstrip fade-up"
+      data-image-slot="certifications-strip"
+      aria-label="Image placeholder: Certification logos / FSSAI / ISO badges"
+    >
+      <span class="img-placeholder__icon" aria-hidden="true">🏅</span>
+      <span class="img-placeholder__label">Image: Certification logos / FSSAI / ISO badges</span>
+    </div>
+
     <div class="why-grid stagger">
 
       <div class="why-card fade-up">
@@ -386,7 +453,50 @@
 
 
   <!-- ========================================================
-       SECTION 8 — CONTACT STRIP
+       SECTION 8 — CERTIFICATIONS & TRUST (new section)
+       Row of 5 certification badge placeholders
+       ======================================================== -->
+  <section class="cert-section section" aria-labelledby="cert-heading">
+    <div class="section-header container">
+      <h2 class="heading-xl" id="cert-heading" style="font-size: clamp(22px,3vw,30px);">Quality You Can Trust</h2>
+    </div>
+    <div class="cert-badges-row container fade-up">
+      <!-- REPLACE WITH ACTUAL IMAGE: cert-fssai -->
+      <div class="cert-badge" data-image-slot="cert-fssai">
+        <!-- REPLACE WITH ACTUAL IMAGE: FSSAI Certified logo -->
+        <span class="cert-badge__icon" aria-hidden="true">✅</span>
+        <span class="cert-badge__text">FSSAI Certified</span>
+      </div>
+      <!-- REPLACE WITH ACTUAL IMAGE: cert-iso -->
+      <div class="cert-badge" data-image-slot="cert-iso">
+        <!-- REPLACE WITH ACTUAL IMAGE: ISO Compliant logo -->
+        <span class="cert-badge__icon" aria-hidden="true">🏛️</span>
+        <span class="cert-badge__text">ISO Compliant</span>
+      </div>
+      <!-- REPLACE WITH ACTUAL IMAGE: cert-gmp -->
+      <div class="cert-badge" data-image-slot="cert-gmp">
+        <!-- REPLACE WITH ACTUAL IMAGE: GMP Certified logo -->
+        <span class="cert-badge__icon" aria-hidden="true">⚗️</span>
+        <span class="cert-badge__text">GMP Certified</span>
+      </div>
+      <!-- REPLACE WITH ACTUAL IMAGE: cert-usa -->
+      <div class="cert-badge" data-image-slot="cert-usa">
+        <!-- REPLACE WITH ACTUAL IMAGE: USA Collaboration badge -->
+        <span class="cert-badge__icon" aria-hidden="true">🇺🇸</span>
+        <span class="cert-badge__text">USA Collaboration</span>
+      </div>
+      <!-- REPLACE WITH ACTUAL IMAGE: cert-veg -->
+      <div class="cert-badge" data-image-slot="cert-veg">
+        <!-- REPLACE WITH ACTUAL IMAGE: Vegetarian Approved logo -->
+        <span class="cert-badge__icon" aria-hidden="true">🌿</span>
+        <span class="cert-badge__text">Vegetarian Approved</span>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ========================================================
+       SECTION 9 — CONTACT STRIP
        ======================================================== -->
   <section class="contact-strip section" aria-labelledby="contact-strip-heading">
     <div style="text-align: center;">
@@ -410,7 +520,7 @@
         <span class="contact-strip__icon" aria-hidden="true">📞</span>
         <p class="contact-strip__title">Phone</p>
         <p class="contact-strip__info">
-          <a href="tel:+919818999863">+91 9818999863</a>
+          <a href="tel:+919871648649">+91 98 71 648 649</a>
         </p>
       </div>
 
@@ -487,7 +597,7 @@
         <div class="footer__contact-item">
           <span class="footer__contact-icon" aria-hidden="true">📞</span>
           <p class="footer__contact-text">
-            <a href="tel:+919818999863">+91 9818999863</a>
+            <a href="tel:+919871648649">+91 98 71 648 649</a>
           </p>
         </div>
         <div class="footer__contact-item">
