@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Products — Azzurra Admin</title>
+  <meta name="description" content="Manage Azzurra Pharmaconutrition products." />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="stylesheet" href="../assets/css/admin.css" />
+</head>
+<body>
+
+<div class="admin-layout" id="adminLayout">
+
+  <!-- Sidebar Overlay (mobile) -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- ═══════════════ SIDEBAR ═══════════════ -->
+  <aside class="admin-sidebar" id="adminSidebar">
+    <div class="admin-sidebar__brand">
+      <div class="admin-sidebar__logo-name">AZZURRA</div>
+      <span class="admin-sidebar__logo-tag">Pharmaconutrition</span>
+      <span class="admin-sidebar__admin-badge">Admin Panel</span>
+    </div>
+
+    <nav class="admin-sidebar__nav" aria-label="Admin navigation">
+      <a href="dashboard.html" class="admin-sidebar__nav-link" id="navDashboard">
+        <span class="nav-icon">📊</span>
+        Dashboard
+      </a>
+      <a href="products.html" class="admin-sidebar__nav-link active" id="navProducts">
+        <span class="nav-icon">📦</span>
+        Products
+      </a>
+    </nav>
+
+    <div class="admin-sidebar__footer">
+      <button class="admin-sidebar__signout" id="signOutBtn">
+        <span>🚪</span> Sign Out
+      </button>
+    </div>
+  </aside>
+
+  <!-- ═══════════════ MAIN ═══════════════ -->
+  <main class="admin-main">
+
+    <!-- Topbar -->
+    <header class="admin-topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="admin-topbar__menu-toggle" id="menuToggle" aria-label="Open sidebar">☰</button>
+        <h1 class="admin-topbar__title">Products</h1>
+      </div>
+      <div class="admin-topbar__right">
+        <button class="btn-primary" id="addProductBtn">
+          <span>＋</span> Add New Product
+        </button>
+        <div class="admin-topbar__user">
+          <div class="admin-topbar__user-avatar" id="userAvatar">A</div>
+          <span class="admin-topbar__user-email" id="userEmail">—</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Content -->
+    <div class="admin-content">
+      <div class="admin-card">
+        <div class="admin-card__header">
+          <span class="admin-card__title">All Products</span>
+          <span id="productCount" style="font-size:13px;color:var(--color-grey);"></span>
+        </div>
+        <div class="admin-card__body admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Thumbnail</th>
+                <th>Name</th>
+                <th>Series</th>
+                <th>Price (₹)</th>
+                <th>In Stock</th>
+                <th>Featured</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="productsTableBody">
+              <tr id="loadingRow">
+                <td colspan="8">
+                  <div class="empty-state">
+                    <div class="empty-state__icon">⏳</div>
+                    <div class="empty-state__title">Loading products…</div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div><!-- /admin-content -->
+
+  </main>
+</div><!-- /admin-layout -->
+
+<!-- ═══════════════ PANEL OVERLAY ═══════════════ -->
+<div class="panel-overlay" id="panelOverlay"></div>
+
+<!-- ═══════════════ SLIDE-IN PANEL ═══════════════ -->
+<div class="slide-panel" id="productPanel" role="dialog" aria-modal="true" aria-label="Product form">
+
+  <div class="slide-panel__header">
+    <span class="slide-panel__title" id="panelTitle">Add New Product</span>
+    <button class="slide-panel__close" id="panelCloseBtn" aria-label="Close panel">&times;</button>
+  </div>
+
+  <div class="slide-panel__body">
+    <form id="productForm" novalidate>
+      <!-- Hidden: editing product ID -->
+      <input type="hidden" id="fieldId" />
+
+      <!-- Name -->
+      <div class="form-group">
+        <label class="form-label" for="fieldName">Product Name <span class="req">*</span></label>
+        <input type="text" id="fieldName" class="form-input" placeholder="e.g. Azzurra Whey Protein" />
+        <span class="form-error-text" id="errName"></span>
+      </div>
+
+      <!-- Series -->
+      <div class="form-group">
+        <label class="form-label" for="fieldSeries">Series</label>
+        <select id="fieldSeries" class="form-select">
+          <option value="">— Select Series —</option>
+          <option value="Essential">Essential</option>
+          <option value="Vital">Vital</option>
+          <option value="Max">Max</option>
+          <option value="Provit">Provit</option>
+          <option value="Lifeline">Lifeline</option>
+          <option value="Oral">Oral</option>
+        </select>
+      </div>
+
+      <!-- Flavour -->
+      <div class="form-group">
+        <label class="form-label" for="fieldFlavour">Flavour</label>
+        <input type="text" id="fieldFlavour" class="form-input" placeholder="e.g. Chocolate, Vanilla, Unflavoured" />
+      </div>
+
+      <!-- Price -->
+      <div class="form-group">
+        <label class="form-label" for="fieldPrice">Price (₹) <span class="req">*</span></label>
+        <input type="number" id="fieldPrice" class="form-input" placeholder="e.g. 1299" min="0" step="0.01" />
+        <span class="form-error-text" id="errPrice"></span>
+      </div>
+
+      <!-- Net Weight -->
+      <div class="form-group">
+        <label class="form-label" for="fieldWeight">Net Weight</label>
+        <input type="text" id="fieldWeight" class="form-input" placeholder="e.g. 500g, 1kg" />
+      </div>
+
+      <!-- Image Folder -->
+      <div class="form-group">
+        <label class="form-label" for="fieldImageFolder">Image Folder</label>
+        <input type="text" id="fieldImageFolder" class="form-input" placeholder="e.g. whey-protein-choc" />
+        <span style="font-size:11px;color:var(--color-grey);margin-top:4px;">Folder name inside assets/products/ — image at IMAGES/1.jpg</span>
+      </div>
+
+      <!-- Tags -->
+      <div class="form-group">
+        <label class="form-label" for="fieldTags">Tags</label>
+        <input type="text" id="fieldTags" class="form-input" placeholder="e.g. protein, recovery, muscle" />
+      </div>
+
+      <div class="section-divider"></div>
+
+      <!-- Short Description -->
+      <div class="form-group">
+        <label class="form-label" for="fieldShortDesc">Short Description</label>
+        <textarea id="fieldShortDesc" class="form-textarea" placeholder="A brief overview of the product…" rows="3"></textarea>
+      </div>
+
+      <!-- Benefits -->
+      <div class="form-group">
+        <label class="form-label" for="fieldBenefits">Benefits</label>
+        <textarea id="fieldBenefits" class="form-textarea" placeholder="List key product benefits…" rows="4"></textarea>
+      </div>
+
+      <!-- Ingredients -->
+      <div class="form-group">
+        <label class="form-label" for="fieldIngredients">Ingredients</label>
+        <textarea id="fieldIngredients" class="form-textarea" placeholder="Full ingredients list…" rows="4"></textarea>
+      </div>
+
+      <!-- How to Use -->
+      <div class="form-group">
+        <label class="form-label" for="fieldHowToUse">How to Use</label>
+        <textarea id="fieldHowToUse" class="form-textarea" placeholder="Usage instructions…" rows="3"></textarea>
+      </div>
+
+      <!-- Nutrition Facts -->
+      <div class="form-group">
+        <label class="form-label" for="fieldNutrition">Nutrition Facts</label>
+        <textarea id="fieldNutrition" class="form-textarea" placeholder="Per serving nutritional information…" rows="4"></textarea>
+      </div>
+
+      <!-- Warnings -->
+      <div class="form-group">
+        <label class="form-label" for="fieldWarnings">Warnings</label>
+        <textarea id="fieldWarnings" class="form-textarea" placeholder="Safety warnings and notices…" rows="3"></textarea>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <!-- Toggles -->
+      <div class="form-toggle-row">
+        <div class="form-toggle-row-info">
+          <div class="form-toggle-row-title">In Stock</div>
+          <div class="form-toggle-row-desc">Show product as available for purchase</div>
+        </div>
+        <label class="toggle-input" title="Toggle In Stock">
+          <input type="checkbox" id="fieldInStock" />
+          <div class="toggle-track"></div>
+        </label>
+      </div>
+
+      <div class="form-toggle-row">
+        <div class="form-toggle-row-info">
+          <div class="form-toggle-row-title">Is Featured</div>
+          <div class="form-toggle-row-desc">Highlight this product on the homepage</div>
+        </div>
+        <label class="toggle-input" title="Toggle Featured">
+          <input type="checkbox" id="fieldFeatured" />
+          <div class="toggle-track"></div>
+        </label>
+      </div>
+
+    </form>
+  </div><!-- /panel body -->
+
+  <div class="slide-panel__footer">
+    <button class="btn-primary btn-full" id="saveProductBtn" type="button">
+      <span>💾</span> <span id="saveBtnText">Save Product</span>
+    </button>
+    <button class="btn-outline" id="cancelPanelBtn" type="button" style="flex-shrink:0;">Cancel</button>
+  </div>
+
+</div><!-- /slide-panel -->
+
+<!-- ═══════════════ TOAST CONTAINER ═══════════════ -->
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+<!-- ═══════════════ SCRIPTS ═══════════════ -->
+<script type="module">
+  import { supabase } from '../assets/js/supabase-config.js';
+
+  /* ────────────────────────────────────────────
+     STATE
+  ──────────────────────────────────────────── */
+  let allProducts  = [];
+  let editingId    = null;   // null = add mode, id = edit mode
+  let isSaving     = false;
+
+  /* ────────────────────────────────────────────
+     AUTH GUARD
+  ──────────────────────────────────────────── */
+  async function checkAuth() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) { window.location.href = 'index.html'; return null; }
+    return session;
+  }
+
+  /* ────────────────────────────────────────────
+     MOBILE SIDEBAR
+  ──────────────────────────────────────────── */
+  const sidebar        = document.getElementById('adminSidebar');
+  const sidebarOverlay = document.getElementById('sidebarOverlay');
+  const menuToggle     = document.getElementById('menuToggle');
+
+  menuToggle.addEventListener('click', () => {
+    sidebar.classList.toggle('open');
+    sidebarOverlay.classList.toggle('show');
+  });
+  sidebarOverlay.addEventListener('click', () => {
+    sidebar.classList.remove('open');
+    sidebarOverlay.classList.remove('show');
+  });
+
+  /* ────────────────────────────────────────────
+     SIGN OUT
+  ──────────────────────────────────────────── */
+  document.getElementById('signOutBtn').addEventListener('click', async () => {
+    await supabase.auth.signOut();
+    window.location.href = 'index.html';
+  });
+
+  /* ────────────────────────────────────────────
+     PANEL LOGIC
+  ──────────────────────────────────────────── */
+  const panel        = document.getElementById('productPanel');
+  const overlay      = document.getElementById('panelOverlay');
+  const panelTitle   = document.getElementById('panelTitle');
+  const saveBtnText  = document.getElementById('saveBtnText');
+  const productForm  = document.getElementById('productForm');
+
+  function openPanel(mode = 'add', product = null) {
+    editingId = product ? product.id : null;
+
+    if (mode === 'add') {
+      panelTitle.textContent = 'Add New Product';
+      saveBtnText.textContent = 'Save Product';
+      productForm.reset();
+      document.getElementById('fieldId').value = '';
+    } else {
+      panelTitle.textContent = 'Edit Product';
+      saveBtnText.textContent = 'Update Product';
+      populateForm(product);
+    }
+
+    clearFormErrors();
+    panel.classList.add('open');
+    overlay.classList.add('show');
+    document.body.style.overflow = 'hidden';
+
+    // Focus first field
+    setTimeout(() => document.getElementById('fieldName').focus(), 350);
+  }
+
+  function closePanel() {
+    panel.classList.remove('open');
+    overlay.classList.remove('show');
+    document.body.style.overflow = '';
+    editingId = null;
+    isSaving  = false;
+  }
+
+  document.getElementById('addProductBtn').addEventListener('click', () => openPanel('add'));
+  document.getElementById('panelCloseBtn').addEventListener('click', closePanel);
+  document.getElementById('cancelPanelBtn').addEventListener('click', closePanel);
+  overlay.addEventListener('click', closePanel);
+
+  // Close with Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && panel.classList.contains('open')) closePanel();
+  });
+
+  /* ────────────────────────────────────────────
+     POPULATE FORM (Edit mode)
+  ──────────────────────────────────────────── */
+  function populateForm(p) {
+    document.getElementById('fieldId').value          = p.id          ?? '';
+    document.getElementById('fieldName').value        = p.name        ?? '';
+    document.getElementById('fieldSeries').value      = p.series      ?? '';
+    document.getElementById('fieldFlavour').value     = p.flavour     ?? '';
+    document.getElementById('fieldPrice').value       = p.price       ?? '';
+    document.getElementById('fieldWeight').value      = p.net_weight  ?? '';
+    document.getElementById('fieldImageFolder').value = p.image_folder ?? '';
+    document.getElementById('fieldTags').value        = p.tags        ?? '';
+    document.getElementById('fieldShortDesc').value   = p.short_description ?? '';
+    document.getElementById('fieldBenefits').value    = p.benefits    ?? '';
+    document.getElementById('fieldIngredients').value = p.ingredients ?? '';
+    document.getElementById('fieldHowToUse').value    = p.how_to_use  ?? '';
+    document.getElementById('fieldNutrition').value   = p.nutrition_facts ?? '';
+    document.getElementById('fieldWarnings').value    = p.warnings    ?? '';
+    document.getElementById('fieldInStock').checked   = !!p.in_stock;
+    document.getElementById('fieldFeatured').checked  = !!p.is_featured;
+  }
+
+  /* ────────────────────────────────────────────
+     FORM VALIDATION
+  ──────────────────────────────────────────── */
+  function validateForm() {
+    clearFormErrors();
+    let valid = true;
+
+    const name  = document.getElementById('fieldName').value.trim();
+    const price = document.getElementById('fieldPrice').value;
+
+    if (!name) {
+      showFieldError('fieldName', 'errName', 'Product name is required.');
+      valid = false;
+    }
+
+    if (!price || isNaN(price) || Number(price) < 0) {
+      showFieldError('fieldPrice', 'errPrice', 'A valid price is required.');
+      valid = false;
+    }
+
+    return valid;
+  }
+
+  function showFieldError(inputId, errId, msg) {
+    document.getElementById(inputId).classList.add('error');
+    document.getElementById(errId).textContent = msg;
+  }
+
+  function clearFormErrors() {
+    ['fieldName', 'fieldPrice'].forEach(id => {
+      document.getElementById(id).classList.remove('error');
+    });
+    ['errName', 'errPrice'].forEach(id => {
+      document.getElementById(id).textContent = '';
+    });
+  }
+
+  /* ────────────────────────────────────────────
+     COLLECT FORM DATA
+  ──────────────────────────────────────────── */
+  function collectFormData() {
+    return {
+      name:               document.getElementById('fieldName').value.trim(),
+      series:             document.getElementById('fieldSeries').value     || null,
+      flavour:            document.getElementById('fieldFlavour').value.trim()     || null,
+      price:              parseFloat(document.getElementById('fieldPrice').value),
+      net_weight:         document.getElementById('fieldWeight').value.trim()      || null,
+      image_folder:       document.getElementById('fieldImageFolder').value.trim() || null,
+      tags:               document.getElementById('fieldTags').value.trim()        || null,
+      short_description:  document.getElementById('fieldShortDesc').value.trim()   || null,
+      benefits:           document.getElementById('fieldBenefits').value.trim()    || null,
+      ingredients:        document.getElementById('fieldIngredients').value.trim() || null,
+      how_to_use:         document.getElementById('fieldHowToUse').value.trim()    || null,
+      nutrition_facts:    document.getElementById('fieldNutrition').value.trim()   || null,
+      warnings:           document.getElementById('fieldWarnings').value.trim()    || null,
+      in_stock:           document.getElementById('fieldInStock').checked,
+      is_featured:        document.getElementById('fieldFeatured').checked,
+    };
+  }
+
+  /* ────────────────────────────────────────────
+     SAVE PRODUCT (Add / Edit)
+  ──────────────────────────────────────────── */
+  document.getElementById('saveProductBtn').addEventListener('click', async () => {
+    if (isSaving) return;
+    if (!validateForm()) return;
+
+    isSaving = true;
+    const btn = document.getElementById('saveProductBtn');
+    btn.disabled = true;
+    btn.style.opacity = '0.7';
+
+    const payload = collectFormData();
+
+    let error;
+
+    if (editingId) {
+      // UPDATE
+      ({ error } = await supabase
+        .from('products')
+        .update(payload)
+        .eq('id', editingId));
+
+      if (!error) {
+        showToast('✅', 'Product Updated', `"${payload.name}" has been updated.`);
+      }
+    } else {
+      // INSERT
+      ({ error } = await supabase
+        .from('products')
+        .insert([payload]));
+
+      if (!error) {
+        showToast('✅', 'Product Added', `"${payload.name}" has been added.`);
+      }
+    }
+
+    btn.disabled = false;
+    btn.style.opacity = '';
+    isSaving = false;
+
+    if (error) {
+      showToast('❌', 'Error', error.message, 'error');
+      return;
+    }
+
+    closePanel();
+    await loadProducts();
+  });
+
+  /* ────────────────────────────────────────────
+     LOAD ALL PRODUCTS
+  ──────────────────────────────────────────── */
+  async function loadProducts() {
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    const tbody = document.getElementById('productsTableBody');
+
+    if (error) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="8">
+            <div class="empty-state">
+              <div class="empty-state__icon">❌</div>
+              <div class="empty-state__title">Failed to load products</div>
+              <div class="empty-state__text">${escHtml(error.message)}</div>
+            </div>
+          </td>
+        </tr>`;
+      return;
+    }
+
+    allProducts = data || [];
+    document.getElementById('productCount').textContent =
+      allProducts.length === 1 ? '1 product' : `${allProducts.length} products`;
+
+    if (allProducts.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="8">
+            <div class="empty-state">
+              <div class="empty-state__icon">📭</div>
+              <div class="empty-state__title">No products yet</div>
+              <div class="empty-state__text">Click "Add New Product" to get started.</div>
+            </div>
+          </td>
+        </tr>`;
+      return;
+    }
+
+    renderTable(allProducts);
+  }
+
+  /* ────────────────────────────────────────────
+     RENDER TABLE
+  ──────────────────────────────────────────── */
+  function renderTable(products) {
+    const tbody = document.getElementById('productsTableBody');
+
+    tbody.innerHTML = products.map((p, idx) => {
+      const imgSrc    = p.image_folder
+        ? `../assets/products/${encodeURIComponent(p.image_folder)}/IMAGES/1.jpg`
+        : null;
+      const shortId   = p.id?.toString().slice(0, 8) ?? idx + 1;
+
+      return `
+      <tr data-id="${p.id}" id="row-${p.id}">
+        <td><span class="table-id">${shortId}</span></td>
+        <td>
+          ${imgSrc
+            ? `<img src="${imgSrc}" alt="${escHtml(p.name ?? '')}" class="table-thumb"
+                   onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
+               /><div class="table-thumb-placeholder" style="display:none;">📦</div>`
+            : `<div class="table-thumb-placeholder">📦</div>`
+          }
+        </td>
+        <td style="font-weight:600;max-width:200px;">
+          <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(p.name ?? '—')}</div>
+          ${p.flavour ? `<div style="font-size:12px;color:var(--color-grey);font-weight:400;">${escHtml(p.flavour)}</div>` : ''}
+        </td>
+        <td>
+          ${p.series ? `<span class="series-badge">${escHtml(p.series)}</span>` : '<span style="color:var(--color-grey-light)">—</span>'}
+        </td>
+        <td class="table-price">₹${Number(p.price ?? 0).toLocaleString('en-IN')}</td>
+        <td>
+          <label class="toggle-input" title="${p.in_stock ? 'Mark Out of Stock' : 'Mark In Stock'}">
+            <input type="checkbox"
+              class="toggle-stock"
+              data-id="${p.id}"
+              ${p.in_stock ? 'checked' : ''}
+            />
+            <div class="toggle-track"></div>
+          </label>
+        </td>
+        <td>
+          <label class="toggle-input" title="${p.is_featured ? 'Remove from Featured' : 'Mark as Featured'}">
+            <input type="checkbox"
+              class="toggle-featured"
+              data-id="${p.id}"
+              ${p.is_featured ? 'checked' : ''}
+            />
+            <div class="toggle-track"></div>
+          </label>
+        </td>
+        <td>
+          <div class="table-actions">
+            <button class="btn-edit edit-btn" data-id="${p.id}" title="Edit product">
+              ✏️ Edit
+            </button>
+            <button class="btn-danger delete-btn" data-id="${p.id}" title="Delete product">
+              🗑️ Delete
+            </button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+
+    bindTableEvents();
+  }
+
+  /* ────────────────────────────────────────────
+     TABLE EVENT DELEGATION
+  ──────────────────────────────────────────── */
+  function bindTableEvents() {
+    const tbody = document.getElementById('productsTableBody');
+
+    // Remove existing listeners by replacing node (clean approach)
+    const fresh = tbody.cloneNode(true);
+    tbody.parentNode.replaceChild(fresh, tbody);
+    const newTbody = document.getElementById('productsTableBody');
+
+    newTbody.addEventListener('change', async (e) => {
+      // Toggle in_stock
+      if (e.target.classList.contains('toggle-stock')) {
+        const id      = e.target.dataset.id;
+        const value   = e.target.checked;
+        await toggleField(id, 'in_stock', value);
+      }
+      // Toggle is_featured
+      if (e.target.classList.contains('toggle-featured')) {
+        const id    = e.target.dataset.id;
+        const value = e.target.checked;
+        await toggleField(id, 'is_featured', value);
+      }
+    });
+
+    newTbody.addEventListener('click', (e) => {
+      const editBtn   = e.target.closest('.edit-btn');
+      const deleteBtn = e.target.closest('.delete-btn');
+
+      if (editBtn) {
+        const id = editBtn.dataset.id;
+        const product = allProducts.find(p => String(p.id) === String(id));
+        if (product) openPanel('edit', product);
+      }
+
+      if (deleteBtn) {
+        const id = deleteBtn.dataset.id;
+        const product = allProducts.find(p => String(p.id) === String(id));
+        handleDelete(product);
+      }
+    });
+  }
+
+  /* ────────────────────────────────────────────
+     TOGGLE FIELD (in_stock / is_featured)
+  ──────────────────────────────────────────── */
+  async function toggleField(id, field, value) {
+    const { error } = await supabase
+      .from('products')
+      .update({ [field]: value })
+      .eq('id', id);
+
+    if (error) {
+      showToast('❌', 'Update Failed', error.message, 'error');
+      // Revert the toggle visually by reloading
+      await loadProducts();
+      return;
+    }
+
+    // Update local state
+    const product = allProducts.find(p => String(p.id) === String(id));
+    if (product) product[field] = value;
+
+    const label = field === 'in_stock' ? 'Stock' : 'Featured';
+    const status = value ? 'enabled' : 'disabled';
+    showToast('✅', `${label} Updated`, `${label} has been ${status}.`);
+  }
+
+  /* ────────────────────────────────────────────
+     DELETE PRODUCT
+  ──────────────────────────────────────────── */
+  async function handleDelete(product) {
+    if (!product) return;
+
+    const confirmed = confirm(
+      `Are you sure you want to delete "${product.name}"?\n\nThis action cannot be undone.`
+    );
+    if (!confirmed) return;
+
+    const row = document.getElementById(`row-${product.id}`);
+
+    // Fade-out animation
+    if (row) {
+      row.classList.add('row-deleting');
+    }
+
+    const { error } = await supabase
+      .from('products')
+      .delete()
+      .eq('id', product.id);
+
+    if (error) {
+      if (row) row.classList.remove('row-deleting');
+      showToast('❌', 'Delete Failed', error.message, 'error');
+      return;
+    }
+
+    // Remove from local state
+    allProducts = allProducts.filter(p => String(p.id) !== String(product.id));
+
+    // Wait for animation then re-render
+    setTimeout(async () => {
+      renderTable(allProducts);
+      document.getElementById('productCount').textContent =
+        allProducts.length === 1 ? '1 product' : `${allProducts.length} products`;
+    }, 400);
+
+    showToast('🗑️', 'Product Deleted', `"${product.name}" has been removed.`);
+  }
+
+  /* ────────────────────────────────────────────
+     TOAST SYSTEM
+  ──────────────────────────────────────────── */
+  function showToast(icon, title, message, type = 'success') {
+    const container = document.getElementById('toastContainer');
+    const toast     = document.createElement('div');
+    toast.className = `toast${type === 'error' ? ' toast--error' : type === 'warning' ? ' toast--warning' : ''}`;
+
+    toast.innerHTML = `
+      <div class="toast__icon">${icon}</div>
+      <div class="toast__body">
+        <div class="toast__title">${escHtml(title)}</div>
+        <div class="toast__message">${escHtml(message)}</div>
+      </div>
+    `;
+
+    container.appendChild(toast);
+
+    // Auto-remove after 4 seconds
+    setTimeout(() => {
+      toast.classList.add('toast-out');
+      setTimeout(() => toast.remove(), 400);
+    }, 4000);
+  }
+
+  /* ────────────────────────────────────────────
+     HTML ESCAPE
+  ──────────────────────────────────────────── */
+  function escHtml(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.appendChild(document.createTextNode(String(str)));
+    return div.innerHTML;
+  }
+
+  /* ────────────────────────────────────────────
+     MAIN INIT
+  ──────────────────────────────────────────── */
+  async function init() {
+    const session = await checkAuth();
+    if (!session) return;
+
+    const email = session.user?.email || '';
+    document.getElementById('userEmail').textContent = email;
+    document.getElementById('userAvatar').textContent = email.charAt(0).toUpperCase();
+
+    await loadProducts();
+  }
+
+  init();
+</script>
+
+</body>
+</html>
