@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Login — Azzurra Pharmaconutrition</title>
+  <meta name="description" content="Secure admin login for Azzurra Pharmaconutrition panel." />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="stylesheet" href="../assets/css/admin.css" />
+</head>
+<body>
+
+<div class="login-page" id="loginPage">
+  <div class="login-card">
+
+    <!-- Brand -->
+    <div class="login-card__brand">
+      <div class="login-card__logo">
+        AZZURRA
+        <span class="login-card__logo-tag">Pharmaconutrition</span>
+      </div>
+      <div class="login-card__title">Admin Panel</div>
+    </div>
+
+    <h1 class="login-card__heading">Welcome back</h1>
+
+    <!-- Error alert -->
+    <div class="login-error" id="loginError" role="alert">
+      <span>⚠️</span>
+      <span id="loginErrorText">Invalid email or password.</span>
+    </div>
+
+    <!-- Login Form -->
+    <form id="loginForm" novalidate>
+      <div class="login-input-group">
+        <span class="login-input-icon">✉️</span>
+        <input
+          type="email"
+          id="emailInput"
+          class="login-input"
+          placeholder="admin@azzurra.com"
+          autocomplete="email"
+          required
+        />
+      </div>
+
+      <div class="login-input-group">
+        <span class="login-input-icon">🔒</span>
+        <input
+          type="password"
+          id="passwordInput"
+          class="login-input"
+          placeholder="••••••••••"
+          autocomplete="current-password"
+          required
+        />
+      </div>
+
+      <button type="submit" class="login-btn" id="loginBtn">
+        <span class="login-btn-text">Sign In</span>
+        <div class="login-spinner"></div>
+      </button>
+    </form>
+
+    <div class="login-card__footer">
+      Azzurra Admin Panel &copy; 2025
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { supabase } from '../assets/js/supabase-config.js';
+
+  // ── Auth Guard: redirect to dashboard if already signed in ──
+  document.addEventListener('DOMContentLoaded', async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      window.location.href = 'dashboard.html';
+    }
+  });
+
+  // ── Form Submit ──
+  const form        = document.getElementById('loginForm');
+  const emailInput  = document.getElementById('emailInput');
+  const passInput   = document.getElementById('passwordInput');
+  const loginBtn    = document.getElementById('loginBtn');
+  const loginError  = document.getElementById('loginError');
+  const loginErrTxt = document.getElementById('loginErrorText');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const email    = emailInput.value.trim();
+    const password = passInput.value;
+
+    if (!email || !password) {
+      showError('Please fill in both email and password.');
+      return;
+    }
+
+    // Loading state
+    loginBtn.classList.add('loading');
+    loginBtn.disabled = true;
+    loginError.classList.remove('show');
+
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+    if (error) {
+      loginBtn.classList.remove('loading');
+      loginBtn.disabled = false;
+      showError(error.message || 'Invalid credentials. Please try again.');
+      return;
+    }
+
+    // Success → redirect
+    window.location.href = 'dashboard.html';
+  });
+
+  function showError(msg) {
+    loginErrTxt.textContent = msg;
+    loginError.classList.add('show');
+    // Shake animation
+    const card = document.querySelector('.login-card');
+    card.style.animation = 'none';
+    card.style.transform = 'translateX(-6px)';
+    setTimeout(() => {
+      card.style.transform = 'translateX(6px)';
+      setTimeout(() => {
+        card.style.transform = '';
+      }, 80);
+    }, 80);
+  }
+</script>
+
+</body>
+</html>
