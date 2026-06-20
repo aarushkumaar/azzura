@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard — Azzurra Pharmaconutrition</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <link rel="stylesheet" href="assets/css/admin.css" />
+</head>
+<body class="admin-body">
+
+  <!-- ========================================================
+       ACCESS DENIED OVERLAY (hidden until auth check fails)
+       ======================================================== -->
+  <div class="admin-access-denied" id="admin-access-denied" hidden>
+    <div class="admin-access-denied__card">
+      <span style="font-size:56px;">🔒</span>
+      <h1>Access Denied</h1>
+      <p>Your account is not authorised to access the admin dashboard.<br>Please contact the superadmin.</p>
+      <a href="admin-login.html" class="btn btn--primary" style="margin-top:24px;">Back to Login</a>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       LOADING SCREEN (shown while auth is being verified)
+       ======================================================== -->
+  <div class="admin-loading-screen" id="admin-loading-screen">
+    <div class="admin-loading-spinner"></div>
+    <p>Verifying access…</p>
+  </div>
+
+  <!-- ========================================================
+       ADMIN SHELL (shown only after auth passes)
+       ======================================================== -->
+  <div class="admin-shell" id="admin-shell" hidden>
+
+    <!-- ---- SIDEBAR ---- -->
+    <aside class="admin-sidebar" id="admin-sidebar" aria-label="Admin navigation">
+      <div class="admin-sidebar__brand">
+        <span class="admin-sidebar__logo">AZZURRA</span>
+        <span class="admin-sidebar__tag">Admin Portal</span>
+      </div>
+
+      <nav class="admin-nav" aria-label="Sections">
+        <a href="#overview"  class="admin-nav__link active" data-section="overview"  id="nav-overview">
+          <span class="admin-nav__icon" aria-hidden="true">📊</span> Overview
+        </a>
+        <a href="#orders"    class="admin-nav__link" data-section="orders"    id="nav-orders">
+          <span class="admin-nav__icon" aria-hidden="true">📦</span> Orders
+          <span class="admin-nav__badge" id="pending-badge" hidden></span>
+        </a>
+        <a href="#products"  class="admin-nav__link" data-section="products"  id="nav-products">
+          <span class="admin-nav__icon" aria-hidden="true">🧬</span> Products
+        </a>
+        <a href="#customers" class="admin-nav__link" data-section="customers" id="nav-customers">
+          <span class="admin-nav__icon" aria-hidden="true">👥</span> Customers
+        </a>
+        <a href="#payments"  class="admin-nav__link" data-section="payments"  id="nav-payments">
+          <span class="admin-nav__icon" aria-hidden="true">💳</span> Payments
+        </a>
+        <a href="#settings"  class="admin-nav__link" data-section="settings"  id="nav-settings">
+          <span class="admin-nav__icon" aria-hidden="true">⚙️</span> Settings
+        </a>
+      </nav>
+
+      <div class="admin-sidebar__footer">
+        <div class="admin-user-info" id="admin-user-info">
+          <div class="admin-user-info__avatar" id="admin-avatar">A</div>
+          <div>
+            <div class="admin-user-info__email" id="admin-email-display">Loading…</div>
+            <div class="admin-user-info__role"  id="admin-role-display">Admin</div>
+          </div>
+        </div>
+        <button class="admin-logout-btn" id="admin-logout-btn" title="Sign out">⏏</button>
+      </div>
+    </aside>
+
+    <!-- ---- MAIN CONTENT ---- -->
+    <main class="admin-main" id="admin-main" role="main">
+
+      <!-- Top bar -->
+      <header class="admin-topbar">
+        <div>
+          <h1 class="admin-topbar__title" id="section-title">Overview</h1>
+          <p class="admin-topbar__date" id="topbar-date"></p>
+        </div>
+        <div class="admin-topbar__actions">
+          <a href="productss.html" target="_blank" class="admin-view-site-btn">View Site ↗</a>
+        </div>
+      </header>
+
+      <!-- ====================================================
+           SECTION: OVERVIEW
+           ==================================================== -->
+      <section class="admin-section" id="section-overview" data-label="Overview">
+
+        <!-- KPI Cards -->
+        <div class="kpi-grid" id="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-card__icon">💰</div>
+            <div class="kpi-card__value" id="kpi-revenue">—</div>
+            <div class="kpi-card__label">Revenue This Month</div>
+            <div class="kpi-card__delta" id="kpi-revenue-delta"></div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-card__icon">📦</div>
+            <div class="kpi-card__value" id="kpi-orders">—</div>
+            <div class="kpi-card__label">Orders This Month</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-card__icon">👥</div>
+            <div class="kpi-card__value" id="kpi-customers">—</div>
+            <div class="kpi-card__label">New Customers</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-card__icon">🏆</div>
+            <div class="kpi-card__value" id="kpi-top-product">—</div>
+            <div class="kpi-card__label">Top Product</div>
+          </div>
+        </div>
+
+        <!-- Charts row -->
+        <div class="charts-row">
+          <div class="chart-card chart-card--wide">
+            <h3 class="chart-card__title">Daily Sales — This Month</h3>
+            <canvas id="bar-chart" class="admin-chart" aria-label="Daily sales bar chart"></canvas>
+          </div>
+          <div class="chart-card">
+            <h3 class="chart-card__title">Revenue by Category</h3>
+            <canvas id="donut-chart" class="admin-chart admin-chart--donut" aria-label="Revenue by category donut chart"></canvas>
+            <div class="donut-legend" id="donut-legend"></div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ====================================================
+           SECTION: ORDERS
+           ==================================================== -->
+      <section class="admin-section" id="section-orders" data-label="Orders" hidden>
+        <div class="admin-section-toolbar">
+          <div class="admin-search-wrap">
+            <input class="admin-search" type="search" id="orders-search" placeholder="Search by order ID, customer…" aria-label="Search orders" />
+          </div>
+          <select class="admin-filter-select" id="orders-status-filter" aria-label="Filter by status">
+            <option value="">All Statuses</option>
+            <option value="pending">Pending</option>
+            <option value="paid">Paid</option>
+            <option value="processing">Processing</option>
+            <option value="shipped">Shipped</option>
+            <option value="delivered">Delivered</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+
+        <div class="admin-table-wrap">
+          <table class="admin-table" id="orders-table" aria-label="Orders table">
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Customer</th>
+                <th>Date</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="orders-tbody">
+              <tr><td colspan="6" class="table-loading">Loading orders…</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Order Detail Side Panel -->
+        <div class="side-panel" id="order-panel" role="dialog" aria-label="Order details" hidden>
+          <div class="side-panel__header">
+            <h2 class="side-panel__title">Order Details</h2>
+            <button class="side-panel__close" id="order-panel-close" aria-label="Close panel">×</button>
+          </div>
+          <div class="side-panel__body" id="order-panel-body">
+            <!-- Populated by admin.js -->
+          </div>
+        </div>
+        <div class="side-panel-overlay" id="order-panel-overlay"></div>
+      </section>
+
+      <!-- ====================================================
+           SECTION: PRODUCTS
+           ==================================================== -->
+      <section class="admin-section" id="section-products" data-label="Products" hidden>
+        <div class="admin-section-toolbar">
+          <input class="admin-search" type="search" id="products-search" placeholder="Search products…" aria-label="Search products" />
+          <button class="btn btn--primary admin-add-btn" id="add-product-btn">+ Add Product</button>
+        </div>
+
+        <div class="admin-table-wrap">
+          <table class="admin-table" id="products-table" aria-label="Products table">
+            <thead>
+              <tr>
+                <th>Image</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>New</th>
+                <th>Featured</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="products-tbody">
+              <tr><td colspan="8" class="table-loading">Loading products…</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Add / Edit Product Modal -->
+        <div class="admin-modal-overlay" id="product-modal-overlay" hidden>
+          <div class="admin-modal" id="product-modal" role="dialog" aria-labelledby="product-modal-title" aria-modal="true">
+            <div class="admin-modal__header">
+              <h2 class="admin-modal__title" id="product-modal-title">Add Product</h2>
+              <button class="admin-modal__close" id="product-modal-close">×</button>
+            </div>
+            <form id="product-form" class="admin-modal__body" novalidate>
+              <input type="hidden" id="pf-id" />
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="pf-name">Product Name *</label>
+                  <input class="form-input" type="text" id="pf-name" required placeholder="Luminary Molecular Serum" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="pf-category">Category *</label>
+                  <select class="form-input" id="pf-category" required>
+                    <option value="">Select…</option>
+                    <option value="molecular_serums">Molecular Serums</option>
+                    <option value="cellular_kits">Cellular Kits</option>
+                    <option value="bio_devices">Bio-Devices</option>
+                    <option value="advanced_supplements">Advanced Supplements</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Need Tags</label>
+                <div class="admin-checkbox-row">
+                  <label><input type="checkbox" name="need_tag" value="longevity" /> Longevity</label>
+                  <label><input type="checkbox" name="need_tag" value="cognition" /> Cognition</label>
+                  <label><input type="checkbox" name="need_tag" value="recovery"  /> Recovery</label>
+                  <label><input type="checkbox" name="need_tag" value="radiance"  /> Radiance</label>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="pf-price">Price (₹) *</label>
+                  <input class="form-input" type="number" id="pf-price" required min="0" step="0.01" placeholder="2999" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="pf-compare-price">Compare Price (₹)</label>
+                  <input class="form-input" type="number" id="pf-compare-price" min="0" step="0.01" placeholder="3499" />
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="pf-rating">Rating (0–5)</label>
+                  <input class="form-input" type="number" id="pf-rating" min="0" max="5" step="0.1" placeholder="4.5" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="pf-review-count">Review Count</label>
+                  <input class="form-input" type="number" id="pf-review-count" min="0" placeholder="48" />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="pf-stock">Stock Quantity *</label>
+                <input class="form-input" type="number" id="pf-stock" required min="0" placeholder="100" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="pf-image-url">
+                  Image Path (relative to site root)
+                  <span class="form-hint">e.g. ./assets/images/luminary-serum.jpg</span>
+                </label>
+                <input class="form-input" type="text" id="pf-image-url" placeholder="./assets/images/product-name.jpg" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="pf-description">Description</label>
+                <textarea class="form-textarea" id="pf-description" rows="3" placeholder="Brief product description…"></textarea>
+              </div>
+
+              <div class="admin-toggle-row">
+                <label class="admin-toggle-label" for="pf-new-release">New Release</label>
+                <label class="admin-toggle">
+                  <input type="checkbox" id="pf-new-release" role="switch" />
+                  <span class="admin-toggle__track"></span>
+                </label>
+              </div>
+
+              <div class="admin-toggle-row">
+                <label class="admin-toggle-label" for="pf-featured">Featured on Homepage</label>
+                <label class="admin-toggle">
+                  <input type="checkbox" id="pf-featured" role="switch" />
+                  <span class="admin-toggle__track"></span>
+                </label>
+              </div>
+
+              <div class="admin-modal__footer">
+                <button type="button" class="btn btn--outline" id="product-cancel-btn">Cancel</button>
+                <button type="submit" class="btn btn--primary" id="product-save-btn">Save Product</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================
+           SECTION: CUSTOMERS
+           ==================================================== -->
+      <section class="admin-section" id="section-customers" data-label="Customers" hidden>
+        <div class="admin-section-toolbar">
+          <input class="admin-search" type="search" id="customers-search" placeholder="Search by name, email…" aria-label="Search customers" />
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table" aria-label="Customers table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Orders</th>
+                <th>Lifetime Value</th>
+                <th>Last Order</th>
+                <th>Joined</th>
+              </tr>
+            </thead>
+            <tbody id="customers-tbody">
+              <tr><td colspan="7" class="table-loading">Loading customers…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ====================================================
+           SECTION: PAYMENTS
+           ==================================================== -->
+      <section class="admin-section" id="section-payments" data-label="Payments" hidden>
+        <div class="admin-section-toolbar">
+          <input class="admin-search" type="search" id="payments-search" placeholder="Search by payment ID, order…" aria-label="Search payments" />
+          <select class="admin-filter-select" id="payments-status-filter" aria-label="Filter by payment status">
+            <option value="">All Statuses</option>
+            <option value="initiated">Initiated</option>
+            <option value="success">Success</option>
+            <option value="failed">Failed</option>
+            <option value="refunded">Refunded</option>
+          </select>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table" aria-label="Payments table">
+            <thead>
+              <tr>
+                <th>Payment ID</th>
+                <th>Order ID</th>
+                <th>Gateway</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="payments-tbody">
+              <tr><td colspan="7" class="table-loading">Loading payments…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ====================================================
+           SECTION: SETTINGS
+           ==================================================== -->
+      <section class="admin-section" id="section-settings" data-label="Settings" hidden>
+        <div class="settings-grid">
+
+          <!-- Payment Gateway -->
+          <div class="settings-card">
+            <h3 class="settings-card__title">Payment Gateway</h3>
+            <p class="settings-card__desc">Choose the active payment gateway for the checkout page.</p>
+            <div class="settings-gateway-opts">
+              <label class="settings-gateway-opt" id="gw-razorpay-label">
+                <input type="radio" name="gateway" value="razorpay" id="gw-razorpay" checked />
+                <span>💳 Razorpay</span>
+                <span class="settings-gateway-opt__badge">Recommended</span>
+              </label>
+              <label class="settings-gateway-opt" id="gw-stripe-label">
+                <input type="radio" name="gateway" value="stripe" id="gw-stripe" />
+                <span>🌐 Stripe</span>
+              </label>
+            </div>
+            <button class="btn btn--primary" id="save-gateway-btn" style="margin-top:20px;">Save Gateway</button>
+          </div>
+
+          <!-- Site Announcement Banner -->
+          <div class="settings-card">
+            <h3 class="settings-card__title">Announcement Banner</h3>
+            <p class="settings-card__desc">Show a site-wide announcement at the top of every page.</p>
+            <div class="admin-toggle-row" style="margin-bottom:16px;">
+              <label class="admin-toggle-label" for="announcement-enabled">Enable Banner</label>
+              <label class="admin-toggle">
+                <input type="checkbox" id="announcement-enabled" role="switch" />
+                <span class="admin-toggle__track"></span>
+              </label>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="announcement-text">Banner Text</label>
+              <input class="form-input" type="text" id="announcement-text" placeholder="Free shipping on orders above ₹2000" />
+            </div>
+            <button class="btn btn--primary" id="save-announcement-btn" style="margin-top:16px;">Save Banner</button>
+          </div>
+
+          <!-- Featured Products -->
+          <div class="settings-card settings-card--wide">
+            <h3 class="settings-card__title">Featured Products (Homepage)</h3>
+            <p class="settings-card__desc">Select up to 3 products to feature on the homepage.</p>
+            <div id="featured-products-list" class="featured-products-picker">
+              <!-- Populated by admin.js -->
+            </div>
+            <button class="btn btn--primary" id="save-featured-btn" style="margin-top:16px;">Save Featured Products</button>
+          </div>
+
+        </div>
+
+        <!-- Toast notification -->
+        <div class="admin-toast" id="settings-toast" role="status" aria-live="polite"></div>
+      </section>
+
+    </main><!-- /admin-main -->
+  </div><!-- /admin-shell -->
+
+  <script src="config.js"></script>
+  <script src="assets/js/admin.js"></script>
+</body>
+</html>
