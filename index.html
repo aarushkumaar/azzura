@@ -285,7 +285,7 @@
 
   <!-- ========================================================
        SECTION 5 — FEATURED PRODUCTS
-       3 cards using the same visual style as the shop
+       Dynamically rendered from PRODUCTS array (products-data.js)
        ======================================================== -->
   <section class="featured-section section" aria-labelledby="featured-heading">
     <div class="section-header container">
@@ -296,69 +296,8 @@
       </p>
     </div>
 
-    <div class="featured-grid stagger">
-
-      <!-- Card 1 -->
-      <article class="product-card fade-up" onclick="location.href='product-detail.html?id=1'" role="button" tabindex="0" aria-label="Luminary Molecular Serum product page">
-        <div class="product-card__img">
-          <img
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuC1bvDaEd5DGmZuiTT1QmFruSxCSnfEJt7MR68h9PHPDBxtxWakponagCtJSQgOJlQI0HjWoObcVj-YEEfBjSW8VK5TNg3A1QOfMF1lE9D00ayT0ZN7qXda1XSF83XKNQNBEPH9Tg_F9QqZbbM_D6Ue_tMa8e0S5-TxE32eXeEGdQc7B3ngspNaRD_O4wfoGkapds6vEy-j8fu8sxNaTNxdcxkMgyKwOVupXkF8rFVvOF1h2BIaDkGH7uESYNZbcqfYqj6Lind1Zpnf"
-            alt="Luminary Molecular Serum"
-            loading="lazy"
-          />
-          <span class="product-card__badge">New Release</span>
-        </div>
-        <div class="product-card__body">
-          <p class="product-card__series">Molecular Serums</p>
-          <h3 class="product-card__name">Luminary Molecular Serum</h3>
-          <p class="product-card__desc">Adaptive DNA repair complex with high-potency Vitamin C for cellular restoration.</p>
-          <div class="product-card__footer">
-            <span class="product-card__link">View Details →</span>
-          </div>
-        </div>
-      </article>
-
-      <!-- Card 2 -->
-      <article class="product-card fade-up" onclick="location.href='product-detail.html?id=3'" role="button" tabindex="0" aria-label="Neuro-Prime Catalyst product page">
-        <div class="product-card__img">
-          <img
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuDQASqE32XHSerfpv51PJ-p9p1uLKMCUqPxKj3GJBvRb6LPefq-mermuRJlhm1JhWaMB5ppgswnbThxsMAIzORm9OzF0ssYjycTHT7BBos-bFq7IAZAyjUisCkgJqFHRYIAeANA-gfMRB4M1jQue7MuFoxcxQhGnfk0MB6Q5MESbJceqCj4DLgE3C1mjzVEp6pNMt5jZ6cCdOgEp4httinzk_Agq7XgAxEYw9doDxheZNrx0nU5qtL4ihthDKegLfnSTVsgE99Bpgpi"
-            alt="Neuro-Prime Catalyst"
-            loading="lazy"
-          />
-          <span class="product-card__badge">Top Rated</span>
-        </div>
-        <div class="product-card__body">
-          <p class="product-card__series">Advanced Supplements</p>
-          <h3 class="product-card__name">Neuro-Prime Catalyst</h3>
-          <p class="product-card__desc">Advanced nootropic complex formulated for cognitive clarity and sustained focus.</p>
-          <div class="product-card__footer">
-            <span class="product-card__link">View Details →</span>
-          </div>
-        </div>
-      </article>
-
-      <!-- Card 3 -->
-      <article class="product-card fade-up" onclick="location.href='product-detail.html?id=5'" role="button" tabindex="0" aria-label="Telomere Elixir product page">
-        <div class="product-card__img">
-          <img
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuCRmHiqfEVOl_hmwWQLOGetv56jxm-cei6vQ1wdzv9g3Yi3Ysdv9-w4XdhhqPFt7WPDP_jwQeJMSuFehN5e191_RLDBVjpQsrmdc4kSYRr-Gg3LcNdIaJqhjPVOsUXPljyG4T13jQ4MmJ3r2Kgup3ByAWHOI4COoNGzG0P3RlgVOcX9fkZO079CgAz87RSbiz_TvY9_bmC3Zb2tGnsJEHGLXhqEqCj7GVwjNsgYlsGwSYOj65kac0KPX_GXAwjc1SJPKCu3fQbnPq9E"
-            alt="Telomere Elixir"
-            loading="lazy"
-          />
-          <span class="product-card__badge">Anti-Aging</span>
-        </div>
-        <div class="product-card__body">
-          <p class="product-card__series">Advanced Supplements</p>
-          <h3 class="product-card__name">Telomere Elixir</h3>
-          <p class="product-card__desc">Liquid supplement targeting cellular aging markers through molecular delivery.</p>
-          <div class="product-card__footer">
-            <span class="product-card__link">View Details →</span>
-          </div>
-        </div>
-      </article>
-
-    </div>
+    <!-- Cards injected by initFeaturedProducts() -->
+    <div class="featured-grid stagger" id="featured-grid"></div>
 
     <!-- View All button -->
     <div style="text-align: center; margin-top: 48px;">
@@ -620,6 +559,65 @@
     </div>
   </footer>
 
+  <script src="assets/js/products-data.js"></script>
   <script src="assets/js/main.js"></script>
+  <script>
+  /* ============================================================
+     HOMEPAGE — Featured Products initialisation
+     Reads PRODUCTS (products-data.js), picks isFeatured items
+     (up to 6), renders cards with w_600 Cloudinary images.
+     Falls back to first 6 products if none are marked featured.
+     ============================================================ */
+  (function initFeaturedProducts() {
+    var grid = document.getElementById('featured-grid');
+    if (!grid || typeof PRODUCTS === 'undefined') return;
+
+    var featured = PRODUCTS.filter(function(p) { return p.isFeatured; }).slice(0, 6);
+    if (featured.length === 0) featured = PRODUCTS.slice(0, 6);
+
+    featured.forEach(function(p, i) {
+      var imgSrc = (p.images && p.images[0])
+        ? p.images[0].replace('f_auto,q_auto/', 'f_auto,q_auto,w_600/')
+        : '';
+
+      var imgHtml = imgSrc
+        ? '<img src="' + imgSrc + '" alt="' + p.name +
+          '" loading="' + (i < 2 ? 'eager' : 'lazy') + '" />'
+        : '<div style="width:100%;height:100%;background:#E8F1FB;display:flex;align-items:center;' +
+          'justify-content:center;font-weight:800;color:#1A5FA8;opacity:.4;font-size:18px;">AZZURRA</div>';
+
+      var article = document.createElement('article');
+      article.className = 'product-card fade-up';
+      article.setAttribute('role', 'button');
+      article.setAttribute('tabindex', '0');
+      article.setAttribute('aria-label', p.name + ' — view product');
+      article.style.animationDelay = (i * 80) + 'ms';
+      article.style.cursor = 'pointer';
+      article.innerHTML =
+        '<div class="product-card__img">' +
+          imgHtml +
+          '<span class="product-card__badge">Featured</span>' +
+        '</div>' +
+        '<div class="product-card__body">' +
+          '<p class="product-card__series">' + p.series + '</p>' +
+          '<h3 class="product-card__name">' + p.name + '</h3>' +
+          '<p class="product-card__desc">' + (p.shortDescription || '') + '</p>' +
+          '<div class="product-card__footer">' +
+            '<span class="product-card__link">View Details \u2192</span>' +
+          '</div>' +
+        '</div>';
+
+      article.addEventListener('click', function() { location.href = p.detailPage; });
+      article.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); location.href = p.detailPage; }
+      });
+
+      grid.appendChild(article);
+    });
+
+    if (typeof window.initFadeUp === 'function') window.initFadeUp();
+  }());
+  </script>
 </body>
 </html>
+
