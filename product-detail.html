@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Azzura | Product Detail</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "primary": "#003674","secondary": "#0051d5","primary-container": "#0a4d9b",
+          "on-primary": "#ffffff","on-secondary": "#ffffff","surface": "#f9f9ff",
+          "background": "#f9f9ff","on-surface": "#151c27","on-surface-variant": "#424751",
+          "surface-container-low": "#f0f3ff","surface-container": "#e7eefe",
+          "surface-container-high": "#e2e8f8","outline-variant": "#c2c6d3",
+          "outline": "#737782","inverse-primary": "#abc7ff","secondary-container": "#316bf3"
+        },
+        fontFamily: {
+          "display-lg": ["Manrope"],"headline-lg": ["Manrope"],"title-md": ["Manrope"],
+          "body-md": ["Inter"],"body-lg": ["Inter"],"label-sm": ["Inter"]
+        },
+        fontSize: {
+          "display-lg": ["48px",{"lineHeight":"1.1","letterSpacing":"-0.02em","fontWeight":"700"}],
+          "headline-lg": ["32px",{"lineHeight":"1.2","letterSpacing":"-0.01em","fontWeight":"600"}],
+          "title-md": ["20px",{"lineHeight":"1.4","fontWeight":"600"}],
+          "body-lg": ["18px",{"lineHeight":"1.6","fontWeight":"400"}],
+          "body-md": ["16px",{"lineHeight":"1.5","fontWeight":"400"}],
+          "label-sm": ["12px",{"lineHeight":"1","letterSpacing":"0.05em","fontWeight":"600"}]
+        }
+      }
+    }
+  }
+</script>
+<style>
+  .material-symbols-outlined { font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; display:inline-block; line-height:1; }
+  .glass-card { background:rgba(255,255,255,0.75); backdrop-filter:blur(16px); border:1px solid rgba(255,255,255,0.4); box-shadow:0 4px 30px rgba(10,77,155,0.05); }
+  body { opacity:0; transition: opacity 0.4s ease; }
+  body.loaded { opacity:1; }
+  .tab-btn.active { background:#003674; color:#fff; }
+  .qty-btn:hover { background:#003674; color:#fff; }
+  .thumbnail.active { border-color:#003674; }
+  .cart-badge { position:absolute; top:-4px; right:-4px; background:#0051d5; color:#fff; width:18px; height:18px; border-radius:50%; font-size:10px; font-family:'Manrope',sans-serif; font-weight:700; display:flex; align-items:center; justify-content:center; }
+</style>
+<script src="cart.js"></script>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-x-hidden">
+
+<!-- Nav -->
+<nav class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-xl border-b border-outline-variant/20 shadow-sm shadow-primary/5">
+  <div class="flex justify-between items-center h-20 px-6 md:px-20 max-w-[1280px] mx-auto">
+    <a href="prototype.html" class="font-headline-lg text-headline-lg tracking-tighter text-primary">Azzura</a>
+    <div class="hidden md:flex items-center gap-8">
+      <a class="font-title-md text-on-surface-variant hover:text-primary transition-colors" href="prototype.html">Home</a>
+      <a class="font-title-md text-primary border-b-2 border-primary pb-1" href="productss.html">Shop</a>
+      <a class="font-title-md text-on-surface-variant hover:text-primary transition-colors" href="#">About Us</a>
+    </div>
+    <div class="flex items-center gap-4">
+      <a href="productss.html" class="material-symbols-outlined text-primary p-2">search</a>
+      <a href="cart.html" class="relative text-primary p-2">
+        <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">shopping_bag</span>
+        <span id="nav-cart-count" class="cart-badge" style="display:none">0</span>
+      </a>
+      <a href="productss.html" class="bg-primary-container text-on-primary px-6 py-2 rounded-full font-title-md hover:opacity-90 transition-all duration-300 active:scale-95">Shop Now</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Breadcrumb -->
+<div class="pt-28 pb-4 px-6 md:px-20 max-w-[1280px] mx-auto">
+  <div class="flex items-center gap-2 text-on-surface-variant text-sm">
+    <a href="prototype.html" class="hover:text-primary transition-colors">Home</a>
+    <span class="material-symbols-outlined text-base">chevron_right</span>
+    <a href="productss.html" class="hover:text-primary transition-colors">Shop</a>
+    <span class="material-symbols-outlined text-base">chevron_right</span>
+    <span id="breadcrumb-name" class="text-primary font-semibold">Product</span>
+  </div>
+</div>
+
+<!-- Main Product Section -->
+<main class="pb-24 px-6 md:px-20 max-w-[1280px] mx-auto">
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+
+    <!-- Left: Images -->
+    <div class="sticky top-28">
+      <div class="rounded-3xl overflow-hidden aspect-square glass-card mb-4">
+        <img id="main-img" src="" alt="" class="w-full h-full object-cover transition-all duration-500"/>
+      </div>
+      <div id="thumbnails" class="flex gap-3 mt-4"></div>
+    </div>
+
+    <!-- Right: Details -->
+    <div>
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-container-high text-primary font-label-sm text-label-sm mb-4">
+        <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+        <span id="product-category">Category</span>
+      </div>
+      <h1 id="product-name" class="font-display-lg text-headline-lg text-primary mb-3"></h1>
+      <div class="flex items-center gap-3 mb-4">
+        <div id="stars" class="flex items-center gap-1"></div>
+        <span id="review-count" class="text-on-surface-variant text-sm"></span>
+      </div>
+      <div class="flex items-center gap-4 mb-6">
+        <span id="product-price" class="font-display-lg text-3xl text-primary"></span>
+        <span class="px-3 py-1 bg-green-50 text-green-700 rounded-full text-sm font-semibold">In Stock</span>
+      </div>
+      <p id="product-desc" class="font-body-lg text-body-lg text-on-surface-variant mb-8 leading-relaxed"></p>
+
+      <!-- Quantity -->
+      <div class="flex items-center gap-4 mb-8">
+        <span class="font-title-md text-primary">Quantity</span>
+        <div class="flex items-center border border-outline-variant rounded-full overflow-hidden">
+          <button onclick="changeQty(-1)" class="qty-btn w-10 h-10 flex items-center justify-center text-primary transition-colors">
+            <span class="material-symbols-outlined">remove</span>
+          </button>
+          <span id="qty" class="w-10 text-center font-title-md text-primary">1</span>
+          <button onclick="changeQty(1)" class="qty-btn w-10 h-10 flex items-center justify-center text-primary transition-colors">
+            <span class="material-symbols-outlined">add</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- CTA Buttons -->
+      <div class="flex flex-col sm:flex-row gap-4 mb-10">
+        <button onclick="handleAddToCart()" class="flex-1 bg-primary text-white px-8 py-4 rounded-full font-title-md hover:bg-secondary transition-all duration-300 active:scale-95 flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined">shopping_bag</span> Add to Cart
+        </button>
+        <button onclick="handleBuyNow()" class="flex-1 border-2 border-primary text-primary px-8 py-4 rounded-full font-title-md hover:bg-primary hover:text-white transition-all duration-300 active:scale-95">
+          Buy Now
+        </button>
+      </div>
+
+      <!-- Trust badges -->
+      <div class="flex flex-wrap gap-4 mb-10">
+        <div class="flex items-center gap-2 text-on-surface-variant text-sm">
+          <span class="material-symbols-outlined text-secondary text-xl">local_shipping</span> Free Shipping
+        </div>
+        <div class="flex items-center gap-2 text-on-surface-variant text-sm">
+          <span class="material-symbols-outlined text-secondary text-xl">replay</span> 30-Day Returns
+        </div>
+        <div class="flex items-center gap-2 text-on-surface-variant text-sm">
+          <span class="material-symbols-outlined text-secondary text-xl">verified_user</span> Clinically Tested
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="border-b border-outline-variant/20 mb-6">
+        <div class="flex gap-2">
+          <button onclick="switchTab('benefits')" id="tab-benefits" class="tab-btn active px-5 py-2 rounded-full font-title-md text-sm transition-all">Benefits</button>
+          <button onclick="switchTab('ingredients')" id="tab-ingredients" class="tab-btn px-5 py-2 rounded-full font-title-md text-sm text-on-surface-variant transition-all">Ingredients</button>
+          <button onclick="switchTab('usage')" id="tab-usage" class="tab-btn px-5 py-2 rounded-full font-title-md text-sm text-on-surface-variant transition-all">Usage</button>
+        </div>
+      </div>
+      <div id="tab-content" class="text-on-surface-variant font-body-md leading-relaxed"></div>
+    </div>
+  </div>
+
+  <!-- Related Products -->
+  <div class="mt-24">
+    <h2 class="font-headline-lg text-headline-lg text-primary mb-8">You May Also Like</h2>
+    <div id="related-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+  </div>
+</main>
+
+<!-- Footer -->
+<footer class="bg-white w-full py-10 px-6 md:px-20 border-t border-outline-variant/10">
+  <div class="max-w-[1280px] mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+    <span class="font-headline-lg text-primary">Azzura</span>
+    <p class="text-on-surface-variant text-sm">© 2024 Azzura Healthcare. Nurturing Human Lives.</p>
+    <div class="flex gap-6 text-sm text-on-surface-variant">
+      <a href="#" class="hover:text-secondary transition-colors">Privacy</a>
+      <a href="#" class="hover:text-secondary transition-colors">Terms</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+const PRODUCTS = {
+  1: {
+    name: "Luminary Molecular Serum",
+    category: "Molecular Serums",
+    price: "$185.00",
+    rating: 5,
+    reviews: 48,
+    desc: "Adaptive DNA repair complex with high-potency Vitamin C. A breakthrough formulation that works at the cellular level to reverse oxidative damage, restore luminosity, and fortify the skin's natural barrier for long-lasting radiance.",
+    img: "images/essential-peptide.png",
+    badge: "New Release",
+    benefits: ["Repairs DNA oxidative damage at the cellular level","Boosts collagen synthesis by up to 42%","Delivers 72-hour deep hydration lock","Reduces fine lines and visible pores within 4 weeks","Clinically tested — dermatologist approved for all skin types"],
+    ingredients: ["L-Ascorbic Acid (20%) — potent antioxidant Vitamin C","Bakuchiol — plant-based retinol alternative","Hyaluronic Acid (3 molecular weights)","Niacinamide (5%) — pore-refining and brightening","Peptide Complex AH-9 — proprietary collagen booster"],
+    usage: ["Apply 2–3 drops to cleansed face and neck each morning","Gently press into skin using fingertips — do not rub","Follow with SPF moisturiser for optimal protection","Use consistently for 4+ weeks to see full results","Can be layered under heavier creams or oils"]
+  },
+  2: {
+    name: "CellSync Pulse Device",
+    category: "Bio-Devices",
+    price: "$499.00",
+    rating: 4,
+    reviews: 124,
+    desc: "Non-invasive cellular resonance technology for rapid muscle recovery and deep tissue regeneration. Used by elite athletes and clinical practitioners worldwide.",
+    img: "images/glutamax-el.png",
+    badge: "Best Seller",
+    benefits: ["Accelerates muscle recovery by 60% post-exercise","Reduces chronic inflammation markers within 2 weeks","Improves circulation and lymphatic drainage","FDA-registered bio-resonance technology","Wireless, rechargeable — 8-hour battery life"],
+    ingredients: ["Frequency Range: 0.5Hz – 100Hz bio-resonance","Intensity Levels: 10 precision-calibrated modes","Material: Medical-grade titanium alloy housing","Connectivity: Bluetooth 5.2 with Azzura app","Certifications: CE, FDA-registered, RoHS compliant"],
+    usage: ["Charge device fully before first use (90 min)","Apply to target muscle group or pain area","Select intensity level 1–3 for first sessions","Use for 15–30 minutes per session","Clean with alcohol wipe after each use"]
+  },
+  3: {
+    name: "Neuro-Prime Catalyst",
+    category: "Advanced Supplements",
+    price: "$120.00",
+    rating: 5,
+    reviews: 210,
+    desc: "Advanced nootropic complex for cognitive clarity and sustained mental focus. Formulated by a board of neuroscientists to enhance neuroplasticity and protect against cognitive decline.",
+    img: "images/essential-peptide.png",
+    badge: "Top Rated",
+    benefits: ["Enhances working memory and recall speed","Reduces mental fatigue by up to 38%","Supports neuroplasticity and long-term brain health","Zero crash, no jitters — smooth sustained energy","Vegan, non-GMO, third-party lab certified"],
+    ingredients: ["Lion's Mane Mushroom Extract (500mg)","Alpha-GPC (300mg) — acetylcholine precursor","Bacopa Monnieri (320mg) — memory adaptogen","Rhodiola Rosea (200mg) — stress resilience","Phosphatidylserine (100mg) — neuroprotective lipid"],
+    usage: ["Take 2 capsules daily with breakfast","Best consumed consistently for 30+ days","Pair with adequate sleep for optimal results","Avoid combining with stimulant medications","Store in a cool, dry place away from sunlight"]
+  },
+  4: {
+    name: "The Genesis System",
+    category: "Cellular Kits",
+    price: "$650.00",
+    rating: 5,
+    reviews: 56,
+    desc: "Complete 30-day biological reset kit with multi-stage treatments targeting cellular renewal, metabolic reset, and systemic inflammation reduction. Your full-body transformation protocol.",
+    img: "images/glutamax-el.png",
+    badge: "Premium Kit",
+    benefits: ["Full 30-day cellular renewal protocol","Includes 5 synergistic formulations","Reduces systemic inflammation biomarkers","Improves mitochondrial function and ATP output","Personalised day-by-day instruction guide included"],
+    ingredients: ["Phase 1: Cellular Detox Serum (AM)","Phase 2: Mitochondrial Booster Capsules","Phase 3: Collagen Matrix Rebuild Cream (PM)","Phase 4: Gut-Skin Axis Probiotic Blend","Phase 5: NAD+ Precursor Oral Supplement"],
+    usage: ["Follow the included 30-day protocol booklet","Each phase is timed for circadian rhythm alignment","Do not skip phases — synergy is key to results","Photograph skin weekly to track transformation","Consult your physician if on immunosuppressants"]
+  },
+  5: {
+    name: "Telomere Elixir",
+    category: "Advanced Supplements",
+    price: "$215.00",
+    rating: 4,
+    reviews: 34,
+    desc: "Liquid supplement targeting cellular aging markers. Designed to slow telomere shortening and extend healthy cellular lifespan through patented molecular delivery technology.",
+    img: "images/essential-peptide.png",
+    badge: "Anti-Aging",
+    benefits: ["Slows telomere attrition — marker of cellular aging","Activates telomerase enzyme expression","Rich in polyphenols and TA-65 precursors","Improves sleep quality and HRV within 3 weeks","Bioavailability-enhanced liquid format absorbs 3x faster"],
+    ingredients: ["Astragalus Root Extract — 95% astragaloside IV","Resveratrol (500mg) — sirtuin activator","CoQ10 (200mg) — mitochondrial energiser","Vitamin D3 + K2 — synergistic bone/cellular support","Organic Schisandra Berry — adaptogenic antioxidant"],
+    usage: ["Take 30ml daily on an empty stomach","Shake bottle well before each use","Best taken in the morning for circadian synergy","Refrigerate after opening — consume within 60 days","Combine with caloric restriction for enhanced effects"]
+  },
+  6: {
+    name: "Azzura Bio-Patch",
+    category: "Bio-Devices",
+    price: "$89.00",
+    rating: 5,
+    reviews: 18,
+    desc: "Real-time nutrient absorption monitor with AI integration. A wearable biosensor patch that tracks key biomarkers through the skin and syncs data to the Azzura Health app.",
+    img: "images/glutamax-el.png",
+    badge: "Wearable Tech",
+    benefits: ["Continuous monitoring of glucose, hydration, lactate","AI-powered insights delivered to your phone","Medical-grade accuracy — validated in 3 clinical trials","Waterproof, hypoallergenic adhesive patch","Lasts 7 days per patch — no calibration needed"],
+    ingredients: ["Electrochemical biosensor array (gold-circuit)","NFC + Bluetooth dual wireless transmission","Hypoallergenic medical adhesive (latex-free)","Biocompatible polymer substrate","Azzura AI analysis engine — app included"],
+    usage: ["Clean and dry skin before application","Apply to upper arm or abdomen — press firmly 30 sec","Open Azzura app and scan patch to activate","Wear continuously for up to 7 days","Remove gently — do not reuse patch"]
+  }
+};
+
+let currentTab = 'benefits';
+let qty = 1;
+
+function changeQty(delta) {
+  qty = Math.max(1, qty + delta);
+  document.getElementById('qty').textContent = qty;
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  ['benefits','ingredients','usage'].forEach(t => {
+    const btn = document.getElementById('tab-' + t);
+    btn.classList.toggle('active', t === tab);
+    btn.classList.toggle('text-on-surface-variant', t !== tab);
+  });
+  renderTabContent();
+}
+
+function renderTabContent() {
+  const p = window._product;
+  const container = document.getElementById('tab-content');
+  if (!p) return;
+  const items = p[currentTab] || [];
+  container.innerHTML = '<ul class="space-y-3">' + items.map(i =>
+    `<li class="flex items-start gap-3"><span class="material-symbols-outlined text-secondary mt-0.5 text-base">check_circle</span><span>${i}</span></li>`
+  ).join('') + '</ul>';
+}
+
+function renderStars(rating, total) {
+  let html = '';
+  for (let i = 1; i <= 5; i++) {
+    const fill = i <= rating ? 1 : 0;
+    html += `<span class="material-symbols-outlined text-[#FFB800] text-base" style="font-variation-settings:'FILL' ${fill}">star</span>`;
+  }
+  return html;
+}
+
+function renderRelated(currentId) {
+  const grid = document.getElementById('related-grid');
+  const ids = Object.keys(PRODUCTS).filter(k => k != currentId).slice(0, 3);
+  grid.innerHTML = ids.map(id => {
+    const p = PRODUCTS[id];
+    return `<div onclick="location.href='product-detail.html?id=${id}'" class="group glass-card rounded-[1.5rem] overflow-hidden cursor-pointer transition-all duration-500 hover:-translate-y-2 hover:shadow-xl hover:shadow-primary/10">
+      <div class="aspect-[4/5] overflow-hidden">
+        <img src="${p.img}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"/>
+      </div>
+      <div class="p-5">
+        <h3 class="font-title-md text-primary mb-1 text-base">${p.name}</h3>
+        <div class="flex justify-between items-center">
+          <span class="text-secondary font-semibold">${p.price}</span>
+          <div class="flex gap-0.5">${renderStars(p.rating, 5)}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function init() {
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id') || '1';
+  const p = PRODUCTS[id];
+  if (!p) { location.href = 'productss.html'; return; }
+  window._product = p;
+
+  document.title = `Azzura | ${p.name}`;
+  document.getElementById('breadcrumb-name').textContent = p.name;
+  document.getElementById('product-name').textContent = p.name;
+  document.getElementById('product-category').textContent = p.category;
+  document.getElementById('product-price').textContent = p.price;
+  document.getElementById('product-desc').textContent = p.desc;
+  document.getElementById('review-count').textContent = `(${p.reviews} reviews)`;
+  document.getElementById('stars').innerHTML = renderStars(p.rating, 5);
+  document.getElementById('main-img').src = p.img;
+  document.getElementById('main-img').alt = p.name;
+
+  // Thumbnails (same image, different zoom effect for demo)
+  const thumbs = document.getElementById('thumbnails');
+  for (let i = 0; i < 3; i++) {
+    const div = document.createElement('div');
+    div.className = `thumbnail w-20 h-20 rounded-xl overflow-hidden border-2 cursor-pointer transition-all ${i===0?'border-primary active':'border-outline-variant'}`;
+    const img = document.createElement('img');
+    img.src = p.img;
+    img.className = 'w-full h-full object-cover';
+    div.appendChild(img);
+    div.addEventListener('click', () => {
+      document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('border-primary','active'));
+      div.classList.add('border-primary','active');
+    });
+    thumbs.appendChild(div);
+  }
+
+  renderTabContent();
+  renderRelated(id);
+}
+
+function handleAddToCart() {
+  if (!window._product) return;
+  if (typeof AzzuraCart !== 'undefined') {
+    AzzuraCart.addToCart(window._product.id, qty);
+    alert(window._product.name + ' added to cart!');
+  }
+}
+
+function handleBuyNow() {
+  if (!window._product) return;
+  if (typeof AzzuraCart !== 'undefined') {
+    AzzuraCart.addToCart(window._product.id, qty);
+    window.location.href = 'checkout.html';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  init();
+  document.body.classList.add('loaded');
+});
+</script>
+</body>
+</html>

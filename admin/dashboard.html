@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — Azzurra Admin</title>
+  <meta name="description" content="Azzurra Pharmaconutrition admin dashboard overview." />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="stylesheet" href="../assets/css/admin.css" />
+</head>
+<body>
+
+<div class="admin-layout" id="adminLayout">
+
+  <!-- Sidebar Overlay (mobile) -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- ═══════════════ SIDEBAR ═══════════════ -->
+  <aside class="admin-sidebar" id="adminSidebar">
+    <div class="admin-sidebar__brand">
+      <div class="admin-sidebar__logo-name">AZZURRA</div>
+      <span class="admin-sidebar__logo-tag">Pharmaconutrition</span>
+      <span class="admin-sidebar__admin-badge">Admin Panel</span>
+    </div>
+
+    <nav class="admin-sidebar__nav" aria-label="Admin navigation">
+      <a href="dashboard.html" class="admin-sidebar__nav-link active" id="navDashboard">
+        <span class="nav-icon">📊</span>
+        Dashboard
+      </a>
+      <a href="products.html" class="admin-sidebar__nav-link" id="navProducts">
+        <span class="nav-icon">📦</span>
+        Products
+      </a>
+    </nav>
+
+    <div class="admin-sidebar__footer">
+      <button class="admin-sidebar__signout" id="signOutBtn">
+        <span>🚪</span> Sign Out
+      </button>
+    </div>
+  </aside>
+
+  <!-- ═══════════════ MAIN ═══════════════ -->
+  <main class="admin-main">
+
+    <!-- Topbar -->
+    <header class="admin-topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="admin-topbar__menu-toggle" id="menuToggle" aria-label="Open sidebar">☰</button>
+        <h1 class="admin-topbar__title">Dashboard</h1>
+      </div>
+      <div class="admin-topbar__right">
+        <div class="admin-topbar__user">
+          <div class="admin-topbar__user-avatar" id="userAvatar">A</div>
+          <span class="admin-topbar__user-email" id="userEmail">admin@azzurra.com</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Content -->
+    <div class="admin-content">
+
+      <!-- Stat Cards -->
+      <div class="stat-cards" id="statCards">
+        <div class="stat-card">
+          <div class="stat-card__icon">📦</div>
+          <div class="stat-card__value" id="statTotal">—</div>
+          <div class="stat-card__label">Total Products</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__icon">✅</div>
+          <div class="stat-card__value" id="statInStock">—</div>
+          <div class="stat-card__label">In Stock</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__icon">⭐</div>
+          <div class="stat-card__value" id="statFeatured">—</div>
+          <div class="stat-card__label">Featured</div>
+        </div>
+      </div>
+
+      <!-- Recent Products Table -->
+      <div class="admin-card">
+        <div class="admin-card__header">
+          <span class="admin-card__title">Recent Products</span>
+          <a href="products.html" class="btn-text-link">
+            Manage All Products →
+          </a>
+        </div>
+        <div class="admin-card__body admin-table-wrap">
+          <table class="admin-table" id="recentTable">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Price (₹)</th>
+                <th>In Stock</th>
+              </tr>
+            </thead>
+            <tbody id="recentTableBody">
+              <tr>
+                <td colspan="4">
+                  <div class="empty-state">
+                    <div class="empty-state__icon">⏳</div>
+                    <div class="empty-state__title">Loading...</div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Quick Links -->
+      <div class="admin-card">
+        <div class="admin-card__header">
+          <span class="admin-card__title">Quick Actions</span>
+        </div>
+        <div class="admin-card__body" style="padding:20px 24px;display:flex;gap:12px;flex-wrap:wrap;">
+          <a href="products.html" class="btn-primary">
+            <span>📦</span> Manage Products
+          </a>
+          <a href="../productss.html" target="_blank" class="btn-outline">
+            <span>🌐</span> View Live Site
+          </a>
+        </div>
+      </div>
+
+    </div><!-- /admin-content -->
+  </main>
+
+</div><!-- /admin-layout -->
+
+<script type="module">
+  import { supabase } from '../assets/js/supabase-config.js';
+
+  // ── Auth Guard ──
+  async function checkAuth() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      window.location.href = 'index.html';
+      return null;
+    }
+    return session;
+  }
+
+  // ── Mobile Sidebar ──
+  const sidebar        = document.getElementById('adminSidebar');
+  const sidebarOverlay = document.getElementById('sidebarOverlay');
+  const menuToggle     = document.getElementById('menuToggle');
+
+  menuToggle.addEventListener('click', () => {
+    sidebar.classList.toggle('open');
+    sidebarOverlay.classList.toggle('show');
+  });
+
+  sidebarOverlay.addEventListener('click', () => {
+    sidebar.classList.remove('open');
+    sidebarOverlay.classList.remove('show');
+  });
+
+  // ── Sign Out ──
+  document.getElementById('signOutBtn').addEventListener('click', async () => {
+    await supabase.auth.signOut();
+    window.location.href = 'index.html';
+  });
+
+  // ── Main Init ──
+  async function init() {
+    const session = await checkAuth();
+    if (!session) return;
+
+    // Show user email
+    const email = session.user?.email || '';
+    document.getElementById('userEmail').textContent = email;
+    document.getElementById('userAvatar').textContent = email.charAt(0).toUpperCase();
+
+    // Load stats & recent products in parallel
+    await Promise.all([loadStats(), loadRecentProducts()]);
+  }
+
+  // ── Load Dashboard Stats ──
+  async function loadStats() {
+    // Total products count
+    const { count: total } = await supabase
+      .from('products')
+      .select('*', { count: 'exact', head: true });
+
+    // In stock count
+    const { count: inStock } = await supabase
+      .from('products')
+      .select('*', { count: 'exact', head: true })
+      .eq('in_stock', true);
+
+    // Featured count
+    const { count: featured } = await supabase
+      .from('products')
+      .select('*', { count: 'exact', head: true })
+      .eq('is_featured', true);
+
+    document.getElementById('statTotal').textContent   = total   ?? '0';
+    document.getElementById('statInStock').textContent = inStock  ?? '0';
+    document.getElementById('statFeatured').textContent = featured ?? '0';
+  }
+
+  // ── Load Recent Products ──
+  async function loadRecentProducts() {
+    const { data, error } = await supabase
+      .from('products')
+      .select('id, name, price, in_stock')
+      .order('created_at', { ascending: false })
+      .limit(5);
+
+    const tbody = document.getElementById('recentTableBody');
+
+    if (error || !data || data.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="4">
+            <div class="empty-state">
+              <div class="empty-state__icon">📭</div>
+              <div class="empty-state__title">No products yet</div>
+              <div class="empty-state__text">Add your first product from the Products page.</div>
+            </div>
+          </td>
+        </tr>`;
+      return;
+    }
+
+    tbody.innerHTML = data.map(p => `
+      <tr>
+        <td><span class="table-id">${p.id?.toString().slice(0, 8) ?? '—'}</span></td>
+        <td style="font-weight:500;">${escHtml(p.name ?? '—')}</td>
+        <td class="table-price">₹${Number(p.price ?? 0).toLocaleString('en-IN')}</td>
+        <td>
+          <span style="
+            display:inline-block;
+            padding:3px 10px;
+            border-radius:100px;
+            font-size:11px;
+            font-weight:600;
+            background:${p.in_stock ? 'var(--color-success-light)' : 'var(--color-danger-light)'};
+            color:${p.in_stock ? 'var(--color-success)' : 'var(--color-danger)'};
+          ">${p.in_stock ? 'In Stock' : 'Out of Stock'}</span>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function escHtml(str) {
+    const div = document.createElement('div');
+    div.appendChild(document.createTextNode(str));
+    return div.innerHTML;
+  }
+
+  init();
+</script>
+
+</body>
+</html>
