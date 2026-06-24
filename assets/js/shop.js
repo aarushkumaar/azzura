@@ -106,34 +106,42 @@ let isOffline      = false;
 
 /* ============================================================
    SUPABASE — FETCH PRODUCTS
-   Uses the REST API directly (no npm package required).
-   Falls back to FALLBACK_PRODUCTS if fetch fails.
+   Delegates to window.loadProductsFromSupabase() which is
+   defined in supabase-products.js. That module handles:
+   - Fetching in_stock products ordered by featured then name
+   - Parsing the `images` JSON column into image_url, images[]
+   - Mapping all Supabase fields to the shape shop.js expects
+   - Falling back gracefully on any network/parse error
    ============================================================ */
 async function fetchProductsFromSupabase() {
-  try {
-    // Build the Supabase REST API URL for the products table
-    const url = `${SUPABASE_URL}/rest/v1/products?select=*&order=created_at.desc`;
+  // If supabase-products.js is loaded, use its mapper for correct image handling
+  if (typeof window.loadProductsFromSupabase === 'function') {
+    const success = await window.loadProductsFromSupabase();
+    if (success && window.PRODUCTS && window.PRODUCTS.length > 0) {
+      return window.PRODUCTS; // already mapped
+    }
+    return null; // fallback to static
+  }
 
+  // Direct fallback if supabase-products.js not loaded
+  try {
+    const url = `${SUPABASE_URL}/rest/v1/products?select=*&in_stock=eq.true&order=is_featured.desc,name.asc`;
     const res = await fetch(url, {
       headers: {
         'apikey':        SUPABASE_ANON_KEY,
         'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-        'Content-Type':  'application/json',
         'Accept':        'application/json'
       },
-      // Timeout after 5 seconds — don't block the shop page too long
       signal: AbortSignal.timeout(5000)
     });
-
     if (!res.ok) throw new Error(`Supabase error ${res.status}`);
-
-    const data = await res.json();
-    return data;
+    return null; // let supabase-products.js handle mapping
   } catch (err) {
     console.warn('[Azzurra Shop] Supabase unavailable, using fallback data.', err.message);
     return null;
   }
 }
+
 
 /* ============================================================
    FILTER & SORT — runs entirely client-side on in-memory array
@@ -391,19 +399,33 @@ function addToCart(product) {
   const cart = getCart();
   const idx  = cart.findIndex(item => item.id === product.id);
 
+  // Resolve the image URL — Supabase products have image_url mapped from images[0]
+  const imgUrl = product.image_url || (product.images && product.images[0]) || '';
+
   if (idx > -1) {
     cart[idx].quantity += 1;
   } else {
     cart.push({
       id:          product.id,
       name:        product.name,
-      price:       product.price,
-      image_url:   product.image_url,
+      price:       product.price || product.price_inr || 0,
+      image_url:   imgUrl,
       quantity:    1
     });
   }
 
   saveCart(cart);
+
+  // Track cart activity in Supabase customers table (non-blocking)
+  if (typeof window.upsertCustomerInSupabase === 'function') {
+    try {
+      const cartState = getCart();
+      window.upsertCustomerInSupabase({
+        email:         '', // email not known yet at this stage
+        cart_activity: cartState
+      });
+    } catch (_) { /* non-critical */ }
+  }
 }
 
 function removeFromCart(productId) {

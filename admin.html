@@ -3,442 +3,1254 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Dashboard — Azzurra Pharmaconutrition</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="assets/css/style.css" />
-  <link rel="stylesheet" href="assets/css/admin.css" />
+  <title>Admin — Azzurra Pharmaconutrition</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- AUTH GUARD -->
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+    const sb = createClient(
+      'https://ilduyhuvpiqhvbnocqxf.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlsZHV5aHV2cGlxaHZibm9jcXhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4MTMxNTUsImV4cCI6MjA5NjM4OTE1NX0.uuC8dKajsnSSaiTx_wxNeapKPl4EV20s5phcRS-TaZg'
+    );
+    window.supabase = sb;
+    (async () => {
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) {
+        window.location.replace('admin-login.html');
+      } else {
+        const emailEl = document.getElementById('sidebar-user-email');
+        if (emailEl) emailEl.textContent = session.user.email || '';
+        document.body.style.opacity = '1';
+      }
+    })();
+  </script>
+
+  <style>
+    /* ================================================================
+       CSS CUSTOM PROPERTIES
+       ================================================================ */
+    :root {
+      --color-primary:       #1A5FA8;
+      --color-primary-dark:  #134a87;
+      --color-primary-light: #E8F1FB;
+      --color-dark:          #1A1A2E;
+      --color-grey:          #6B7280;
+      --color-gold:          #C9A84C;
+      --color-border:        #D1E3F8;
+      --color-green:         #48BB78;
+      --color-purple:        #9F7AEA;
+      --color-red:           #FC8181;
+      --color-orange:        #F6AD55;
+      --font-body:           'Inter', sans-serif;
+      --font-heading:        'DM Serif Display', serif;
+    }
+
+    /* RESET */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { height: 100%; }
+    body {
+      font-family: var(--font-body);
+      background: #f5f7fa;
+      color: var(--color-dark);
+      height: 100vh;
+      overflow: hidden;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    /* SHELL */
+    .admin-shell { display: flex; height: 100vh; overflow: hidden; }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 240px; min-width: 240px;
+      height: 100vh; background: #fff;
+      border-left: 4px solid var(--color-primary);
+      box-shadow: 2px 0 12px rgba(0,0,0,0.06);
+      display: flex; flex-direction: column;
+      position: relative; z-index: 100; flex-shrink: 0;
+    }
+    .sidebar-brand { padding: 28px 20px 20px; border-bottom: 1px solid var(--color-border); }
+    .sidebar-brand-name { font-size: 18px; font-weight: 700; color: var(--color-primary); letter-spacing: 0.08em; display: block; }
+    .sidebar-brand-tag  { font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--color-gold); font-weight: 600; display: block; margin-top: 2px; }
+    .sidebar-user-email { font-size: 12px; color: var(--color-grey); margin-top: 8px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sidebar-nav { flex: 1; padding: 16px 12px; display: flex; flex-direction: column; gap: 4px; overflow-y: auto; }
+    .sidebar-link {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 500;
+      color: var(--color-dark); cursor: pointer; border: none; background: transparent;
+      text-align: left; width: 100%; transition: background 0.2s ease, color 0.2s ease;
+    }
+    .sidebar-link:hover { background: #f0f6ff; }
+    .sidebar-link.active { background: var(--color-primary-light); color: var(--color-primary); font-weight: 600; }
+    .sidebar-link .nav-icon { font-size: 16px; flex-shrink: 0; }
+    .sidebar-bottom { padding: 16px 12px; border-top: 1px solid var(--color-border); }
+    .btn-signout {
+      display: flex; align-items: center; gap: 8px; padding: 10px 14px; border: none;
+      background: transparent; color: var(--color-red); font-family: var(--font-body);
+      font-size: 14px; font-weight: 600; cursor: pointer; border-radius: 8px; width: 100%;
+      transition: background 0.2s ease;
+    }
+    .btn-signout:hover { background: #fff5f5; }
+
+    /* MAIN */
+    .main-content { flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; min-width: 0; }
+    .topbar {
+      position: sticky; top: 0; background: #fff; border-bottom: 1px solid var(--color-border);
+      padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; z-index: 50; flex-shrink: 0;
+    }
+    .topbar-title { font-size: 20px; font-weight: 700; color: var(--color-dark); }
+    .topbar-right { display: flex; align-items: center; gap: 16px; }
+    .topbar-clock { font-size: 13px; color: var(--color-grey); font-weight: 500; }
+    .hamburger { display: none; background: none; border: none; cursor: pointer; padding: 4px; flex-direction: column; gap: 5px; }
+    .hamburger span { display: block; width: 22px; height: 2px; background: var(--color-dark); border-radius: 2px; }
+    .content-area { flex: 1; overflow-y: auto; padding: 32px; }
+
+    /* SECTIONS */
+    .admin-section { display: none; }
+    .admin-section.active { display: block; }
+
+    /* STAT CARDS */
+    .stats-grid { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 32px; }
+    .stat-card {
+      background: #fff; border-radius: 12px; padding: 24px;
+      border-left: 4px solid var(--color-primary);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06); flex: 1; min-width: 180px;
+    }
+    .stat-card.green  { border-left-color: var(--color-green); }
+    .stat-card.purple { border-left-color: var(--color-purple); }
+    .stat-card.red    { border-left-color: var(--color-red); }
+    .stat-number { font-size: 28px; font-weight: 700; color: var(--color-primary); line-height: 1; display: block; margin-bottom: 6px; }
+    .stat-card.green  .stat-number { color: var(--color-green); }
+    .stat-card.purple .stat-number { color: var(--color-purple); }
+    .stat-card.red    .stat-number { color: var(--color-red); }
+    .stat-label { font-size: 13px; color: var(--color-grey); font-weight: 500; }
+
+    /* DASHBOARD PANELS */
+    .dashboard-panels { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    .panel-card { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .panel-title { font-size: 15px; font-weight: 700; color: var(--color-dark); margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--color-border); }
+
+    /* TABLES */
+    .table-wrapper { overflow-x: auto; border-radius: 12px; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    table { width: 100%; border-collapse: collapse; }
+    thead { background: var(--color-primary); }
+    thead th { color: #fff; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; padding: 12px 16px; text-align: left; white-space: nowrap; }
+    tbody tr { border-bottom: 1px solid var(--color-primary-light); transition: background 0.2s ease; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #f8fbff; }
+    tbody td { padding: 12px 16px; font-size: 14px; color: var(--color-dark); vertical-align: middle; }
+    tbody tr.fade-out { opacity: 0; transition: opacity 0.4s ease; }
+    .prod-thumb { width: 48px; height: 48px; object-fit: cover; border-radius: 8px; border: 1px solid var(--color-border); background: #f5f7fa; }
+    .prod-thumb-placeholder { width: 48px; height: 48px; border-radius: 8px; background: var(--color-primary-light); display: flex; align-items: center; justify-content: center; font-size: 18px; }
+
+    /* BADGES */
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; text-transform: capitalize; letter-spacing: 0.03em; }
+    .badge-pending   { background: #FFF3E0; color: #E65100; }
+    .badge-confirmed { background: var(--color-primary-light); color: var(--color-primary); }
+    .badge-shipped   { background: #F3E5F5; color: #7B1FA2; }
+    .badge-delivered { background: #E8F5E9; color: #2E7D32; }
+    .badge-cancelled { background: #FFEBEE; color: #C62828; }
+    .badge-instock    { background: #E8F5E9; color: #2E7D32; }
+    .badge-outofstock { background: #FFEBEE; color: #C62828; }
+
+    /* TOGGLE SWITCH */
+    label.toggle-switch { display: inline-flex; align-items: center; cursor: pointer; gap: 8px; }
+    label.toggle-switch input[type="checkbox"] { display: none; }
+    label.toggle-switch .toggle-slider {
+      position: relative; display: inline-block; width: 44px; height: 24px;
+      background: #CBD5E0; border-radius: 12px; transition: background 0.2s ease; flex-shrink: 0;
+    }
+    label.toggle-switch .toggle-slider::after {
+      content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px;
+      background: #fff; border-radius: 50%; transition: transform 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    label.toggle-switch input[type="checkbox"]:checked + .toggle-slider { background: var(--color-primary); }
+    label.toggle-switch input[type="checkbox"]:checked + .toggle-slider::after { transform: translateX(20px); }
+
+    /* FORM */
+    .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+    .form-label { font-size: 13px; font-weight: 600; color: var(--color-dark); }
+    .form-label .req { color: var(--color-red); }
+    input[type="text"], input[type="number"], input[type="email"], input[type="tel"], select, textarea {
+      border: 1.5px solid var(--color-border); border-radius: 8px; padding: 10px 14px;
+      font-family: var(--font-body); font-size: 14px; width: 100%; box-sizing: border-box;
+      color: var(--color-dark); background: #fff; transition: border-color 0.2s ease, box-shadow 0.2s ease; resize: vertical;
+    }
+    input[type="text"]:focus, input[type="number"]:focus, input[type="email"]:focus,
+    input[type="tel"]:focus, select:focus, textarea:focus {
+      border-color: var(--color-primary); outline: none; box-shadow: 0 0 0 3px rgba(26,95,168,0.1);
+    }
+    .btn-primary {
+      background: var(--color-primary); color: #fff; border: none; border-radius: 100px;
+      padding: 10px 22px; font-family: var(--font-body); font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: background 0.2s ease, transform 0.2s ease; white-space: nowrap;
+    }
+    .btn-primary:hover { background: var(--color-primary-dark); transform: scale(1.02); }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .btn-primary.full-width { border-radius: 8px; width: 100%; padding: 12px; font-size: 15px; }
+    .btn-secondary {
+      background: transparent; color: var(--color-grey); border: 1.5px solid #CBD5E0; border-radius: 100px;
+      padding: 10px 22px; font-family: var(--font-body); font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: background 0.2s ease, border-color 0.2s ease; white-space: nowrap;
+    }
+    .btn-secondary:hover { background: #f5f7fa; border-color: #a0aec0; }
+    .btn-secondary.full-width { border-radius: 8px; width: 100%; padding: 12px; font-size: 15px; margin-top: 8px; }
+    .btn-danger {
+      background: transparent; color: var(--color-red); border: 1.5px solid var(--color-red); border-radius: 100px;
+      padding: 10px 22px; font-family: var(--font-body); font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: background 0.2s ease; white-space: nowrap;
+    }
+    .btn-danger:hover { background: #fff5f5; }
+    .btn-icon {
+      background: none; border: none; cursor: pointer; padding: 6px 8px; border-radius: 6px;
+      font-size: 15px; transition: background 0.2s ease; display: inline-flex; align-items: center;
+    }
+    .btn-icon:hover { background: #f0f6ff; }
+    .btn-icon.danger:hover { background: #fff5f5; }
+
+    /* TOOLBAR */
+    .section-toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+    .section-toolbar h2 { font-size: 18px; font-weight: 700; color: var(--color-dark); }
+    .toolbar-search { flex: 1; min-width: 180px; max-width: 280px; border: 1.5px solid var(--color-border); border-radius: 8px; padding: 9px 14px; font-family: var(--font-body); font-size: 14px; }
+    .toolbar-select { border: 1.5px solid var(--color-border); border-radius: 8px; padding: 9px 14px; font-family: var(--font-body); font-size: 14px; background: #fff; cursor: pointer; }
+
+    /* PAGINATION */
+    .pagination { display: flex; align-items: center; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+    .pagination button {
+      background: #fff; border: 1.5px solid var(--color-border); border-radius: 8px;
+      padding: 6px 14px; font-family: var(--font-body); font-size: 13px; cursor: pointer; transition: background 0.2s ease;
+    }
+    .pagination button:hover:not(:disabled) { background: var(--color-primary-light); }
+    .pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
+    .pagination span { font-size: 13px; color: var(--color-grey); }
+
+    /* SLIDE PANEL */
+    .panel-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 900; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+    .panel-overlay.open { opacity: 1; pointer-events: all; }
+    .slide-panel {
+      position: fixed; right: 0; top: 0; width: 420px; height: 100vh; background: #fff;
+      z-index: 1000; padding: 32px 24px; overflow-y: auto;
+      transform: translateX(100%); transition: transform 0.3s ease; box-shadow: -4px 0 24px rgba(0,0,0,0.12);
+    }
+    .slide-panel.open { transform: translateX(0); }
+    .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--color-border); }
+    .panel-header h3 { font-family: var(--font-heading); font-size: 22px; color: var(--color-dark); }
+    .btn-close-panel { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--color-grey); line-height: 1; padding: 4px; border-radius: 6px; transition: background 0.2s ease; }
+    .btn-close-panel:hover { background: #f5f7fa; color: var(--color-dark); }
+
+    /* TOAST */
+    #toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+    .toast {
+      background: #fff; border-radius: 10px; padding: 14px 18px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.12); border-left: 4px solid var(--color-primary);
+      display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 500;
+      color: var(--color-dark); min-width: 260px; max-width: 380px; pointer-events: all;
+      animation: toastIn 0.3s ease forwards; cursor: pointer;
+    }
+    .toast.success { border-left-color: var(--color-green); }
+    .toast.error   { border-left-color: var(--color-red); }
+    .toast.info    { border-left-color: var(--color-primary); }
+    .toast.warning { border-left-color: var(--color-orange); }
+    .toast-icon { font-size: 16px; flex-shrink: 0; }
+    .toast.exiting { animation: toastOut 0.3s ease forwards; }
+    @keyframes toastIn  { from { opacity: 0; transform: translateX(60px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes toastOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(60px); } }
+
+    /* MODAL */
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1100; display: flex; align-items: center; justify-content: center; padding: 24px; }
+    .modal-box { background: #fff; border-radius: 16px; padding: 32px; width: 100%; max-width: 640px; max-height: 80vh; overflow-y: auto; box-shadow: 0 16px 48px rgba(0,0,0,0.2); }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--color-border); }
+    .modal-header h3 { font-family: var(--font-heading); font-size: 20px; color: var(--color-dark); }
+
+    /* FILTER TABS */
+    .filter-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+    .filter-tab {
+      padding: 7px 16px; border-radius: 100px; border: 1.5px solid var(--color-border); background: #fff;
+      font-family: var(--font-body); font-size: 13px; font-weight: 500; cursor: pointer;
+      transition: all 0.2s ease; color: var(--color-grey);
+    }
+    .filter-tab:hover { border-color: var(--color-primary); color: var(--color-primary); }
+    .filter-tab.active { background: var(--color-primary); border-color: var(--color-primary); color: #fff; font-weight: 600; }
+
+    /* ORDER DETAIL */
+    .order-detail-row td { background: var(--color-primary-light); padding: 20px 16px; }
+    .order-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .order-detail-group h4 { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-grey); margin-bottom: 4px; }
+    .order-detail-group p { font-size: 14px; color: var(--color-dark); }
+    .order-items-list { background: #fff; border-radius: 8px; padding: 12px 16px; margin-bottom: 12px; }
+    .order-item-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 13px; border-bottom: 1px solid var(--color-border); }
+    .order-item-row:last-child { border-bottom: none; }
+    .status-select { padding: 6px 12px; border-radius: 8px; border: 1.5px solid var(--color-border); font-family: var(--font-body); font-size: 13px; background: #fff; cursor: pointer; }
+
+    /* CUSTOMER DETAIL */
+    .customer-detail-row td { background: var(--color-primary-light); padding: 16px; }
+
+    /* EMPTY STATE */
+    .empty-state { text-align: center; padding: 60px 20px; color: var(--color-grey); }
+    .empty-state .empty-icon { font-size: 40px; margin-bottom: 12px; }
+    .empty-state p { font-size: 15px; }
+
+    /* SETTINGS */
+    .settings-card { background: #fff; border-radius: 12px; padding: 32px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); max-width: 560px; }
+    .settings-card h3 { font-family: var(--font-heading); font-size: 20px; margin-bottom: 24px; color: var(--color-dark); }
+    .settings-divider { height: 1px; background: var(--color-border); margin: 28px 0; }
+
+    /* LOW STOCK */
+    .low-stock-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--color-border); font-size: 14px; }
+    .low-stock-item:last-child { border-bottom: none; }
+
+    /* SPINNER */
+    .spinner { display: inline-block; width: 20px; height: 20px; border: 2.5px solid var(--color-border); border-top-color: var(--color-primary); border-radius: 50%; animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-row td { text-align: center; padding: 40px; }
+
+    /* IMPORT ITEMS */
+    .import-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; border: 1.5px solid var(--color-border); margin-bottom: 8px; font-size: 13px; cursor: pointer; transition: background 0.2s ease, border-color 0.2s ease; }
+    .import-item:hover { background: var(--color-primary-light); border-color: var(--color-primary); }
+    .import-item input[type="checkbox"] { cursor: pointer; accent-color: var(--color-primary); width: 16px; height: 16px; flex-shrink: 0; }
+    .import-item-name { font-weight: 600; color: var(--color-dark); }
+    .import-item-sub { color: var(--color-grey); margin-top: 2px; }
+    .select-all-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; font-size: 13px; color: var(--color-grey); cursor: pointer; }
+
+    /* MOBILE */
+    .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 90; }
+    .sidebar-overlay.open { display: block; }
+    @media (max-width: 768px) {
+      .hamburger { display: flex; }
+      .sidebar { position: fixed; left: -244px; top: 0; z-index: 200; transition: left 0.3s ease; }
+      .sidebar.mobile-open { left: 0; }
+      .dashboard-panels { grid-template-columns: 1fr; }
+      .stats-grid { gap: 12px; }
+      .stat-card { min-width: 140px; padding: 16px; }
+      .content-area { padding: 16px; }
+      .topbar { padding: 12px 16px; }
+      .slide-panel { width: 100%; }
+      .order-detail-grid { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
-<body class="admin-body">
+<body>
 
-  <!-- ========================================================
-       ACCESS DENIED OVERLAY (hidden until auth check fails)
-       ======================================================== -->
-  <div class="admin-access-denied" id="admin-access-denied" hidden>
-    <div class="admin-access-denied__card">
-      <span style="font-size:56px;">🔒</span>
-      <h1>Access Denied</h1>
-      <p>Your account is not authorised to access the admin dashboard.<br>Please contact the superadmin.</p>
-      <a href="admin-login.html" class="btn btn--primary" style="margin-top:24px;">Back to Login</a>
+<div class="admin-shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <span class="sidebar-brand-name">AZZURRA</span>
+      <span class="sidebar-brand-tag">Admin Portal</span>
+      <span class="sidebar-user-email" id="sidebar-user-email">Loading&hellip;</span>
     </div>
-  </div>
+    <nav class="sidebar-nav">
+      <button class="sidebar-link active" data-section="dashboard"><span class="nav-icon">&#128202;</span> Dashboard</button>
+      <button class="sidebar-link" data-section="products"><span class="nav-icon">&#129516;</span> Products</button>
+      <button class="sidebar-link" data-section="orders"><span class="nav-icon">&#128230;</span> Orders</button>
+      <button class="sidebar-link" data-section="customers"><span class="nav-icon">&#128101;</span> Customers</button>
+      <button class="sidebar-link" data-section="settings"><span class="nav-icon">&#9881;&#65039;</span> Settings</button>
+    </nav>
+    <div class="sidebar-bottom">
+      <button class="btn-signout" id="btn-signout"><span>&#128682;</span> Sign Out</button>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
-  <!-- ========================================================
-       LOADING SCREEN (shown while auth is being verified)
-       ======================================================== -->
-  <div class="admin-loading-screen" id="admin-loading-screen">
-    <div class="admin-loading-spinner"></div>
-    <p>Verifying access…</p>
-  </div>
-
-  <!-- ========================================================
-       ADMIN SHELL (shown only after auth passes)
-       ======================================================== -->
-  <div class="admin-shell" id="admin-shell" hidden>
-
-    <!-- ---- SIDEBAR ---- -->
-    <aside class="admin-sidebar" id="admin-sidebar" aria-label="Admin navigation">
-      <div class="admin-sidebar__brand">
-        <span class="admin-sidebar__logo">AZZURRA</span>
-        <span class="admin-sidebar__tag">Admin Portal</span>
+  <!-- MAIN -->
+  <div class="main-content">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+          <span></span><span></span><span></span>
+        </button>
+        <h1 class="topbar-title" id="topbar-title">Dashboard</h1>
       </div>
-
-      <nav class="admin-nav" aria-label="Sections">
-        <a href="#overview"  class="admin-nav__link active" data-section="overview"  id="nav-overview">
-          <span class="admin-nav__icon" aria-hidden="true">📊</span> Overview
-        </a>
-        <a href="#orders"    class="admin-nav__link" data-section="orders"    id="nav-orders">
-          <span class="admin-nav__icon" aria-hidden="true">📦</span> Orders
-          <span class="admin-nav__badge" id="pending-badge" hidden></span>
-        </a>
-        <a href="#products"  class="admin-nav__link" data-section="products"  id="nav-products">
-          <span class="admin-nav__icon" aria-hidden="true">🧬</span> Products
-        </a>
-        <a href="#customers" class="admin-nav__link" data-section="customers" id="nav-customers">
-          <span class="admin-nav__icon" aria-hidden="true">👥</span> Customers
-        </a>
-        <a href="#payments"  class="admin-nav__link" data-section="payments"  id="nav-payments">
-          <span class="admin-nav__icon" aria-hidden="true">💳</span> Payments
-        </a>
-        <a href="#settings"  class="admin-nav__link" data-section="settings"  id="nav-settings">
-          <span class="admin-nav__icon" aria-hidden="true">⚙️</span> Settings
-        </a>
-      </nav>
-
-      <div class="admin-sidebar__footer">
-        <div class="admin-user-info" id="admin-user-info">
-          <div class="admin-user-info__avatar" id="admin-avatar">A</div>
-          <div>
-            <div class="admin-user-info__email" id="admin-email-display">Loading…</div>
-            <div class="admin-user-info__role"  id="admin-role-display">Admin</div>
-          </div>
-        </div>
-        <button class="admin-logout-btn" id="admin-logout-btn" title="Sign out">⏏</button>
+      <div class="topbar-right">
+        <span class="topbar-clock" id="topbar-clock"></span>
       </div>
-    </aside>
+    </div>
 
-    <!-- ---- MAIN CONTENT ---- -->
-    <main class="admin-main" id="admin-main" role="main">
+    <div class="content-area">
 
-      <!-- Top bar -->
-      <header class="admin-topbar">
-        <div>
-          <h1 class="admin-topbar__title" id="section-title">Overview</h1>
-          <p class="admin-topbar__date" id="topbar-date"></p>
-        </div>
-        <div class="admin-topbar__actions">
-          <a href="productss.html" target="_blank" class="admin-view-site-btn">View Site ↗</a>
-        </div>
-      </header>
-
-      <!-- ====================================================
-           SECTION: OVERVIEW
-           ==================================================== -->
-      <section class="admin-section" id="section-overview" data-label="Overview">
-
-        <!-- KPI Cards -->
-        <div class="kpi-grid" id="kpi-grid">
-          <div class="kpi-card">
-            <div class="kpi-card__icon">💰</div>
-            <div class="kpi-card__value" id="kpi-revenue">—</div>
-            <div class="kpi-card__label">Revenue This Month</div>
-            <div class="kpi-card__delta" id="kpi-revenue-delta"></div>
+      <!-- SECTION: DASHBOARD -->
+      <section class="admin-section active" id="section-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span class="stat-number" id="stat-products">&mdash;</span>
+            <span class="stat-label">Total Products</span>
           </div>
-          <div class="kpi-card">
-            <div class="kpi-card__icon">📦</div>
-            <div class="kpi-card__value" id="kpi-orders">—</div>
-            <div class="kpi-card__label">Orders This Month</div>
+          <div class="stat-card green">
+            <span class="stat-number" id="stat-orders">&mdash;</span>
+            <span class="stat-label">Total Orders</span>
           </div>
-          <div class="kpi-card">
-            <div class="kpi-card__icon">👥</div>
-            <div class="kpi-card__value" id="kpi-customers">—</div>
-            <div class="kpi-card__label">New Customers</div>
+          <div class="stat-card purple">
+            <span class="stat-number" id="stat-customers">&mdash;</span>
+            <span class="stat-label">Customers</span>
           </div>
-          <div class="kpi-card">
-            <div class="kpi-card__icon">🏆</div>
-            <div class="kpi-card__value" id="kpi-top-product">—</div>
-            <div class="kpi-card__label">Top Product</div>
+          <div class="stat-card red">
+            <span class="stat-number" id="stat-outofstock">&mdash;</span>
+            <span class="stat-label">Out of Stock</span>
           </div>
         </div>
-
-        <!-- Charts row -->
-        <div class="charts-row">
-          <div class="chart-card chart-card--wide">
-            <h3 class="chart-card__title">Daily Sales — This Month</h3>
-            <canvas id="bar-chart" class="admin-chart" aria-label="Daily sales bar chart"></canvas>
+        <div class="dashboard-panels">
+          <div class="panel-card">
+            <div class="panel-title">Recent Orders</div>
+            <div id="recent-orders-container"><div style="text-align:center;padding:24px;"><div class="spinner"></div></div></div>
           </div>
-          <div class="chart-card">
-            <h3 class="chart-card__title">Revenue by Category</h3>
-            <canvas id="donut-chart" class="admin-chart admin-chart--donut" aria-label="Revenue by category donut chart"></canvas>
-            <div class="donut-legend" id="donut-legend"></div>
+          <div class="panel-card">
+            <div class="panel-title">Out of Stock Products</div>
+            <div id="low-stock-container"><div style="text-align:center;padding:24px;"><div class="spinner"></div></div></div>
           </div>
         </div>
-
       </section>
 
-      <!-- ====================================================
-           SECTION: ORDERS
-           ==================================================== -->
-      <section class="admin-section" id="section-orders" data-label="Orders" hidden>
-        <div class="admin-section-toolbar">
-          <div class="admin-search-wrap">
-            <input class="admin-search" type="search" id="orders-search" placeholder="Search by order ID, customer…" aria-label="Search orders" />
-          </div>
-          <select class="admin-filter-select" id="orders-status-filter" aria-label="Filter by status">
-            <option value="">All Statuses</option>
-            <option value="pending">Pending</option>
-            <option value="paid">Paid</option>
-            <option value="processing">Processing</option>
-            <option value="shipped">Shipped</option>
-            <option value="delivered">Delivered</option>
-            <option value="cancelled">Cancelled</option>
+      <!-- SECTION: PRODUCTS -->
+      <section class="admin-section" id="section-products">
+        <div class="section-toolbar">
+          <h2>Products <span id="products-count" style="font-size:14px;font-weight:400;color:var(--color-grey);"></span></h2>
+          <input type="text" class="toolbar-search" id="products-search" placeholder="Search products&hellip;" />
+          <select class="toolbar-select" id="products-series-filter">
+            <option value="">All Series</option>
+            <option value="Essential">Essential</option>
+            <option value="Vital">Vital</option>
+            <option value="Max">Max</option>
+            <option value="Provit">Provit</option>
+            <option value="Lifeline">Lifeline</option>
+            <option value="Oral">Oral</option>
           </select>
+          <button class="btn-secondary" id="btn-import-cloudinary">&#9729; Import from Cloudinary</button>
+          <button class="btn-primary" id="btn-add-product">+ Add New Product</button>
         </div>
-
-        <div class="admin-table-wrap">
-          <table class="admin-table" id="orders-table" aria-label="Orders table">
+        <div class="table-wrapper">
+          <table>
             <thead>
               <tr>
-                <th>Order ID</th>
-                <th>Customer</th>
-                <th>Date</th>
-                <th>Total</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="orders-tbody">
-              <tr><td colspan="6" class="table-loading">Loading orders…</td></tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Order Detail Side Panel -->
-        <div class="side-panel" id="order-panel" role="dialog" aria-label="Order details" hidden>
-          <div class="side-panel__header">
-            <h2 class="side-panel__title">Order Details</h2>
-            <button class="side-panel__close" id="order-panel-close" aria-label="Close panel">×</button>
-          </div>
-          <div class="side-panel__body" id="order-panel-body">
-            <!-- Populated by admin.js -->
-          </div>
-        </div>
-        <div class="side-panel-overlay" id="order-panel-overlay"></div>
-      </section>
-
-      <!-- ====================================================
-           SECTION: PRODUCTS
-           ==================================================== -->
-      <section class="admin-section" id="section-products" data-label="Products" hidden>
-        <div class="admin-section-toolbar">
-          <input class="admin-search" type="search" id="products-search" placeholder="Search products…" aria-label="Search products" />
-          <button class="btn btn--primary admin-add-btn" id="add-product-btn">+ Add Product</button>
-        </div>
-
-        <div class="admin-table-wrap">
-          <table class="admin-table" id="products-table" aria-label="Products table">
-            <thead>
-              <tr>
-                <th>Image</th>
-                <th>Name</th>
-                <th>Category</th>
-                <th>Price</th>
-                <th>Stock</th>
-                <th>New</th>
-                <th>Featured</th>
-                <th>Actions</th>
+                <th>#</th><th>Image</th><th>Name</th><th>Series</th>
+                <th>Price (&#8377;)</th><th>In Stock</th><th>Featured</th><th>Actions</th>
               </tr>
             </thead>
             <tbody id="products-tbody">
-              <tr><td colspan="8" class="table-loading">Loading products…</td></tr>
+              <tr class="loading-row"><td colspan="8"><div class="spinner"></div></td></tr>
             </tbody>
           </table>
         </div>
+        <div class="pagination" id="products-pagination"></div>
+      </section>
 
-        <!-- Add / Edit Product Modal -->
-        <div class="admin-modal-overlay" id="product-modal-overlay" hidden>
-          <div class="admin-modal" id="product-modal" role="dialog" aria-labelledby="product-modal-title" aria-modal="true">
-            <div class="admin-modal__header">
-              <h2 class="admin-modal__title" id="product-modal-title">Add Product</h2>
-              <button class="admin-modal__close" id="product-modal-close">×</button>
-            </div>
-            <form id="product-form" class="admin-modal__body" novalidate>
-              <input type="hidden" id="pf-id" />
-
-              <div class="form-row">
-                <div class="form-group">
-                  <label class="form-label" for="pf-name">Product Name *</label>
-                  <input class="form-input" type="text" id="pf-name" required placeholder="Luminary Molecular Serum" />
-                </div>
-                <div class="form-group">
-                  <label class="form-label" for="pf-category">Category *</label>
-                  <select class="form-input" id="pf-category" required>
-                    <option value="">Select…</option>
-                    <option value="molecular_serums">Molecular Serums</option>
-                    <option value="cellular_kits">Cellular Kits</option>
-                    <option value="bio_devices">Bio-Devices</option>
-                    <option value="advanced_supplements">Advanced Supplements</option>
-                  </select>
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Need Tags</label>
-                <div class="admin-checkbox-row">
-                  <label><input type="checkbox" name="need_tag" value="longevity" /> Longevity</label>
-                  <label><input type="checkbox" name="need_tag" value="cognition" /> Cognition</label>
-                  <label><input type="checkbox" name="need_tag" value="recovery"  /> Recovery</label>
-                  <label><input type="checkbox" name="need_tag" value="radiance"  /> Radiance</label>
-                </div>
-              </div>
-
-              <div class="form-row">
-                <div class="form-group">
-                  <label class="form-label" for="pf-price">Price (₹) *</label>
-                  <input class="form-input" type="number" id="pf-price" required min="0" step="0.01" placeholder="2999" />
-                </div>
-                <div class="form-group">
-                  <label class="form-label" for="pf-compare-price">Compare Price (₹)</label>
-                  <input class="form-input" type="number" id="pf-compare-price" min="0" step="0.01" placeholder="3499" />
-                </div>
-              </div>
-
-              <div class="form-row">
-                <div class="form-group">
-                  <label class="form-label" for="pf-rating">Rating (0–5)</label>
-                  <input class="form-input" type="number" id="pf-rating" min="0" max="5" step="0.1" placeholder="4.5" />
-                </div>
-                <div class="form-group">
-                  <label class="form-label" for="pf-review-count">Review Count</label>
-                  <input class="form-input" type="number" id="pf-review-count" min="0" placeholder="48" />
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label" for="pf-stock">Stock Quantity *</label>
-                <input class="form-input" type="number" id="pf-stock" required min="0" placeholder="100" />
-              </div>
-
-              <div class="form-group">
-                <label class="form-label" for="pf-image-url">
-                  Image Path (relative to site root)
-                  <span class="form-hint">e.g. ./assets/images/luminary-serum.jpg</span>
-                </label>
-                <input class="form-input" type="text" id="pf-image-url" placeholder="./assets/images/product-name.jpg" />
-              </div>
-
-              <div class="form-group">
-                <label class="form-label" for="pf-description">Description</label>
-                <textarea class="form-textarea" id="pf-description" rows="3" placeholder="Brief product description…"></textarea>
-              </div>
-
-              <div class="admin-toggle-row">
-                <label class="admin-toggle-label" for="pf-new-release">New Release</label>
-                <label class="admin-toggle">
-                  <input type="checkbox" id="pf-new-release" role="switch" />
-                  <span class="admin-toggle__track"></span>
-                </label>
-              </div>
-
-              <div class="admin-toggle-row">
-                <label class="admin-toggle-label" for="pf-featured">Featured on Homepage</label>
-                <label class="admin-toggle">
-                  <input type="checkbox" id="pf-featured" role="switch" />
-                  <span class="admin-toggle__track"></span>
-                </label>
-              </div>
-
-              <div class="admin-modal__footer">
-                <button type="button" class="btn btn--outline" id="product-cancel-btn">Cancel</button>
-                <button type="submit" class="btn btn--primary" id="product-save-btn">Save Product</button>
-              </div>
-            </form>
-          </div>
+      <!-- SECTION: ORDERS -->
+      <section class="admin-section" id="section-orders">
+        <div class="section-toolbar">
+          <h2>Orders</h2>
+        </div>
+        <div class="filter-tabs" id="orders-filter-tabs">
+          <button class="filter-tab active" data-status="all">All</button>
+          <button class="filter-tab" data-status="pending">Pending</button>
+          <button class="filter-tab" data-status="confirmed">Confirmed</button>
+          <button class="filter-tab" data-status="shipped">Shipped</button>
+          <button class="filter-tab" data-status="delivered">Delivered</button>
+          <button class="filter-tab" data-status="cancelled">Cancelled</button>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Order ID</th><th>Customer</th><th>Items</th>
+                <th>Total (&#8377;)</th><th>Status</th><th>Date</th><th>View</th>
+              </tr>
+            </thead>
+            <tbody id="orders-tbody">
+              <tr class="loading-row"><td colspan="7"><div class="spinner"></div></td></tr>
+            </tbody>
+          </table>
         </div>
       </section>
 
-      <!-- ====================================================
-           SECTION: CUSTOMERS
-           ==================================================== -->
-      <section class="admin-section" id="section-customers" data-label="Customers" hidden>
-        <div class="admin-section-toolbar">
-          <input class="admin-search" type="search" id="customers-search" placeholder="Search by name, email…" aria-label="Search customers" />
-        </div>
-        <div class="admin-table-wrap">
-          <table class="admin-table" aria-label="Customers table">
+      <!-- SECTION: CUSTOMERS -->
+      <section class="admin-section" id="section-customers">
+        <div class="section-toolbar"><h2>Customers</h2></div>
+        <div class="table-wrapper">
+          <table>
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Orders</th>
-                <th>Lifetime Value</th>
-                <th>Last Order</th>
-                <th>Joined</th>
+                <th>Name</th><th>Email</th><th>Phone</th><th>Total Orders</th><th>Last Activity</th>
               </tr>
             </thead>
             <tbody id="customers-tbody">
-              <tr><td colspan="7" class="table-loading">Loading customers…</td></tr>
+              <tr class="loading-row"><td colspan="5"><div class="spinner"></div></td></tr>
             </tbody>
           </table>
         </div>
       </section>
 
-      <!-- ====================================================
-           SECTION: PAYMENTS
-           ==================================================== -->
-      <section class="admin-section" id="section-payments" data-label="Payments" hidden>
-        <div class="admin-section-toolbar">
-          <input class="admin-search" type="search" id="payments-search" placeholder="Search by payment ID, order…" aria-label="Search payments" />
-          <select class="admin-filter-select" id="payments-status-filter" aria-label="Filter by payment status">
-            <option value="">All Statuses</option>
-            <option value="initiated">Initiated</option>
-            <option value="success">Success</option>
-            <option value="failed">Failed</option>
-            <option value="refunded">Refunded</option>
-          </select>
-        </div>
-        <div class="admin-table-wrap">
-          <table class="admin-table" aria-label="Payments table">
-            <thead>
-              <tr>
-                <th>Payment ID</th>
-                <th>Order ID</th>
-                <th>Gateway</th>
-                <th>Amount</th>
-                <th>Status</th>
-                <th>Date</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="payments-tbody">
-              <tr><td colspan="7" class="table-loading">Loading payments…</td></tr>
-            </tbody>
-          </table>
+      <!-- SECTION: SETTINGS -->
+      <section class="admin-section" id="section-settings">
+        <div class="settings-card">
+          <h3>Site Settings</h3>
+          <div class="form-group">
+            <label class="form-label">Site Name</label>
+            <input type="text" id="setting-site-name" placeholder="Azzurra" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Contact Phone</label>
+            <input type="text" id="setting-phone" placeholder="+91 98 71 648 649" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Contact Email</label>
+            <input type="email" id="setting-email" placeholder="info@azzurrapharmaconutrition.com" />
+          </div>
+          <button class="btn-primary" id="btn-save-settings" style="margin-top:8px;">Save Settings</button>
+          <div class="settings-divider"></div>
+          <h3 style="font-size:17px;margin-bottom:16px;">Danger Zone</h3>
+          <p style="font-size:14px;color:var(--color-grey);margin-bottom:16px;">Sign out all admin sessions globally.</p>
+          <button class="btn-danger" id="btn-clear-sessions">&#128274; Clear All Sessions</button>
         </div>
       </section>
 
-      <!-- ====================================================
-           SECTION: SETTINGS
-           ==================================================== -->
-      <section class="admin-section" id="section-settings" data-label="Settings" hidden>
-        <div class="settings-grid">
+    </div>
+  </div>
+</div>
 
-          <!-- Payment Gateway -->
-          <div class="settings-card">
-            <h3 class="settings-card__title">Payment Gateway</h3>
-            <p class="settings-card__desc">Choose the active payment gateway for the checkout page.</p>
-            <div class="settings-gateway-opts">
-              <label class="settings-gateway-opt" id="gw-razorpay-label">
-                <input type="radio" name="gateway" value="razorpay" id="gw-razorpay" checked />
-                <span>💳 Razorpay</span>
-                <span class="settings-gateway-opt__badge">Recommended</span>
-              </label>
-              <label class="settings-gateway-opt" id="gw-stripe-label">
-                <input type="radio" name="gateway" value="stripe" id="gw-stripe" />
-                <span>🌐 Stripe</span>
-              </label>
-            </div>
-            <button class="btn btn--primary" id="save-gateway-btn" style="margin-top:20px;">Save Gateway</button>
-          </div>
+<!-- SLIDE-IN PANEL -->
+<div class="panel-overlay" id="panel-overlay"></div>
+<div class="slide-panel" id="product-panel">
+  <div class="panel-header">
+    <h3 id="panel-title">Add Product</h3>
+    <button class="btn-close-panel" id="btn-close-panel">&times;</button>
+  </div>
+  <form id="product-form" novalidate>
+    <input type="hidden" id="form-product-id" />
+    <div class="form-group">
+      <label class="form-label">Product Name <span class="req">*</span></label>
+      <input type="text" id="form-name" required placeholder="e.g. Essential Chocolate 350g" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Series</label>
+      <select id="form-series">
+        <option value="">&#8212; Select Series &#8212;</option>
+        <option value="Essential">Essential</option>
+        <option value="Vital">Vital</option>
+        <option value="Max">Max</option>
+        <option value="Provit">Provit</option>
+        <option value="Lifeline">Lifeline</option>
+        <option value="Oral">Oral</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Flavour</label>
+      <input type="text" id="form-flavour" placeholder="e.g. Chocolate, Vanilla" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Price in &#8377; <span class="req">*</span></label>
+      <input type="number" id="form-price" required min="0" placeholder="e.g. 1299" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Net Weight</label>
+      <input type="text" id="form-weight" placeholder="e.g. 400g, 1kg" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Short Description</label>
+      <textarea id="form-short-desc" rows="2" placeholder="Brief product description"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Tags <small style="font-weight:400;color:var(--color-grey);">(comma-separated)</small></label>
+      <input type="text" id="form-tags" placeholder="protein, clinical, renal" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Key Benefits <small style="font-weight:400;color:var(--color-grey);">(one per line)</small></label>
+      <textarea id="form-benefits" rows="4" placeholder="Supports muscle recovery&#10;Boosts immunity"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Ingredients</label>
+      <textarea id="form-ingredients" rows="3" placeholder="Whey protein, maltodextrin, vitamins&hellip;"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">How to Use</label>
+      <textarea id="form-how-to-use" rows="3" placeholder="Mix 2 scoops with 200ml water&hellip;"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Nutrition Facts</label>
+      <textarea id="form-nutrition" rows="4" placeholder="Per 100g: Protein 70g, Carbs 8g&hellip;"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Warnings</label>
+      <textarea id="form-warnings" rows="2" placeholder="Keep out of reach of children&hellip;"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Image Folder</label>
+      <input type="text" id="form-image-folder" placeholder="ESENTIAL_SERIES/ESSENTIAL_BLCD_CHOCOLATE_350" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Cloudinary Image URLs <small style="font-weight:400;color:var(--color-grey);">(JSON array)</small></label>
+      <textarea id="form-images" rows="4" placeholder='["https://res.cloudinary.com/...webp"]'></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label" style="display:flex;align-items:center;gap:12px;">
+        <span>In Stock</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="form-in-stock" checked />
+          <span class="toggle-slider"></span>
+        </label>
+      </label>
+    </div>
+    <div class="form-group">
+      <label class="form-label" style="display:flex;align-items:center;gap:12px;">
+        <span>Is Featured</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="form-featured" />
+          <span class="toggle-slider"></span>
+        </label>
+      </label>
+    </div>
+    <button type="submit" class="btn-primary full-width" id="btn-save-product">Save Product</button>
+    <button type="button" class="btn-secondary full-width" id="btn-cancel-panel">Cancel</button>
+  </form>
+</div>
 
-          <!-- Site Announcement Banner -->
-          <div class="settings-card">
-            <h3 class="settings-card__title">Announcement Banner</h3>
-            <p class="settings-card__desc">Show a site-wide announcement at the top of every page.</p>
-            <div class="admin-toggle-row" style="margin-bottom:16px;">
-              <label class="admin-toggle-label" for="announcement-enabled">Enable Banner</label>
-              <label class="admin-toggle">
-                <input type="checkbox" id="announcement-enabled" role="switch" />
-                <span class="admin-toggle__track"></span>
-              </label>
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="announcement-text">Banner Text</label>
-              <input class="form-input" type="text" id="announcement-text" placeholder="Free shipping on orders above ₹2000" />
-            </div>
-            <button class="btn btn--primary" id="save-announcement-btn" style="margin-top:16px;">Save Banner</button>
-          </div>
+<!-- TOAST CONTAINER -->
+<div id="toast-container"></div>
+<!-- IMPORT MODAL CONTAINER -->
+<div id="import-modal-container"></div>
 
-          <!-- Featured Products -->
-          <div class="settings-card settings-card--wide">
-            <h3 class="settings-card__title">Featured Products (Homepage)</h3>
-            <p class="settings-card__desc">Select up to 3 products to feature on the homepage.</p>
-            <div id="featured-products-list" class="featured-products-picker">
-              <!-- Populated by admin.js -->
-            </div>
-            <button class="btn btn--primary" id="save-featured-btn" style="margin-top:16px;">Save Featured Products</button>
-          </div>
+<!-- MAIN APP SCRIPT -->
+<script type="module">
 
-        </div>
+/* Wait for supabase to be available on window (set by auth guard) */
+function waitForSupabase(cb) {
+  if (window.supabase) { cb(window.supabase); return; }
+  const t = setInterval(() => { if (window.supabase) { clearInterval(t); cb(window.supabase); } }, 50);
+}
 
-        <!-- Toast notification -->
-        <div class="admin-toast" id="settings-toast" role="status" aria-live="polite"></div>
-      </section>
+waitForSupabase(async (sb) => {
 
-    </main><!-- /admin-main -->
-  </div><!-- /admin-shell -->
+/* ── CLOCK ── */
+const clockEl = document.getElementById('topbar-clock');
+function updateClock() {
+  clockEl.textContent = new Date().toLocaleString('en-IN', {
+    weekday:'short', day:'2-digit', month:'short', year:'numeric',
+    hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:true
+  });
+}
+updateClock();
+setInterval(updateClock, 1000);
 
-  <script src="config.js"></script>
-  <script src="assets/js/admin.js"></script>
+/* ── TOAST ── */
+window.showToast = function(message, type = 'info', autoDismiss = true) {
+  const icons = { success: '&#10003;', error: '&#10007;', info: '&#9432;', warning: '&#9888;' };
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = 'toast ' + type;
+  toast.innerHTML = '<span class="toast-icon">' + (icons[type] || icons.info) + '</span><span>' + message + '</span>';
+  container.appendChild(toast);
+  const dismiss = () => {
+    toast.classList.add('exiting');
+    toast.addEventListener('animationend', () => toast.remove(), { once: true });
+  };
+  toast.addEventListener('click', dismiss);
+  if (autoDismiss && type !== 'error') setTimeout(dismiss, 3000);
+};
+
+/* ── NAVIGATION ── */
+const sectionLoaded = {};
+const sectionTitles = { dashboard:'Dashboard', products:'Products', orders:'Orders', customers:'Customers', settings:'Settings' };
+
+window.showSection = function(name) {
+  document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+  const sec  = document.getElementById('section-' + name);
+  const link = document.querySelector('.sidebar-link[data-section="' + name + '"]');
+  if (sec)  sec.classList.add('active');
+  if (link) link.classList.add('active');
+  document.getElementById('topbar-title').textContent = sectionTitles[name] || name;
+  if (!sectionLoaded[name]) {
+    sectionLoaded[name] = true;
+    if (name === 'dashboard') loadDashboard();
+    if (name === 'products')  loadProducts();
+    if (name === 'orders')    loadOrders();
+    if (name === 'customers') loadCustomers();
+    if (name === 'settings')  loadSettings();
+  }
+  closeMobileSidebar();
+};
+
+document.querySelectorAll('.sidebar-link').forEach(link => {
+  link.addEventListener('click', () => showSection(link.dataset.section));
+});
+
+/* ── MOBILE ── */
+const hamburger = document.getElementById('hamburger');
+const sidebarEl = document.getElementById('sidebar');
+const sidebarOverlay = document.getElementById('sidebar-overlay');
+hamburger.addEventListener('click', () => { sidebarEl.classList.toggle('mobile-open'); sidebarOverlay.classList.toggle('open'); });
+sidebarOverlay.addEventListener('click', closeMobileSidebar);
+function closeMobileSidebar() { sidebarEl.classList.remove('mobile-open'); sidebarOverlay.classList.remove('open'); }
+
+/* ── SIGN OUT ── */
+document.getElementById('btn-signout').addEventListener('click', async () => {
+  await sb.auth.signOut();
+  window.location.replace('admin-login.html');
+});
+
+/* ── HELPERS ── */
+function esc(str) {
+  return String(str == null ? '' : str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+}
+function fmtDate(ts) {
+  if (!ts) return '&mdash;';
+  return new Date(ts).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+}
+function statusBadge(status) {
+  const s = (status || 'pending').toLowerCase();
+  const cls = { pending:'badge-pending', confirmed:'badge-confirmed', shipped:'badge-shipped', delivered:'badge-delivered', cancelled:'badge-cancelled' }[s] || 'badge-pending';
+  return '<span class="badge ' + cls + '">' + esc(s) + '</span>';
+}
+function getFirstImage(imagesField) {
+  if (!imagesField) return null;
+  try {
+    const parsed = typeof imagesField === 'string' ? JSON.parse(imagesField) : imagesField;
+    if (Array.isArray(parsed) && parsed.length) return parsed[0];
+  } catch(_) {}
+  if (typeof imagesField === 'string' && imagesField.startsWith('http')) return imagesField;
+  return null;
+}
+function countItems(items) {
+  try { const a = typeof items === 'string' ? JSON.parse(items) : (items || []); return Array.isArray(a) ? a.length : 0; }
+  catch(_) { return 0; }
+}
+function toTitleCase(str) {
+  return str.replace(/_/g,' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
+/* ── DASHBOARD ── */
+async function loadDashboard() {
+  try {
+    const [
+      { count: pCount }, { count: oCount }, { count: cCount }, { count: oos }
+    ] = await Promise.all([
+      sb.from('products').select('*',{count:'exact',head:true}),
+      sb.from('orders').select('*',{count:'exact',head:true}),
+      sb.from('customers').select('*',{count:'exact',head:true}),
+      sb.from('products').select('*',{count:'exact',head:true}).eq('in_stock',false),
+    ]);
+    document.getElementById('stat-products').textContent   = pCount  ?? 0;
+    document.getElementById('stat-orders').textContent     = oCount  ?? 0;
+    document.getElementById('stat-customers').textContent  = cCount  ?? 0;
+    document.getElementById('stat-outofstock').textContent = oos     ?? 0;
+
+    const { data: recentOrders, error: roe } = await sb.from('orders')
+      .select('id,customer_name,total_amount,created_at,status')
+      .order('created_at',{ascending:false}).limit(5);
+    if (roe) throw roe;
+    renderRecentOrders(recentOrders || []);
+
+    const { data: lowStock, error: lse } = await sb.from('products')
+      .select('id,name,series').eq('in_stock',false).limit(15);
+    if (lse) throw lse;
+    renderLowStock(lowStock || []);
+  } catch(err) {
+    showToast('Dashboard load error: ' + err.message, 'error');
+  }
+}
+
+function renderRecentOrders(orders) {
+  const c = document.getElementById('recent-orders-container');
+  if (!orders.length) { c.innerHTML = '<div class="empty-state"><div class="empty-icon">&#128230;</div><p>No orders yet</p></div>'; return; }
+  c.innerHTML = '<table><thead><tr><th>ID</th><th>Customer</th><th>Amount</th><th>Date</th><th>Status</th></tr></thead><tbody>'
+    + orders.map(o => '<tr><td style="font-size:12px;color:var(--color-grey);">#' + String(o.id).slice(-6) + '</td><td>' + esc(o.customer_name||'&mdash;') + '</td><td>&#8377;' + Number(o.total_amount||0).toLocaleString('en-IN') + '</td><td style="font-size:12px;">' + fmtDate(o.created_at) + '</td><td>' + statusBadge(o.status) + '</td></tr>').join('')
+    + '</tbody></table>';
+}
+
+function renderLowStock(products) {
+  const c = document.getElementById('low-stock-container');
+  if (!products.length) { c.innerHTML = '<div class="empty-state"><div class="empty-icon">&#10003;</div><p>All products in stock</p></div>'; return; }
+  c.innerHTML = products.map(p =>
+    '<div class="low-stock-item"><span class="badge badge-outofstock">Out of Stock</span><span>' + esc(p.name||'&mdash;') + '</span>'
+    + (p.series ? '<span style="font-size:12px;color:var(--color-grey);margin-left:auto;">' + esc(p.series) + '</span>' : '') + '</div>'
+  ).join('');
+}
+
+/* ── PRODUCTS ── */
+let allProducts     = [];
+let filteredProducts = [];
+let productPage     = 1;
+const PER_PAGE      = 20;
+let searchTimer     = null;
+
+async function loadProducts() {
+  document.getElementById('products-tbody').innerHTML = '<tr class="loading-row"><td colspan="8"><div class="spinner"></div></td></tr>';
+  try {
+    const { data, error } = await sb.from('products').select('*').order('created_at',{ascending:false});
+    if (error) throw error;
+    allProducts = data || [];
+    applyFilters();
+  } catch(err) { showToast('Products load error: ' + err.message, 'error'); }
+}
+
+function applyFilters() {
+  const q = document.getElementById('products-search').value.trim().toLowerCase();
+  const s = document.getElementById('products-series-filter').value;
+  filteredProducts = allProducts.filter(p => {
+    return (!q || (p.name||'').toLowerCase().includes(q)) && (!s || (p.series||'') === s);
+  });
+  productPage = 1;
+  renderProducts();
+}
+
+function renderProducts() {
+  const tbody      = document.getElementById('products-tbody');
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / PER_PAGE));
+  const start      = (productPage - 1) * PER_PAGE;
+  const slice      = filteredProducts.slice(start, start + PER_PAGE);
+  document.getElementById('products-count').textContent = '(' + filteredProducts.length + ')';
+
+  if (!slice.length) {
+    tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">&#129516;</div><p>No products found</p></div></td></tr>';
+    document.getElementById('products-pagination').innerHTML = '';
+    return;
+  }
+
+  tbody.innerHTML = slice.map((p, i) => {
+    const imgSrc = getFirstImage(p.images);
+    const thumb  = imgSrc
+      ? '<img src="' + esc(imgSrc) + '" class="prod-thumb" loading="lazy" alt="' + esc(p.name||'') + '" />'
+      : '<div class="prod-thumb-placeholder">&#129516;</div>';
+    return '<tr id="prod-row-' + p.id + '">'
+      + '<td style="color:var(--color-grey);font-size:12px;">' + (start+i+1) + '</td>'
+      + '<td>' + thumb + '</td>'
+      + '<td style="font-weight:600;max-width:200px;word-break:break-word;">' + esc(p.name||'&mdash;') + '</td>'
+      + '<td>' + (p.series ? '<span style="font-size:12px;background:var(--color-primary-light);color:var(--color-primary);padding:3px 8px;border-radius:20px;">' + esc(p.series) + '</span>' : '&mdash;') + '</td>'
+      + '<td>' + (p.price ? '&#8377;' + Number(p.price).toLocaleString('en-IN') : '&mdash;') + '</td>'
+      + '<td><label class="toggle-switch"><input type="checkbox" ' + (p.in_stock?'checked':'') + ' onchange="toggleField(' + p.id + ',\'in_stock\',this.checked)" /><span class="toggle-slider"></span></label></td>'
+      + '<td><label class="toggle-switch"><input type="checkbox" ' + (p.is_featured?'checked':'') + ' onchange="toggleField(' + p.id + ',\'is_featured\',this.checked)" /><span class="toggle-slider"></span></label></td>'
+      + '<td style="white-space:nowrap;"><button class="btn-icon" onclick="openEditPanel(' + p.id + ')" title="Edit">&#9999;&#65039;</button><button class="btn-icon danger" onclick="deleteProduct(' + p.id + ')" title="Delete">&#128465;&#65039;</button></td>'
+      + '</tr>';
+  }).join('');
+
+  const pg = document.getElementById('products-pagination');
+  if (totalPages <= 1) { pg.innerHTML = ''; return; }
+  pg.innerHTML = '<button onclick="changePage(' + (productPage-1) + ')" ' + (productPage===1?'disabled':'') + '>&larr; Prev</button>'
+    + '<span>Page ' + productPage + ' of ' + totalPages + '</span>'
+    + '<button onclick="changePage(' + (productPage+1) + ')" ' + (productPage===totalPages?'disabled':'') + '>Next &rarr;</button>';
+}
+
+window.changePage = function(p) {
+  const total = Math.max(1, Math.ceil(filteredProducts.length / PER_PAGE));
+  if (p < 1 || p > total) return;
+  productPage = p; renderProducts();
+};
+
+window.toggleField = async function(id, field, value) {
+  try {
+    const { error } = await sb.from('products').update({ [field]: value }).eq('id', id);
+    if (error) throw error;
+    const idx = allProducts.findIndex(p => p.id === id);
+    if (idx !== -1) allProducts[idx][field] = value;
+    if (field === 'in_stock') {
+      document.getElementById('stat-outofstock').textContent = allProducts.filter(p => !p.in_stock).length;
+    }
+    showToast('Product updated', 'success');
+  } catch(err) { showToast('Update failed: ' + err.message, 'error'); }
+};
+
+window.deleteProduct = async function(id) {
+  if (!window.confirm('Delete this product? This cannot be undone.')) return;
+  const row = document.getElementById('prod-row-' + id);
+  if (row) row.classList.add('fade-out');
+  try {
+    const { error } = await sb.from('products').delete().eq('id', id);
+    if (error) throw error;
+    allProducts = allProducts.filter(p => p.id !== id);
+    applyFilters();
+    showToast('Product deleted', 'success');
+  } catch(err) {
+    if (row) row.classList.remove('fade-out');
+    showToast('Delete failed: ' + err.message, 'error');
+  }
+};
+
+document.getElementById('products-search').addEventListener('input', () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(applyFilters, 250);
+});
+document.getElementById('products-series-filter').addEventListener('change', applyFilters);
+
+/* ── SLIDE-IN PANEL ── */
+const panelOverlay = document.getElementById('panel-overlay');
+const productPanel = document.getElementById('product-panel');
+const productForm  = document.getElementById('product-form');
+
+function openPanel()  { panelOverlay.classList.add('open'); productPanel.classList.add('open'); document.body.style.overflow = 'hidden'; }
+function closePanel() {
+  panelOverlay.classList.remove('open'); productPanel.classList.remove('open'); document.body.style.overflow = '';
+  productForm.reset(); document.getElementById('form-product-id').value = ''; document.getElementById('panel-title').textContent = 'Add Product';
+}
+
+panelOverlay.addEventListener('click', closePanel);
+document.getElementById('btn-close-panel').addEventListener('click', closePanel);
+document.getElementById('btn-cancel-panel').addEventListener('click', closePanel);
+document.getElementById('btn-add-product').addEventListener('click', () => {
+  document.getElementById('form-in-stock').checked = true;
+  document.getElementById('form-featured').checked = false;
+  openPanel();
+});
+
+window.openEditPanel = function(id) {
+  const p = allProducts.find(x => x.id === id);
+  if (!p) { showToast('Product not found', 'error'); return; }
+  document.getElementById('form-product-id').value  = p.id;
+  document.getElementById('form-name').value         = p.name || '';
+  document.getElementById('form-series').value       = p.series || '';
+  document.getElementById('form-flavour').value      = p.flavour || '';
+  document.getElementById('form-price').value        = p.price || '';
+  document.getElementById('form-weight').value       = p.net_weight || '';
+  document.getElementById('form-short-desc').value   = p.short_description || '';
+  document.getElementById('form-tags').value         = p.tags || '';
+  document.getElementById('form-benefits').value     = p.key_benefits || '';
+  document.getElementById('form-ingredients').value  = p.ingredients || '';
+  document.getElementById('form-how-to-use').value   = p.how_to_use || '';
+  document.getElementById('form-nutrition').value    = p.nutrition_facts || '';
+  document.getElementById('form-warnings').value     = p.warnings || '';
+  document.getElementById('form-image-folder').value = p.image_folder || '';
+  document.getElementById('form-images').value       = p.images || '';
+  document.getElementById('form-in-stock').checked   = !!p.in_stock;
+  document.getElementById('form-featured').checked   = !!p.is_featured;
+  document.getElementById('panel-title').textContent = 'Edit Product';
+  openPanel();
+};
+
+productForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const name  = document.getElementById('form-name').value.trim();
+  const price = document.getElementById('form-price').value.trim();
+  if (!name)  { showToast('Product name is required', 'error'); return; }
+  if (!price) { showToast('Price is required', 'error'); return; }
+  const btn = document.getElementById('btn-save-product');
+  btn.disabled = true; btn.textContent = 'Saving\u2026';
+  const payload = {
+    name, price: parseFloat(price) || 0,
+    series:            document.getElementById('form-series').value || null,
+    flavour:           document.getElementById('form-flavour').value.trim() || null,
+    net_weight:        document.getElementById('form-weight').value.trim() || null,
+    short_description: document.getElementById('form-short-desc').value.trim() || null,
+    tags:              document.getElementById('form-tags').value.trim() || null,
+    key_benefits:      document.getElementById('form-benefits').value.trim() || null,
+    ingredients:       document.getElementById('form-ingredients').value.trim() || null,
+    how_to_use:        document.getElementById('form-how-to-use').value.trim() || null,
+    nutrition_facts:   document.getElementById('form-nutrition').value.trim() || null,
+    warnings:          document.getElementById('form-warnings').value.trim() || null,
+    image_folder:      document.getElementById('form-image-folder').value.trim() || null,
+    images:            document.getElementById('form-images').value.trim() || null,
+    in_stock:          document.getElementById('form-in-stock').checked,
+    is_featured:       document.getElementById('form-featured').checked,
+  };
+  try {
+    const id = document.getElementById('form-product-id').value;
+    let error;
+    if (id) { ({ error } = await sb.from('products').update(payload).eq('id', id)); }
+    else    { ({ error } = await sb.from('products').insert(payload)); }
+    if (error) throw error;
+    closePanel();
+    sectionLoaded['products'] = false;
+    await loadProducts();
+    showToast(id ? '\u2713 Product updated' : '\u2713 Product added', 'success');
+  } catch(err) { showToast('Save failed: ' + err.message, 'error'); }
+  finally { btn.disabled = false; btn.textContent = 'Save Product'; }
+});
+
+/* ── CLOUDINARY IMPORT ── */
+document.getElementById('btn-import-cloudinary').addEventListener('click', async () => {
+  const btn = document.getElementById('btn-import-cloudinary');
+  btn.disabled = true; btn.textContent = 'Loading\u2026';
+  try {
+    const res = await fetch('./cloudinary-products-map.json');
+    if (!res.ok) throw new Error('Could not load cloudinary-products-map.json');
+    const mapData = await res.json();
+    const { data: existing } = await sb.from('products').select('image_folder');
+    const existingFolders = new Set((existing || []).map(p => p.image_folder).filter(Boolean));
+    const newItems = [];
+    for (const [seriesKey, products] of Object.entries(mapData)) {
+      for (const [productKey, urls] of Object.entries(products)) {
+        const folder = seriesKey + '/' + productKey;
+        if (!existingFolders.has(folder)) newItems.push({ seriesKey, productKey, folder, urls });
+      }
+    }
+    showImportModal(newItems);
+  } catch(err) { showToast('Import error: ' + err.message, 'error'); }
+  finally { btn.disabled = false; btn.textContent = '\u2601\uFE0F Import from Cloudinary'; }
+});
+
+function showImportModal(items) {
+  const c = document.getElementById('import-modal-container');
+  if (!items.length) { showToast('All Cloudinary products already imported!', 'info'); return; }
+  const itemsHtml = items.map((item, i) =>
+    '<label class="import-item" for="imp-' + i + '">'
+    + '<input type="checkbox" id="imp-' + i + '" data-idx="' + i + '" checked />'
+    + '<div class="import-item-info"><div class="import-item-name">' + esc(toTitleCase(item.productKey)) + '</div>'
+    + '<div class="import-item-sub">' + esc(item.seriesKey) + ' &middot; ' + item.urls.length + ' image' + (item.urls.length!==1?'s':'') + '</div></div></label>'
+  ).join('');
+  const itemsJson = JSON.stringify(items).replace(/\\/g,'\\\\').replace(/"/g,'&quot;');
+  c.innerHTML = '<div class="modal-backdrop" id="import-modal">'
+    + '<div class="modal-box">'
+    + '<div class="modal-header"><h3>&#9729;&#65039; Import from Cloudinary (' + items.length + ' new)</h3>'
+    + '<button class="btn-close-panel" onclick="document.getElementById(\'import-modal\').remove()">&times;</button></div>'
+    + '<label class="select-all-row"><input type="checkbox" id="imp-sel-all" checked onchange="selAll(this.checked)" /> Select / deselect all</label>'
+    + '<div style="max-height:40vh;overflow-y:auto;margin-bottom:20px;">' + itemsHtml + '</div>'
+    + '<button class="btn-primary full-width" onclick="doImport()">Import Selected</button>'
+    + '<button class="btn-secondary full-width" onclick="document.getElementById(\'import-modal\').remove()">Cancel</button>'
+    + '</div></div>';
+  // store items reference on window for doImport
+  window.__importItems = items;
+}
+
+window.selAll = function(checked) {
+  document.querySelectorAll('#import-modal input[data-idx]').forEach(cb => cb.checked = checked);
+};
+
+window.doImport = async function() {
+  const items = window.__importItems || [];
+  const selected = [];
+  document.querySelectorAll('#import-modal input[data-idx]').forEach(cb => {
+    if (cb.checked) selected.push(items[parseInt(cb.dataset.idx)]);
+  });
+  if (!selected.length) { showToast('No products selected', 'warning'); return; }
+  const btn = document.querySelector('#import-modal .btn-primary');
+  if (btn) { btn.disabled = true; btn.textContent = 'Importing\u2026'; }
+  const seriesMap = {
+    'ESENTIAL_SERIES':'Essential','VITAL_SERIES':'Vital','MAX_SERIES':'Max',
+    'PROVIT_SERIES':'Provit','LIFELINE_SERIES':'Lifeline','ORAL_SERIES':'Oral'
+  };
+  try {
+    const inserts = selected.map(item => ({
+      name:            toTitleCase(item.productKey),
+      series:          seriesMap[item.seriesKey] || item.seriesKey,
+      image_folder:    item.folder,
+      images:          JSON.stringify(item.urls),
+      in_stock:        true, is_featured: false,
+      flavour:null, price:null, net_weight:null, short_description:null,
+      tags:null, key_benefits:null, ingredients:null, how_to_use:null,
+      nutrition_facts:null, warnings:null,
+    }));
+    const { error } = await sb.from('products').insert(inserts);
+    if (error) throw error;
+    document.getElementById('import-modal')?.remove();
+    sectionLoaded['products'] = false;
+    await loadProducts();
+    showToast('\u2713 ' + selected.length + ' product' + (selected.length!==1?'s':'') + ' imported', 'success');
+  } catch(err) {
+    showToast('Import failed: ' + err.message, 'error');
+    if (btn) { btn.disabled = false; btn.textContent = 'Import Selected'; }
+  }
+};
+
+/* ── ORDERS ── */
+let allOrders   = [];
+let ordersFilter = 'all';
+
+async function loadOrders() {
+  document.getElementById('orders-tbody').innerHTML = '<tr class="loading-row"><td colspan="7"><div class="spinner"></div></td></tr>';
+  try {
+    const { data, error } = await sb.from('orders').select('*').order('created_at',{ascending:false});
+    if (error) throw error;
+    allOrders = data || [];
+    renderOrders();
+  } catch(err) { showToast('Orders load error: ' + err.message, 'error'); }
+}
+
+function renderOrders() {
+  const tbody    = document.getElementById('orders-tbody');
+  const filtered = ordersFilter === 'all' ? allOrders : allOrders.filter(o => (o.status||'').toLowerCase() === ordersFilter);
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">&#128230;</div><p>No ' + (ordersFilter!=='all'?ordersFilter+' ':'') + 'orders found</p></div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = filtered.map(o => {
+    const itemCount = countItems(o.items);
+    return '<tr id="order-row-' + o.id + '" class="order-main-row" style="cursor:pointer;" onclick="toggleOrderDetail(' + o.id + ')">'
+      + '<td style="font-size:12px;color:var(--color-grey);font-family:monospace;">#' + String(o.id).slice(-8) + '</td>'
+      + '<td style="font-weight:600;">' + esc(o.customer_name||'&mdash;') + '</td>'
+      + '<td>' + itemCount + ' item' + (itemCount!==1?'s':'') + '</td>'
+      + '<td>&#8377;' + Number(o.total_amount||0).toLocaleString('en-IN') + '</td>'
+      + '<td>' + statusBadge(o.status) + '</td>'
+      + '<td style="font-size:13px;color:var(--color-grey);">' + fmtDate(o.created_at) + '</td>'
+      + '<td><button class="btn-icon" onclick="event.stopPropagation();toggleOrderDetail(' + o.id + ')" title="View">&#128065;</button></td>'
+      + '</tr>'
+      + '<tr id="order-detail-' + o.id + '" class="order-detail-row" style="display:none;"><td colspan="7">' + buildOrderDetail(o) + '</td></tr>';
+  }).join('');
+}
+
+function buildOrderDetail(o) {
+  let itemsHtml = '';
+  try {
+    const items = typeof o.items === 'string' ? JSON.parse(o.items) : (o.items || []);
+    if (Array.isArray(items) && items.length) {
+      itemsHtml = '<div class="order-items-list">'
+        + items.map(it => '<div class="order-item-row"><span>' + esc(it.name||it.product_name||'Item') + '</span><span>Qty: ' + (it.quantity||it.qty||1) + ' &nbsp;&middot;&nbsp; &#8377;' + Number(it.price||it.unit_price||0).toLocaleString('en-IN') + '</span></div>').join('')
+        + '</div>';
+    }
+  } catch(_) { itemsHtml = '<p style="font-size:13px;color:var(--color-grey);">Unable to parse items.</p>'; }
+
+  return '<div class="order-detail-grid">'
+    + '<div class="order-detail-group"><h4>Customer</h4><p>' + esc(o.customer_name||'&mdash;') + '</p><p style="font-size:13px;color:var(--color-grey);">' + esc(o.customer_email||'&mdash;') + '</p><p style="font-size:13px;color:var(--color-grey);">' + esc(o.customer_phone||o.phone||'&mdash;') + '</p></div>'
+    + '<div class="order-detail-group"><h4>Delivery Address</h4><p style="font-size:13px;">' + esc(o.delivery_address||o.address||'&mdash;') + '</p></div>'
+    + '</div>' + itemsHtml
+    + '<div style="display:flex;align-items:center;gap:12px;margin-top:8px;"><span style="font-size:13px;font-weight:600;">Update Status:</span>'
+    + '<select class="status-select" onchange="updateOrderStatus(' + o.id + ',this.value)">'
+    + ['pending','confirmed','shipped','delivered','cancelled'].map(s =>
+        '<option value="' + s + '" ' + ((o.status||'').toLowerCase()===s?'selected':'') + '>' + s.charAt(0).toUpperCase()+s.slice(1) + '</option>'
+      ).join('')
+    + '</select></div>';
+}
+
+window.toggleOrderDetail = function(id) {
+  const det = document.getElementById('order-detail-' + id);
+  if (!det) return;
+  const wasOpen = det.style.display !== 'none';
+  document.querySelectorAll('.order-detail-row').forEach(r => r.style.display = 'none');
+  document.querySelectorAll('.order-main-row').forEach(r => r.style.background = '');
+  if (!wasOpen) {
+    det.style.display = 'table-row';
+    const mainRow = document.getElementById('order-row-' + id);
+    if (mainRow) mainRow.style.background = '#E8F1FB';
+  }
+};
+
+window.updateOrderStatus = async function(id, status) {
+  try {
+    const { error } = await sb.from('orders').update({ status }).eq('id', id);
+    if (error) throw error;
+    const idx = allOrders.findIndex(o => o.id === id);
+    if (idx !== -1) allOrders[idx].status = status;
+    const mainRow = document.getElementById('order-row-' + id);
+    if (mainRow) {
+      const cell = mainRow.querySelector('td:nth-child(5)');
+      if (cell) cell.innerHTML = statusBadge(status);
+    }
+    showToast('Order status updated to ' + status, 'success');
+  } catch(err) { showToast('Status update failed: ' + err.message, 'error'); }
+};
+
+document.getElementById('orders-filter-tabs').addEventListener('click', e => {
+  const tab = e.target.closest('.filter-tab');
+  if (!tab) return;
+  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  tab.classList.add('active');
+  ordersFilter = tab.dataset.status;
+  renderOrders();
+});
+
+/* ── CUSTOMERS ── */
+async function loadCustomers() {
+  document.getElementById('customers-tbody').innerHTML = '<tr class="loading-row"><td colspan="5"><div class="spinner"></div></td></tr>';
+  try {
+    const { data: customers, error } = await sb.from('customers').select('*').order('created_at',{ascending:false});
+    if (error) throw error;
+    const { data: orders } = await sb.from('orders').select('id,customer_email,created_at');
+    const ordersByEmail = {};
+    (orders||[]).forEach(o => {
+      const e = (o.customer_email||'').toLowerCase();
+      if (!ordersByEmail[e]) ordersByEmail[e] = [];
+      ordersByEmail[e].push(o);
+    });
+    renderCustomers(customers||[], ordersByEmail);
+  } catch(err) { showToast('Customers load error: ' + err.message, 'error'); }
+}
+
+function renderCustomers(customers, ordersByEmail) {
+  const tbody = document.getElementById('customers-tbody');
+  if (!customers.length) {
+    tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state"><div class="empty-icon">&#128101;</div><p>No customers yet</p></div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = customers.map(c => {
+    const email  = (c.email||'').toLowerCase();
+    const orders = ordersByEmail[email] || [];
+    const lastTs = orders.length ? orders.reduce((a,b) => a.created_at > b.created_at ? a : b).created_at : null;
+    return '<tr id="cust-row-' + c.id + '" style="cursor:pointer;" onclick="toggleCustDetail(' + c.id + ')">'
+      + '<td style="font-weight:600;">' + esc(c.name||c.full_name||'&mdash;') + '</td>'
+      + '<td style="font-size:13px;">' + esc(c.email||'&mdash;') + '</td>'
+      + '<td style="font-size:13px;">' + esc(c.phone||'&mdash;') + '</td>'
+      + '<td>' + orders.length + '</td>'
+      + '<td style="font-size:13px;color:var(--color-grey);">' + fmtDate(lastTs) + '</td>'
+      + '</tr>'
+      + '<tr id="cust-detail-' + c.id + '" class="customer-detail-row" style="display:none;"><td colspan="5">' + buildCustDetail(c, orders) + '</td></tr>';
+  }).join('');
+}
+
+function buildCustDetail(c, orders) {
+  if (!orders.length) return '<div style="padding:12px;font-size:14px;color:var(--color-grey);">No orders for this customer.</div>';
+  return '<div style="padding:8px 0;">'
+    + '<div style="font-size:13px;font-weight:600;margin-bottom:8px;">Order History (' + orders.length + ')</div>'
+    + '<div class="order-items-list">'
+    + orders.map(o => '<div class="order-item-row"><span style="font-size:12px;color:var(--color-grey);font-family:monospace;">#' + String(o.id).slice(-8) + '</span><span style="font-size:13px;">' + fmtDate(o.created_at) + '</span></div>').join('')
+    + '</div></div>';
+}
+
+window.toggleCustDetail = function(id) {
+  const det = document.getElementById('cust-detail-' + id);
+  if (!det) return;
+  const wasOpen = det.style.display !== 'none';
+  document.querySelectorAll('.customer-detail-row').forEach(r => r.style.display = 'none');
+  document.querySelectorAll('#customers-tbody tr[id^="cust-row"]').forEach(r => r.style.background = '');
+  if (!wasOpen) {
+    det.style.display = 'table-row';
+    const mr = document.getElementById('cust-row-' + id);
+    if (mr) mr.style.background = '#E8F1FB';
+  }
+};
+
+/* ── SETTINGS ── */
+async function loadSettings() {
+  try {
+    const { data, error } = await sb.from('settings').select('*').eq('id',1).single();
+    if (error && error.code !== 'PGRST116') throw error;
+    if (data) {
+      document.getElementById('setting-site-name').value = data.site_name || 'Azzurra';
+      document.getElementById('setting-phone').value     = data.contact_phone || '+91 98 71 648 649';
+      document.getElementById('setting-email').value     = data.contact_email || 'info@azzurrapharmaconutrition.com';
+    } else {
+      document.getElementById('setting-site-name').value = 'Azzurra';
+      document.getElementById('setting-phone').value     = '+91 98 71 648 649';
+      document.getElementById('setting-email').value     = 'info@azzurrapharmaconutrition.com';
+    }
+  } catch(_) {
+    document.getElementById('setting-site-name').value = 'Azzurra';
+    document.getElementById('setting-phone').value     = '+91 98 71 648 649';
+    document.getElementById('setting-email').value     = 'info@azzurrapharmaconutrition.com';
+  }
+}
+
+document.getElementById('btn-save-settings').addEventListener('click', async () => {
+  const btn = document.getElementById('btn-save-settings');
+  btn.disabled = true; btn.textContent = 'Saving\u2026';
+  try {
+    const payload = {
+      id: 1,
+      site_name:     document.getElementById('setting-site-name').value.trim(),
+      contact_phone: document.getElementById('setting-phone').value.trim(),
+      contact_email: document.getElementById('setting-email').value.trim(),
+    };
+    const { error } = await sb.from('settings').upsert(payload, { onConflict: 'id' });
+    if (error) throw error;
+    showToast('\u2713 Settings saved', 'success');
+  } catch(err) { showToast('Save failed: ' + err.message, 'error'); }
+  finally { btn.disabled = false; btn.textContent = 'Save Settings'; }
+});
+
+document.getElementById('btn-clear-sessions').addEventListener('click', async () => {
+  if (!window.confirm('Sign out all admin sessions globally? You will be redirected to login.')) return;
+  try {
+    await sb.auth.signOut({ scope: 'global' });
+    window.location.replace('admin-login.html');
+  } catch(err) { showToast('Failed: ' + err.message, 'error'); }
+});
+
+/* ── INITIAL LOAD ── */
+showSection('dashboard');
+
+}); // end waitForSupabase
+</script>
+
 </body>
 </html>

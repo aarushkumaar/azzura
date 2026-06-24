@@ -3,114 +3,318 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Login — Azzurra</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="assets/css/style.css" />
-  <style>
-    body { background: var(--color-primary-light); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  <title>Admin Login — Azzurra Pharmaconutrition</title>
 
-    .login-card {
-      background: var(--color-white);
+  <!-- Google Fonts: Inter + DM Serif Display -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    /* ── Reset & Base ─────────────────────────────────────── */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --color-primary:       #1A5FA8;
+      --color-primary-dark:  #134a87;
+      --color-primary-light: #E8F1FB;
+      --color-dark:          #1A1A2E;
+      --color-grey:          #6B7280;
+      --color-gold:          #C9A84C;
+      --color-border:        #D1E3F8;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--color-primary-light);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+    }
+
+    /* ── Card ─────────────────────────────────────────────── */
+    .card {
+      background: #ffffff;
       border: 1.5px solid var(--color-border);
       border-radius: 20px;
       padding: 48px 40px;
-      max-width: 440px;
       width: 100%;
-      box-shadow: 0 12px 48px rgba(26,95,168,0.1);
+      max-width: 420px;
+      box-shadow: 0 12px 48px rgba(26, 95, 168, 0.10);
     }
 
-    .login-logo { text-align: center; margin-bottom: 32px; }
-    .login-logo-name { font-size: 26px; font-weight: 700; letter-spacing: 0.06em; color: var(--color-primary); display: block; }
-    .login-logo-tag  { font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--color-gold); font-weight: 600; display: block; margin-top: 2px; }
+    /* ── Card Header ──────────────────────────────────────── */
+    .card-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
 
-    .login-title { font-family: var(--font-heading); font-size: 26px; color: var(--color-dark); font-weight: 400; margin-bottom: 6px; text-align: center; }
-    .login-sub   { font-size: 14px; color: var(--color-grey); text-align: center; margin-bottom: 32px; }
+    .logo-text {
+      font-family: 'Inter', sans-serif;
+      font-weight: 700;
+      font-size: 26px;
+      color: var(--color-primary);
+      letter-spacing: 0.06em;
+      line-height: 1;
+      display: block;
+      margin-bottom: 6px;
+    }
 
-    .login-form { display: flex; flex-direction: column; gap: 16px; }
+    .portal-badge {
+      display: block;
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--color-gold);
+      margin-bottom: 20px;
+    }
 
-    .login-btn {
+    .divider-line {
+      width: 40px;
+      height: 2px;
+      background: var(--color-border);
+      margin: 0 auto 20px;
+      border-radius: 2px;
+    }
+
+    .card-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 26px;
+      font-weight: 400;
+      color: var(--color-dark);
+      line-height: 1.2;
+      margin-bottom: 8px;
+    }
+
+    .card-subtitle {
+      font-size: 13px;
+      color: var(--color-grey);
+      line-height: 1.5;
+    }
+
+    /* ── Form ─────────────────────────────────────────────── */
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--color-dark);
+      margin-bottom: 6px;
+    }
+
+    /* Input wrapper: position:relative so toggle sits inside */
+    .input-wrapper {
+      position: relative;
+    }
+
+    input[type="email"],
+    input[type="password"],
+    input[type="text"] {
+      border: 1.5px solid var(--color-border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
       width: 100%;
-      padding: 14px;
-      background: var(--color-primary);
-      color: var(--color-white);
+      background: #fff;
+      color: var(--color-dark);
+      transition: border-color 0.18s ease;
+      outline: none;
+    }
+
+    input[type="email"]:focus,
+    input[type="password"]:focus,
+    input[type="text"]:focus {
+      border-color: var(--color-primary);
+      outline: none;
+    }
+
+    /* Extra right padding so text doesn't overlap the toggle icon */
+    #password {
+      padding-right: 44px;
+    }
+
+    /* ── Password Toggle Button ───────────────────────────── */
+    .toggle-password {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 18px;
+      line-height: 1;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-grey);
+      user-select: none;
+      outline: none;
+    }
+
+    .toggle-password:focus-visible {
+      outline: 2px solid var(--color-primary);
+      border-radius: 4px;
+    }
+
+    /* ── Sign In Button ───────────────────────────────────── */
+    .btn-signin {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 13px 24px;
+      background-color: var(--color-primary);
+      color: #ffffff;
       border: none;
       border-radius: 100px;
-      font-family: var(--font-body);
+      font-family: 'Inter', sans-serif;
       font-size: 15px;
       font-weight: 700;
       cursor: pointer;
-      transition: background var(--ease), transform var(--ease);
-      margin-top: 4px;
+      margin-top: 24px;
+      transition: background-color 0.2s ease, opacity 0.2s ease;
+      letter-spacing: 0.01em;
     }
-    .login-btn:hover { background: var(--color-primary-dark); transform: scale(1.02); }
-    .login-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
-    .login-error {
+    .btn-signin:hover:not(:disabled) {
+      background-color: var(--color-primary-dark);
+    }
+
+    .btn-signin:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    /* ── Spinner Animation ────────────────────────────────── */
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .spinner {
+      display: inline-block;
+      animation: spin 1s linear infinite;
+      font-style: normal;
+      line-height: 1;
+    }
+
+    /* ── Error Message ────────────────────────────────────── */
+    .error-message {
+      display: none;
       background: #fff5f5;
       border: 1.5px solid #fc8181;
       border-radius: 8px;
       padding: 12px 16px;
       font-size: 13px;
       color: #c53030;
-      display: none;
+      margin-top: 14px;
+      line-height: 1.5;
     }
-    .login-error.show { display: block; }
 
-    .login-success {
-      background: #f0fff4;
-      border: 1.5px solid #68d391;
-      border-radius: 8px;
-      padding: 12px 16px;
-      font-size: 13px;
-      color: #276749;
-      display: none;
+    .error-message.show {
+      display: block;
+    }
+
+    /* ── Footer ───────────────────────────────────────────── */
+    .card-footer {
       text-align: center;
+      margin-top: 28px;
+      font-size: 12px;
+      color: var(--color-grey);
+      border-top: 1px solid var(--color-border);
+      padding-top: 20px;
     }
-    .login-success.show { display: block; }
-
-    .login-divider { height: 1px; background: var(--color-border); margin: 8px 0; }
-    .login-back { display: block; text-align: center; font-size: 13px; color: var(--color-grey); margin-top: 20px; }
-    .login-back a { color: var(--color-primary); font-weight: 600; }
   </style>
 </head>
 <body>
-  <div class="login-card">
-    <div class="login-logo">
-      <span class="login-logo-name">AZZURRA</span>
-      <span class="login-logo-tag">Admin Portal</span>
+
+  <!-- ── Login Card ─────────────────────────────────────── -->
+  <div class="card" role="main">
+
+    <!-- Header -->
+    <div class="card-header">
+      <span class="logo-text">AZZURRA</span>
+      <span class="portal-badge">Admin Portal</span>
+      <div class="divider-line"></div>
+      <h1 class="card-title">Admin Login</h1>
+      <p class="card-subtitle">Azzurra Pharmaconutrition &mdash; Internal Access Only</p>
     </div>
 
-    <h1 class="login-title">Admin Sign In</h1>
-    <p class="login-sub">Enter your admin email to receive a secure login link.</p>
+    <!-- Form -->
+    <form id="login-form" novalidate>
 
-    <form class="login-form" id="login-form" novalidate>
+      <!-- Email -->
       <div class="form-group">
-        <label class="form-label" for="admin-email">Admin Email</label>
-        <input
-          class="form-input"
-          type="email"
-          id="admin-email"
-          name="email"
-          placeholder="admin@azzurra.com"
-          required
-          autocomplete="email"
-        />
-        <span class="form-error" id="err-email">Please enter a valid email address.</span>
+        <label for="email">Email Address</label>
+        <div class="input-wrapper">
+          <input
+            type="email"
+            id="email"
+            name="email"
+            value="aarushk0207@gmail.com"
+            autocomplete="email"
+            required
+          />
+        </div>
       </div>
 
-      <div class="login-error" id="login-error"></div>
-      <div class="login-success" id="login-success">
-        ✅ Magic link sent! Check your email inbox and click the link to sign in.
+      <!-- Password -->
+      <div class="form-group">
+        <label for="password">Password</label>
+        <div class="input-wrapper">
+          <input
+            type="password"
+            id="password"
+            name="password"
+            autocomplete="current-password"
+            required
+          />
+          <!-- Eye toggle — sits absolutely inside .input-wrapper -->
+          <button
+            type="button"
+            class="toggle-password"
+            id="toggle-password"
+            aria-label="Toggle password visibility"
+            title="Show/hide password"
+          >&#128065;</button>
+        </div>
       </div>
 
-      <button type="submit" class="login-btn" id="login-btn">Send Login Link</button>
+      <!-- Submit -->
+      <button type="submit" class="btn-signin" id="signin-btn">
+        Sign In
+      </button>
+
+      <!-- Error (hidden by default) -->
+      <div class="error-message" id="error-message" role="alert" aria-live="polite">
+        Invalid email or password. Please try again.
+      </div>
+
     </form>
 
-    <p class="login-back">
-      <a href="index.html">← Back to website</a>
-    </p>
-  </div>
+    <!-- Footer -->
+    <div class="card-footer">
+      &copy; 2025 Azzurra Pharmaconutrition. Restricted access.
+    </div>
 
+<<<<<<< Updated upstream
   <script src="config.js"></script>
   <script>
     /* ============================================================
@@ -191,6 +395,98 @@
         }
       } catch (_) { /* no session — show login form */ }
     })();
+=======
+  </div><!-- /.card -->
+
+  <!-- ── Supabase Auth Logic ─────────────────────────────── -->
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+    /* ── Config ───────────────────────────────────────────── */
+    const SUPABASE_URL      = 'https://ilduyhuvpiqhvbnocqxf.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlsZHV5aHV2cGlxaHZibm9jcXhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4MTMxNTUsImV4cCI6MjA5NjM4OTE1NX0.uuC8dKajsnSSaiTx_wxNeapKPl4EV20s5phcRS-TaZg';
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    /* ── DOM Refs ─────────────────────────────────────────── */
+    const form          = document.getElementById('login-form');
+    const emailInput    = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const signinBtn     = document.getElementById('signin-btn');
+    const errorMsg      = document.getElementById('error-message');
+    const toggleBtn     = document.getElementById('toggle-password');
+
+    /* ── 1. Session Check on Load ─────────────────────────── */
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          // Already authenticated — skip login
+          window.location.replace('admin.html');
+        }
+      } catch (err) {
+        // Non-blocking: just display the form if check fails
+        console.warn('Session check failed:', err.message);
+      }
+    });
+
+    /* ── 2. Form Submit Handler ───────────────────────────── */
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const email    = emailInput.value.trim();
+      const password = passwordInput.value;
+
+      // Reset error state
+      errorMsg.classList.remove('show');
+
+      // Show loading
+      setLoading(true);
+
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+        if (error) {
+          // Auth failed — restore button and show error
+          setLoading(false);
+          errorMsg.classList.add('show');
+          console.error('Auth error:', error.message);
+          return;
+        }
+
+        // Success — go to admin dashboard
+        window.location.replace('admin.html');
+
+      } catch (err) {
+        // Unexpected network / runtime error
+        setLoading(false);
+        errorMsg.classList.add('show');
+        console.error('Unexpected error:', err);
+      }
+    });
+
+    /* ── 3. Password Show / Hide Toggle ──────────────────── */
+    toggleBtn.addEventListener('click', () => {
+      const isHidden = passwordInput.type === 'password';
+      // Switch type
+      passwordInput.type = isHidden ? 'text' : 'password';
+      // Update icon: 👁 (visible) vs 🙈 (hidden)
+      toggleBtn.innerHTML = isHidden ? '&#128584;' : '&#128065;';
+      toggleBtn.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
+    });
+
+    /* ── Helper: Loading State ────────────────────────────── */
+    function setLoading(isLoading) {
+      signinBtn.disabled = isLoading;
+      if (isLoading) {
+        // Spinner character + "Signing in…"
+        signinBtn.innerHTML = '<span class="spinner" aria-hidden="true">&#10227;</span> Signing in&hellip;';
+      } else {
+        signinBtn.textContent = 'Sign In';
+      }
+    }
+>>>>>>> Stashed changes
   </script>
+
 </body>
 </html>

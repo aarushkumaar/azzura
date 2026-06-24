@@ -83,12 +83,74 @@ function validateCheckoutForm(data) {
 }
 
 /* ============================================================
-   STEP 1 — Create order in Supabase via Edge Function
-   Edge Function URL: SUPABASE_URL + /functions/v1/createOrder
+   STEP 1 — Create order in Supabase `orders` table directly
+   Primary path: saves directly via Supabase REST API.
+   Razorpay Edge Function path is kept below as a secondary
+   option for when the Edge Function is deployed.
    ============================================================ */
 async function createOrder(formData) {
   const cart = getCart();
 
+  // Build a structured address string
+  const addressStr = [
+    formData.address,
+    formData.city,
+    formData.state,
+    formData.pincode
+  ].filter(Boolean).join(', ');
+
+  // Build the order payload
+  const orderPayload = {
+    customer_name:  formData.name,
+    customer_email: formData.email,
+    customer_phone: formData.phone,
+    address:        addressStr,
+    items:          JSON.stringify(cart.map(function(item) {
+      return {
+        product_id: item.id,
+        name:       item.name,
+        quantity:   item.quantity,
+        unit_price: item.price,
+        subtotal:   item.price * item.quantity,
+        image_url:  item.image_url || ''
+      };
+    })),
+    total_amount:   getCartTotal(),
+    status:         'pending'
+  };
+
+  // -- PRIMARY PATH: save directly to Supabase orders table --
+  if (typeof window.saveOrderToSupabase === 'function') {
+    try {
+      const savedOrder = await window.saveOrderToSupabase(orderPayload);
+      console.info('[Azzurra Checkout] Order saved to Supabase. ID:', savedOrder.id);
+
+      // Also upsert the customer record
+      if (typeof window.upsertCustomerInSupabase === 'function') {
+        window.upsertCustomerInSupabase({
+          name:          formData.name,
+          email:         formData.email,
+          phone:         formData.phone,
+          cart_activity: cart
+        });
+      }
+
+      return {
+        orderId:        savedOrder.id || 'ORD-' + Date.now(),
+        razorpayOrderId: null,   // No Razorpay order yet — open modal-less flow
+        amount:         Math.round(getCartTotal() * 100),  // paise
+        currency:       SITE_CONFIG.currency,
+        keyId:          RAZORPAY_KEY_ID
+      };
+    } catch (saveErr) {
+      console.error('[Azzurra Checkout] Direct Supabase save failed:', saveErr.message);
+      // Fall through to Edge Function attempt below
+    }
+  }
+
+  // -- SECONDARY PATH: Supabase Edge Function (requires deployment) --
+  // Uncomment this block when your Edge Function is deployed:
+  /*
   const payload = {
     cart: cart.map(function(item) {
       return {
@@ -119,6 +181,10 @@ async function createOrder(formData) {
 
   return res.json();
   // Returns: { orderId, razorpayOrderId, amount, currency, keyId }
+  */
+
+  // If both paths fail, throw so the UI shows an error
+  throw new Error('Could not save order. Please check your connection and try again.');
 }
 
 /* ============================================================
