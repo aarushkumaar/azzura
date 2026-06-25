@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Login — Azzurra Pharmaconutrition</title>
+  <meta name="description" content="Secure admin login for Azzurra Pharmaconutrition panel." />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="stylesheet" href="../assets/css/admin.css" />
+  <style>
+    /* ── Page layout ── */
+    body {
+      background: #0f172a;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    /* ── Login card ── */
+    .login-card {
+      background: #1e293b;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 48px 40px;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+    }
+
+    .login-card__brand {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+
+    .login-card__logo {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      color: #60a5fa;
+      margin-bottom: 4px;
+    }
+
+    .login-card__logo-tag {
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.3);
+      font-weight: 500;
+      display: block;
+    }
+
+    .login-card__title {
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #60a5fa;
+      font-weight: 600;
+      margin-top: 12px;
+      display: block;
+    }
+
+    .login-card__heading {
+      font-size: 22px;
+      font-weight: 600;
+      color: #f1f5f9;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .login-card__sub {
+      font-size: 13px;
+      color: rgba(255,255,255,0.35);
+      text-align: center;
+      margin-bottom: 36px;
+      line-height: 1.6;
+    }
+
+    /* ── Google OAuth button ── */
+    .google-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 14px 20px;
+      background: #fff;
+      color: #1f2937;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+      letter-spacing: 0.01em;
+    }
+
+    .google-btn:hover {
+      background: #f8fafc;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+    }
+
+    .google-btn:active {
+      transform: translateY(0);
+    }
+
+    .google-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .google-btn svg {
+      flex-shrink: 0;
+    }
+
+    /* ── Loading spinner inside button ── */
+    .google-btn .btn-spinner {
+      display: none;
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(0,0,0,0.15);
+      border-top-color: #1f2937;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    .google-btn.loading .btn-spinner { display: block; }
+    .google-btn.loading .google-icon { display: none; }
+    .google-btn.loading .btn-text { opacity: 0.7; }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ── Error alert ── */
+    .login-error {
+      display: none;
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: #fca5a5;
+      margin-bottom: 20px;
+      text-align: center;
+      line-height: 1.5;
+    }
+    .login-error.show { display: block; }
+
+    /* ── Divider ── */
+    .login-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 28px 0;
+    }
+    .login-divider::before,
+    .login-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(255,255,255,0.08);
+    }
+    .login-divider span {
+      font-size: 11px;
+      color: rgba(255,255,255,0.2);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* ── Footer note ── */
+    .login-card__footer {
+      text-align: center;
+      margin-top: 28px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.2);
+    }
+
+    /* ── Back link ── */
+    .login-back {
+      display: block;
+      text-align: center;
+      font-size: 13px;
+      color: rgba(255,255,255,0.25);
+      margin-top: 20px;
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .login-back:hover { color: #60a5fa; }
+
+    /* ── Security note ── */
+    .security-note {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      background: rgba(96,165,250,0.06);
+      border: 1px solid rgba(96,165,250,0.12);
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-top: 20px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.35);
+      line-height: 1.5;
+    }
+    .security-note-icon { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+  </style>
+</head>
+<body>
+
+<div class="login-card">
+
+  <!-- Brand -->
+  <div class="login-card__brand">
+    <div class="login-card__logo">AZZURRA
+      <span class="login-card__logo-tag">Pharmaconutrition</span>
+    </div>
+    <span class="login-card__title">Admin Portal</span>
+  </div>
+
+  <h1 class="login-card__heading">Welcome back</h1>
+  <p class="login-card__sub">
+    Sign in with your authorised Google account<br />to access the admin panel.
+  </p>
+
+  <!-- Error alert -->
+  <div class="login-error" id="loginError" role="alert"></div>
+
+  <!-- Sign in with Google button -->
+  <button class="google-btn" id="googleBtn" type="button" aria-label="Sign in with Google">
+    <!-- Google logo SVG (official colours) -->
+    <svg class="google-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="20" height="20">
+      <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+      <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+      <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+      <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+      <path fill="none" d="M0 0h48v48H0z"/>
+    </svg>
+    <div class="btn-spinner"></div>
+    <span class="btn-text">Sign in with Google</span>
+  </button>
+
+  <div class="security-note">
+    <span class="security-note-icon">🔒</span>
+    <span>Only pre-authorised email addresses can access this panel. Your Google account will be verified after sign-in.</span>
+  </div>
+
+  <div class="login-card__footer">
+    Azzurra Admin Panel &copy; 2025
+  </div>
+
+  <a href="../index.html" class="login-back">← Back to website</a>
+</div>
+
+<script type="module">
+  // ============================================================
+  //  AZZURRA ADMIN — Login Page (Google OAuth)
+  //
+  //  On load:  if user already has a valid session AND is in
+  //            admin_users → redirect straight to dashboard.
+  //  On click: initiate signInWithOAuth({ provider: 'google' })
+  //            → Google consent screen
+  //            → /auth/callback.html (exchanges code, checks allowlist)
+  //            → /admin/dashboard.html ✅  or  / ❌
+  // ============================================================
+
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+  const SUPABASE_URL      = 'https://ilduyhuvpiqhvbnocqxf.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlsZHV5aHV2cGlxaHZibm9jcXhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4MTMxNTUsImV4cCI6MjA5NjM4OTE1NX0.uuC8dKajsnSSaiTx_wxNeapKPl4EV20s5phcRS-TaZg';
+
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: {
+      flowType: 'pkce',
+      persistSession: true,
+      detectSessionInUrl: true,
+    },
+  });
+
+  window.supabaseClient = supabase;
+
+  const googleBtn  = document.getElementById('googleBtn');
+  const errorAlert = document.getElementById('loginError');
+
+  function showError(msg) {
+    errorAlert.textContent = msg;
+    errorAlert.classList.add('show');
+  }
+
+  function setLoading(loading) {
+    googleBtn.disabled = loading;
+    googleBtn.classList.toggle('loading', loading);
+  }
+
+  // ── Check if already signed in and is an admin ──
+  (async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return; // Not logged in — show login form normally
+
+      // Check allowlist
+      const { data: adminRow } = await supabase
+        .from('admin_users')
+        .select('email')
+        .eq('email', user.email)
+        .maybeSingle();
+
+      if (adminRow) {
+        // Already a valid admin session → go straight to dashboard
+        window.location.replace('dashboard.html');
+      } else {
+        // Has a session but not admin → sign out silently
+        await supabase.auth.signOut();
+      }
+    } catch (_) {
+      // No session or error — show login form normally
+    }
+  })();
+
+  // ── Handle Google Sign-In button click ──
+  googleBtn.addEventListener('click', async () => {
+    setLoading(true);
+    errorAlert.classList.remove('show');
+
+    const redirectTo = `${window.location.origin}/auth/callback.html`;
+
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo,
+        // Request the user's email and profile from Google
+        scopes: 'openid email profile',
+        // Always show account picker (useful if user has multiple Google accounts)
+        queryParams: { prompt: 'select_account' },
+      },
+    });
+
+    if (error) {
+      setLoading(false);
+      showError(error.message || 'Failed to initiate Google sign-in. Please try again.');
+    }
+    // On success, browser redirects to Google — no further action needed here.
+    // Loading spinner stays active during the redirect for a polished feel.
+  });
+</script>
+
+</body>
+</html>

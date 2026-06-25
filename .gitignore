@@ -1,8 +1,13 @@
-# Supabase credentials — NEVER commit these
-config.js
+# Local-only overrides (optional secrets not in committed config.js)
+config.local.js
 
-# Node (if edge functions are developed locally)
+# Local Deno cache
+.deno_cache/
+deno.lock
+
+# Node
 node_modules/
+
 .env
 .env.local
 

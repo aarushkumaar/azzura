@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — Azzurra Admin</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="stylesheet" href="../assets/css/admin.css" />
+</head>
+<body class="admin-body">
+
+<div class="admin-shell" id="adminLayout">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="admin-sidebar" id="adminSidebar">
+    <div class="admin-sidebar__brand">
+      <span class="admin-sidebar__logo">AZZURRA</span>
+      <span class="admin-sidebar__tag">Pharmaconutrition</span>
+    </div>
+
+    <nav class="admin-nav">
+      <a href="dashboard.html" class="admin-nav__link active">
+        <span class="admin-nav__icon">📊</span> Dashboard
+      </a>
+      <a href="products.html" class="admin-nav__link">
+        <span class="admin-nav__icon">📦</span> Products
+      </a>
+    </nav>
+
+    <div class="admin-sidebar__footer">
+      <div class="admin-user-info">
+        <div class="admin-user-info__avatar" id="userAvatar">A</div>
+        <div>
+          <div class="admin-user-info__email" id="userEmail">—</div>
+          <div class="admin-user-info__role">Admin</div>
+        </div>
+      </div>
+      <button class="admin-logout-btn" id="signOutBtn" title="Sign Out">🚪</button>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="admin-main">
+
+    <header class="admin-topbar">
+      <div>
+        <div class="admin-topbar__title">Dashboard</div>
+        <div class="admin-topbar__date" id="topbarDate"></div>
+      </div>
+      <a href="../productss.html" target="_blank" class="admin-view-site-btn">🌐 View Live Site</a>
+    </header>
+
+    <div class="admin-section">
+
+      <!-- KPI Cards -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <span class="kpi-card__icon">📦</span>
+          <div class="kpi-card__value" id="statTotal">—</div>
+          <div class="kpi-card__label">Total Products</div>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-card__icon">✅</span>
+          <div class="kpi-card__value" id="statInStock">—</div>
+          <div class="kpi-card__label">In Stock</div>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-card__icon">⭐</span>
+          <div class="kpi-card__value" id="statFeatured">—</div>
+          <div class="kpi-card__label">Featured</div>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-card__icon">📉</span>
+          <div class="kpi-card__value" id="statOutOfStock">—</div>
+          <div class="kpi-card__label">Out of Stock</div>
+        </div>
+      </div>
+
+      <!-- Recent Products -->
+      <div class="admin-table-wrap">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1.5px solid var(--color-border);">
+          <span style="font-weight:700;font-size:14px;color:var(--color-dark);text-transform:uppercase;letter-spacing:0.06em;">Recent Products</span>
+          <a href="products.html" style="font-size:13px;color:var(--color-primary);font-weight:600;text-decoration:none;">Manage All →</a>
+        </div>
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Price (₹)</th>
+              <th>In Stock</th>
+            </tr>
+          </thead>
+          <tbody id="recentTableBody">
+            <tr><td colspan="4" class="table-loading">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </main>
+
+</div>
+
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+  const SUPABASE_URL      = 'https://ilduyhuvpiqhvbnocqxf.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlsZHV5aHV2cGlxaHZibm9jcXhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4MTMxNTUsImV4cCI6MjA5NjM4OTE1NX0.uuC8dKajsnSSaiTx_wxNeapKPl4EV20s5phcRS-TaZg';
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // ── Auth Guard ──
+  async function checkAuth() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) { window.location.href = 'index.html'; return null; }
+
+    const { data: adminRow } = await supabase
+      .from('admin_users').select('email')
+      .eq('email', session.user.email).maybeSingle();
+
+    if (!adminRow) {
+      await supabase.auth.signOut();
+      window.location.href = 'index.html';
+      return null;
+    }
+    return session;
+  }
+
+  // ── Mobile Sidebar (for narrow screens) ──
+  document.getElementById('adminSidebar').addEventListener('click', (e) => {
+    if (window.innerWidth > 900) return;
+    if (!e.target.closest('.admin-sidebar')) {
+      document.getElementById('adminSidebar').classList.remove('open');
+    }
+  });
+
+  // ── Sign Out ──
+  document.getElementById('signOutBtn').addEventListener('click', async () => {
+    await supabase.auth.signOut();
+    window.location.href = 'index.html';
+  });
+
+  // ── Date ──
+  document.getElementById('topbarDate').textContent = new Date().toLocaleDateString('en-IN', {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+  });
+
+  // ── Stats ──
+  async function loadStats() {
+    const { count: total }      = await supabase.from('products').select('*', { count: 'exact', head: true });
+    const { count: inStock }    = await supabase.from('products').select('*', { count: 'exact', head: true }).eq('in_stock', true);
+    const { count: featured }   = await supabase.from('products').select('*', { count: 'exact', head: true }).eq('is_featured', true);
+    const { count: outOfStock } = await supabase.from('products').select('*', { count: 'exact', head: true }).eq('in_stock', false);
+
+    document.getElementById('statTotal').textContent      = total      ?? '0';
+    document.getElementById('statInStock').textContent    = inStock    ?? '0';
+    document.getElementById('statFeatured').textContent   = featured   ?? '0';
+    document.getElementById('statOutOfStock').textContent = outOfStock ?? '0';
+  }
+
+  // ── Recent Products ──
+  async function loadRecentProducts() {
+    const { data, error } = await supabase
+      .from('products').select('id, name, price, in_stock')
+      .order('created_at', { ascending: false }).limit(5);
+
+    const tbody = document.getElementById('recentTableBody');
+
+    if (error || !data || data.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="4" class="table-loading">No products yet.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = data.map(p => `
+      <tr>
+        <td><code style="font-size:11px;color:var(--color-grey);">${p.id?.toString().slice(0,8) ?? '—'}</code></td>
+        <td style="font-weight:600;">${escHtml(p.name ?? '—')}</td>
+        <td>₹${Number(p.price ?? 0).toLocaleString('en-IN')}</td>
+        <td>
+          <span class="status-badge ${p.in_stock ? 'status-badge--delivered' : 'status-badge--cancelled'}">
+            ${p.in_stock ? 'In Stock' : 'Out of Stock'}
+          </span>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function escHtml(str) {
+    const div = document.createElement('div');
+    div.appendChild(document.createTextNode(str));
+    return div.innerHTML;
+  }
+
+  async function init() {
+    const session = await checkAuth();
+    if (!session) return;
+
+    const email = session.user?.email || '';
+    document.getElementById('userEmail').textContent = email;
+    document.getElementById('userAvatar').textContent = email.charAt(0).toUpperCase();
+
+    await Promise.all([loadStats(), loadRecentProducts()]);
+  }
+
+  init();
+</script>
+
+</body>
+</html>
