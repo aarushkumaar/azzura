@@ -6,12 +6,8 @@
   <title>Azzurra Pharmaconutrition Pvt. Ltd. — Nurturing Human Lives</title>
   <meta name="description" content="Azzurra Pharmaconutrition — clinically formulated, research-backed nutrition solutions. Precision Nutrition. Purposeful Recovery. Based in Faridabad, India, in technical collaboration with Azzurra Pharmaconutrition, USA." />
   <link rel="stylesheet" href="assets/css/style.css" />
-  <link rel="stylesheet" href="assets/css/cart.css" />
 </head>
 <body>
-
-  <!-- Scroll progress bar (fixed, top of page) -->
-  <div id="scroll-progress" aria-hidden="true"></div>
 
   <!-- ========================================================
        NAVBAR
@@ -29,15 +25,8 @@
       <li><a href="index.html"    class="navbar__link active">Home</a></li>
       <li><a href="about.html"    class="navbar__link">About</a></li>
       <li><a href="science.html"  class="navbar__link">Science</a></li>
-      <li><a href="contact.html"  class="navbar__link">Contact</a></li>
-      <!-- Cart icon with badge -->
-      <li>
-        <a href="cart.html" class="navbar__cart-icon" id="navbar-cart-link" aria-label="Your cart">
-          🛒
-          <span class="navbar__cart-badge" id="navbar-cart-badge">0</span>
-        </a>
-      </li>
       <li><a href="productss.html" class="navbar__link navbar__link--shop">Shop</a></li>
+      <li><a href="contact.html"  class="navbar__link">Contact</a></li>
     </ul>
 
     <!-- Mobile hamburger button -->
@@ -55,42 +44,30 @@
     <a href="science.html"   class="navbar__drawer-link">Science</a>
     <a href="productss.html" class="navbar__drawer-link" style="color:var(--color-primary);font-weight:700;">Shop</a>
     <a href="contact.html"   class="navbar__drawer-link">Contact</a>
-    <a href="cart.html"      class="navbar__drawer-link">🛒 Cart</a>
   </nav>
 
 
   <!-- ========================================================
        SECTION 1 — HERO
-       Full-viewport, centered, animated text reveal
+       Two-column: 60% text left, 40% animated visual right
+       Dot-grid background, scroll indicator at bottom
        ======================================================== -->
-  <section class="hero" id="hero" aria-label="Hero">
+  <section class="hero hero--split" id="hero" aria-label="Hero">
 
-    <!-- Faint watermark "AZZURRA" behind the heading -->
-    <div class="hero__watermark" aria-hidden="true">AZZURRA</div>
+    <!-- Dot-grid background pattern (::before in CSS) -->
 
-    <!-- Floating particles (CSS animated) -->
-    <div class="hero-particles" aria-hidden="true">
-      <span class="hero-particle"></span>
-      <span class="hero-particle"></span>
-      <span class="hero-particle"></span>
-      <span class="hero-particle"></span>
-      <span class="hero-particle"></span>
-      <span class="hero-particle"></span>
-      <span class="hero-particle"></span>
-      <span class="hero-particle"></span>
-      <span class="hero-particle"></span>
-      <span class="hero-particle"></span>
-      <span class="hero-particle"></span>
-      <span class="hero-particle"></span>
-    </div>
+    <!-- LEFT COLUMN: Text content -->
+    <div class="hero__text-col">
 
-    <div class="hero__inner">
-      <!-- Decorative rule above heading -->
-      <div class="hero__rule"></div>
+      <!-- Animated blue rule that draws left-to-right on load -->
+      <div class="hero__rule hero__rule--animated" aria-hidden="true"></div>
 
-      <h1 class="hero__heading">
-        <span class="line-1">Precision Nutrition.</span>
-        <span class="line-2">Purposeful Recovery.</span>
+      <!-- Heading split into word spans for staggered animation -->
+      <h1 class="hero__heading hero__heading--words">
+        <span class="hw">Precision</span>
+        <span class="hw">Nutrition.</span>
+        <span class="hw hw--break">Purposeful</span>
+        <span class="hw">Recovery.</span>
       </h1>
 
       <p class="hero__sub">
@@ -101,10 +78,55 @@
         <a href="productss.html" class="btn btn--primary">Explore Products</a>
         <a href="science.html"   class="btn btn--outline">Our Science</a>
       </div>
+
+      <!-- 3 inline trust badges below CTAs -->
+      <div class="hero__trust" aria-label="Trust credentials">
+        <span class="hero__trust-badge">✓ Clinically Tested</span>
+        <span class="hero__trust-sep" aria-hidden="true">|</span>
+        <span class="hero__trust-badge">✓ Made in India</span>
+        <span class="hero__trust-sep" aria-hidden="true">|</span>
+        <span class="hero__trust-badge">✓ USA Collaboration</span>
+      </div>
+
+    </div><!-- /hero__text-col -->
+
+    <!-- RIGHT COLUMN: Animated CSS composition -->
+    <div class="hero__visual-col" aria-hidden="true">
+
+      <!-- Large background orb -->
+      <div class="hero-orb"></div>
+
+      <!-- Floating card 1: Main stat card -->
+      <div class="hero-card hero-card--main">
+        <span class="hero-card__pill">CLINICAL GRADE</span>
+        <div class="hero-card__number">98%</div>
+        <div class="hero-card__label">Absorption Rate</div>
+      </div>
+
+      <!-- Floating card 2: Years of research (offset bottom-left) -->
+      <div class="hero-card hero-card--secondary">
+        <div class="hero-card__number hero-card__number--sm">10+</div>
+        <div class="hero-card__label">Years of Research</div>
+      </div>
+
+      <!-- Pill tags scattered around the orb -->
+      <span class="hero-pill hero-pill--1">L-Glutamine</span>
+      <span class="hero-pill hero-pill--2">Whey Peptide</span>
+      <span class="hero-pill hero-pill--3">MCT</span>
+
+    </div><!-- /hero__visual-col -->
+
+    <!-- Bottom-RIGHT floating collab label (CHANGE 1: moved from left) -->
+    <p class="hero__collab label">Technical Collaboration: Azzurra Pharmaconutrition, USA</p>
+
+    <!-- Scroll indicator at bottom-center -->
+    <div class="hero__scroll-indicator" aria-label="Scroll down">
+      <span class="hero__scroll-label">Scroll</span>
+      <div class="hero__scroll-line">
+        <div class="hero__scroll-dot"></div>
+      </div>
     </div>
 
-    <!-- Bottom-left floating label -->
-    <p class="hero__collab label">Technical Collaboration: Azzurra Pharmaconutrition, USA</p>
   </section>
 
 
@@ -113,27 +135,24 @@
        Animated count-up numbers on scroll
        ======================================================== -->
   <section class="stats-bar" aria-label="Key statistics">
-    <!-- Animated decorative progress line -->
-    <div id="stats-progress-line" class="stats-progress-line" aria-hidden="true"></div>
-
     <div class="stats-bar__grid stagger">
 
-      <div class="stats-bar__item" data-tooltip="Est. 2014 — A decade of clinical research">
+      <div class="stats-bar__item">
         <span class="stats-bar__number" data-count-to="10" data-suffix="+">0+</span>
         <span class="stats-bar__label">Years of Research</span>
       </div>
 
-      <div class="stats-bar__item" data-tooltip="Across Essential, Vital, Max, Provit, Lifeline &amp; Oral Series">
+      <div class="stats-bar__item">
         <span class="stats-bar__number" data-count-to="6" data-suffix="">0</span>
         <span class="stats-bar__label">Product Series</span>
       </div>
 
-      <div class="stats-bar__item" data-tooltip="Each formulation rigorously evaluated before launch">
+      <div class="stats-bar__item">
         <span class="stats-bar__number" data-count-to="50" data-suffix="+">0+</span>
         <span class="stats-bar__label">Clinical Formulations</span>
       </div>
 
-      <div class="stats-bar__item" data-tooltip="Scientists, clinicians, and nutrition experts working together">
+      <div class="stats-bar__item">
         <span class="stats-bar__number" data-count-to="18" data-suffix="">0</span>
         <span class="stats-bar__label">Expert Team Members</span>
       </div>
@@ -144,7 +163,7 @@
 
   <!-- ========================================================
        SECTION 3 — ABOUT AZZURRA
-       Two-column: text left, CSS molecule visual right
+       Two-column: text left, image placeholder right
        ======================================================== -->
   <section class="about-section section" aria-labelledby="about-heading">
     <div class="about-section__grid">
@@ -186,38 +205,16 @@
         <a href="about.html" class="btn btn--outline" style="margin-top: 8px;">Learn More</a>
       </div>
 
-      <!-- Right: CSS molecule / hexagonal grid visual -->
-      <div class="about-section__visual fade-up" aria-hidden="true">
-        <div class="molecule-grid" id="molecule-visual">
-          <div class="hex-row">
-            <div class="hex-cell hex-cell--filled"></div>
-            <div class="hex-cell hex-cell--border"></div>
-            <div class="hex-cell hex-cell--accent"></div>
-          </div>
-          <div class="hex-row hex-row--offset">
-            <div class="hex-cell hex-cell--border"></div>
-            <div class="hex-cell hex-cell--filled hex-cell--large">
-              <span class="hex-stat-num">2014</span>
-              <span class="hex-stat-label">Founded</span>
-            </div>
-            <div class="hex-cell hex-cell--border"></div>
-          </div>
-          <div class="hex-row">
-            <div class="hex-cell hex-cell--accent"></div>
-            <div class="hex-cell hex-cell--border"></div>
-            <div class="hex-cell hex-cell--filled"></div>
-          </div>
-          <!-- Connecting lines (decorative) -->
-          <div class="mol-connector mol-connector--h" style="top:22%;left:16%"></div>
-          <div class="mol-connector mol-connector--h" style="top:22%;left:50%"></div>
-          <div class="mol-connector mol-connector--v" style="top:36%;left:32%"></div>
-          <div class="mol-connector mol-connector--v" style="top:36%;left:66%"></div>
-          <div class="mol-connector mol-connector--h" style="top:62%;left:16%"></div>
-          <div class="mol-connector mol-connector--h" style="top:62%;left:50%"></div>
-          <!-- Floating atom dots -->
-          <div class="mol-atom" style="top:10%;right:8%;width:12px;height:12px;"></div>
-          <div class="mol-atom mol-atom--sm" style="bottom:12%;left:4%;width:8px;height:8px;"></div>
-          <div class="mol-atom mol-atom--outline" style="bottom:28%;right:4%;width:20px;height:20px;"></div>
+      <!-- Right: Image placeholder (replace with real photo later) -->
+      <!-- REPLACE WITH ACTUAL IMAGE: doctor-research-lab -->
+      <div class="about-section__visual fade-up">
+        <div
+          class="img-placeholder img-placeholder--about"
+          data-image-slot="doctor-research-lab"
+          aria-label="Image placeholder: Research team / lab setting"
+        >
+          <span class="img-placeholder__icon" aria-hidden="true">⚕️</span>
+          <span class="img-placeholder__label">Image: Research team / lab setting</span>
         </div>
       </div>
 
@@ -241,57 +238,45 @@
     <div class="series-grid stagger">
 
       <a href="productss.html" class="series-card fade-up">
-        <div class="series-card__left-accent" aria-hidden="true"></div>
         <div class="series-card__icon" aria-hidden="true">⚗️</div>
         <h3 class="series-card__name">Essential Series</h3>
         <p class="series-card__desc">Complete elemental nutrition for recovery and baseline nutritional support.</p>
         <div class="series-card__arrow">View Products →</div>
-        <div class="series-card__pill">3 Products →</div>
       </a>
 
       <a href="productss.html" class="series-card fade-up">
-        <div class="series-card__left-accent" aria-hidden="true"></div>
         <div class="series-card__icon" aria-hidden="true">💊</div>
         <h3 class="series-card__name">Vital Series</h3>
         <p class="series-card__desc">Targeted micronutrient therapy for specific deficiency conditions.</p>
         <div class="series-card__arrow">View Products →</div>
-        <div class="series-card__pill">4 Products →</div>
       </a>
 
       <a href="productss.html" class="series-card fade-up">
-        <div class="series-card__left-accent" aria-hidden="true"></div>
         <div class="series-card__icon" aria-hidden="true">🧬</div>
         <h3 class="series-card__name">Max Series</h3>
         <p class="series-card__desc">Advanced formulations engineered for critical care and intensive recovery.</p>
         <div class="series-card__arrow">View Products →</div>
-        <div class="series-card__pill">2 Products →</div>
       </a>
 
       <a href="productss.html" class="series-card fade-up">
-        <div class="series-card__left-accent" aria-hidden="true"></div>
         <div class="series-card__icon" aria-hidden="true">🌿</div>
         <h3 class="series-card__name">Provit Series</h3>
         <p class="series-card__desc">Synergistic protein and vitamin combinations for comprehensive nutrition.</p>
         <div class="series-card__arrow">View Products →</div>
-        <div class="series-card__pill">3 Products →</div>
       </a>
 
       <a href="productss.html" class="series-card fade-up">
-        <div class="series-card__left-accent" aria-hidden="true"></div>
         <div class="series-card__icon" aria-hidden="true">❤️‍🩹</div>
         <h3 class="series-card__name">Lifeline Series</h3>
         <p class="series-card__desc">Long-term nutritional support designed for patients with chronic conditions.</p>
         <div class="series-card__arrow">View Products →</div>
-        <div class="series-card__pill">4 Products →</div>
       </a>
 
       <a href="productss.html" class="series-card fade-up">
-        <div class="series-card__left-accent" aria-hidden="true"></div>
         <div class="series-card__icon" aria-hidden="true">🥤</div>
         <h3 class="series-card__name">Oral Series</h3>
         <p class="series-card__desc">Ready-to-use oral nutrition supplements for convenient daily consumption.</p>
         <div class="series-card__arrow">View Products →</div>
-        <div class="series-card__pill">5 Products →</div>
       </a>
 
     </div>
@@ -300,7 +285,7 @@
 
   <!-- ========================================================
        SECTION 5 — FEATURED PRODUCTS
-       Dynamically rendered from PRODUCTS array
+       Dynamically rendered from PRODUCTS array (products-data.js)
        ======================================================== -->
   <section class="featured-section section" aria-labelledby="featured-heading">
     <div class="section-header container">
@@ -311,10 +296,8 @@
       </p>
     </div>
 
-    <!-- Cards injected here by JS -->
-    <div class="featured-grid stagger" id="featured-grid">
-      <!-- Dynamically rendered by products-data.js + inline script below -->
-    </div>
+    <!-- Cards injected by initFeaturedProducts() -->
+    <div class="featured-grid stagger" id="featured-grid"></div>
 
     <!-- View All button -->
     <div style="text-align: center; margin-top: 48px;">
@@ -325,7 +308,7 @@
 
   <!-- ========================================================
        SECTION 6 — WHY AZZURRA
-       2×2 feature grid with inline SVG animated icons
+       2×2 feature grid
        ======================================================== -->
   <section class="why-section section" aria-labelledby="why-heading">
     <div class="section-header container">
@@ -333,16 +316,21 @@
       <h2 class="heading-xl" id="why-heading">Why Azzurra?</h2>
     </div>
 
+    <!-- Certifications background placeholder strip inside why section -->
+    <!-- REPLACE WITH ACTUAL IMAGE: certifications-strip -->
+    <div
+      class="img-placeholder img-placeholder--certstrip fade-up"
+      data-image-slot="certifications-strip"
+      aria-label="Image placeholder: Certification logos / FSSAI / ISO badges"
+    >
+      <span class="img-placeholder__icon" aria-hidden="true">🏅</span>
+      <span class="img-placeholder__label">Image: Certification logos / FSSAI / ISO badges</span>
+    </div>
+
     <div class="why-grid stagger">
 
       <div class="why-card fade-up">
-        <!-- Inline SVG: animated blue circle -->
-        <div class="why-card__icon-wrap" aria-hidden="true">
-          <svg class="why-icon-svg" viewBox="0 0 56 56" width="56" height="56">
-            <circle class="why-icon-circle" cx="28" cy="28" r="24" />
-          </svg>
-          <span class="why-icon-emoji">🔬</span>
-        </div>
+        <div class="why-card__icon" aria-hidden="true">🔬</div>
         <div>
           <h3 class="why-card__title">Clinically Validated</h3>
           <p class="why-card__desc">
@@ -353,12 +341,7 @@
       </div>
 
       <div class="why-card fade-up">
-        <div class="why-card__icon-wrap" aria-hidden="true">
-          <svg class="why-icon-svg" viewBox="0 0 56 56" width="56" height="56">
-            <circle class="why-icon-circle" cx="28" cy="28" r="24" />
-          </svg>
-          <span class="why-icon-emoji">⚙️</span>
-        </div>
+        <div class="why-card__icon" aria-hidden="true">⚙️</div>
         <div>
           <h3 class="why-card__title">Precision Formulated</h3>
           <p class="why-card__desc">
@@ -369,12 +352,7 @@
       </div>
 
       <div class="why-card fade-up">
-        <div class="why-card__icon-wrap" aria-hidden="true">
-          <svg class="why-icon-svg" viewBox="0 0 56 56" width="56" height="56">
-            <circle class="why-icon-circle" cx="28" cy="28" r="24" />
-          </svg>
-          <span class="why-icon-emoji">🌐</span>
-        </div>
+        <div class="why-card__icon" aria-hidden="true">🌐</div>
         <div>
           <h3 class="why-card__title">Global Standards</h3>
           <p class="why-card__desc">
@@ -385,12 +363,7 @@
       </div>
 
       <div class="why-card fade-up">
-        <div class="why-card__icon-wrap" aria-hidden="true">
-          <svg class="why-icon-svg" viewBox="0 0 56 56" width="56" height="56">
-            <circle class="why-icon-circle" cx="28" cy="28" r="24" />
-          </svg>
-          <span class="why-icon-emoji">🫀</span>
-        </div>
+        <div class="why-card__icon" aria-hidden="true">🫀</div>
         <div>
           <h3 class="why-card__title">Patient-Centric</h3>
           <p class="why-card__desc">
@@ -419,7 +392,50 @@
 
 
   <!-- ========================================================
-       SECTION 8 — CONTACT STRIP
+       SECTION 8 — CERTIFICATIONS & TRUST (new section)
+       Row of 5 certification badge placeholders
+       ======================================================== -->
+  <section class="cert-section section" aria-labelledby="cert-heading">
+    <div class="section-header container">
+      <h2 class="heading-xl" id="cert-heading" style="font-size: clamp(22px,3vw,30px);">Quality You Can Trust</h2>
+    </div>
+    <div class="cert-badges-row container fade-up">
+      <!-- REPLACE WITH ACTUAL IMAGE: cert-fssai -->
+      <div class="cert-badge" data-image-slot="cert-fssai">
+        <!-- REPLACE WITH ACTUAL IMAGE: FSSAI Certified logo -->
+        <span class="cert-badge__icon" aria-hidden="true">✅</span>
+        <span class="cert-badge__text">FSSAI Certified</span>
+      </div>
+      <!-- REPLACE WITH ACTUAL IMAGE: cert-iso -->
+      <div class="cert-badge" data-image-slot="cert-iso">
+        <!-- REPLACE WITH ACTUAL IMAGE: ISO Compliant logo -->
+        <span class="cert-badge__icon" aria-hidden="true">🏛️</span>
+        <span class="cert-badge__text">ISO Compliant</span>
+      </div>
+      <!-- REPLACE WITH ACTUAL IMAGE: cert-gmp -->
+      <div class="cert-badge" data-image-slot="cert-gmp">
+        <!-- REPLACE WITH ACTUAL IMAGE: GMP Certified logo -->
+        <span class="cert-badge__icon" aria-hidden="true">⚗️</span>
+        <span class="cert-badge__text">GMP Certified</span>
+      </div>
+      <!-- REPLACE WITH ACTUAL IMAGE: cert-usa -->
+      <div class="cert-badge" data-image-slot="cert-usa">
+        <!-- REPLACE WITH ACTUAL IMAGE: USA Collaboration badge -->
+        <span class="cert-badge__icon" aria-hidden="true">🇺🇸</span>
+        <span class="cert-badge__text">USA Collaboration</span>
+      </div>
+      <!-- REPLACE WITH ACTUAL IMAGE: cert-veg -->
+      <div class="cert-badge" data-image-slot="cert-veg">
+        <!-- REPLACE WITH ACTUAL IMAGE: Vegetarian Approved logo -->
+        <span class="cert-badge__icon" aria-hidden="true">🌿</span>
+        <span class="cert-badge__text">Vegetarian Approved</span>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ========================================================
+       SECTION 9 — CONTACT STRIP
        ======================================================== -->
   <section class="contact-strip section" aria-labelledby="contact-strip-heading">
     <div style="text-align: center;">
@@ -443,7 +459,7 @@
         <span class="contact-strip__icon" aria-hidden="true">📞</span>
         <p class="contact-strip__title">Phone</p>
         <p class="contact-strip__info">
-          <a href="tel:+919818999863">+91 9818999863</a>
+          <a href="tel:+919871648649">+91 98 71 648 649</a>
         </p>
       </div>
 
@@ -520,7 +536,7 @@
         <div class="footer__contact-item">
           <span class="footer__contact-icon" aria-hidden="true">📞</span>
           <p class="footer__contact-text">
-            <a href="tel:+919818999863">+91 9818999863</a>
+            <a href="tel:+919871648649">+91 98 71 648 649</a>
           </p>
         </div>
         <div class="footer__contact-item">
@@ -543,57 +559,113 @@
     </div>
   </footer>
 
-  <!-- Back to Top button -->
-  <button id="back-to-top" aria-label="Back to top" title="Back to top">↑</button>
-
-  <!-- Shared product data -->
   <script src="assets/js/products-data.js"></script>
-
-  <!-- Render Featured Products from PRODUCTS array -->
+  <script src="assets/js/supabase-products.js"></script>
+  <script src="assets/js/main.js"></script>
   <script>
-    (function renderFeaturedProducts() {
+  /* ============================================================
+     HOMEPAGE — Featured Products
+     1. Try loadFeaturedProductsFromSupabase() (from supabase-products.js)
+        which fetches WHERE is_featured=true LIMIT 6 from Supabase.
+     2. If that returns 0 products (table empty or network error),
+        fall back to the static PRODUCTS array (products-data.js).
+     3. Renders product cards into #featured-grid.
+     ============================================================ */
+  (function initFeaturedProducts() {
+
+    function renderCards(products) {
       var grid = document.getElementById('featured-grid');
-      if (!grid || typeof PRODUCTS === 'undefined') return;
+      if (!grid) return;
+      grid.innerHTML = '';
 
-      /* Show first 3 in-stock products as featured */
-      var featured = PRODUCTS.filter(function(p) { return p.inStock; }).slice(0, 3);
+      products.forEach(function(p, i) {
+        // Supabase products have `images` as a parsed array (mapper does JSON.parse)
+        // Static products also have `images` array
+        var firstImg = (p.images && p.images[0]) ? p.images[0] : '';
 
-      featured.forEach(function(product) {
+        // Add Cloudinary w_600 transform for performance
+        var imgSrc = firstImg
+          ? firstImg.replace('/image/upload/', '/image/upload/f_auto,q_auto,w_600/')
+              .replace('/image/upload/f_auto,q_auto,f_auto,q_auto,w_600/', '/image/upload/f_auto,q_auto,w_600/')
+          : '';
+
+        var imgHtml = imgSrc
+          ? '<img src="' + imgSrc + '" alt="' + p.name +
+            '" loading="' + (i < 2 ? 'eager' : 'lazy') + '" />'
+          : '<div style="width:100%;height:100%;background:#E8F1FB;display:flex;align-items:center;' +
+            'justify-content:center;font-weight:800;color:#1A5FA8;opacity:.4;font-size:18px;">AZZURRA</div>';
+
+        // Link — Supabase products: use product-detail.html?id=ID
+        // Static products: use detailPage field
+        var link = p.detailPage
+          ? p.detailPage
+          : (p._supabaseId ? 'product-detail.html?id=' + p._supabaseId : 'productss.html');
+
+        // Description — handle both field names
+        var desc = p.shortDescription || p.short_description || '';
+
         var article = document.createElement('article');
         article.className = 'product-card fade-up';
         article.setAttribute('role', 'button');
         article.setAttribute('tabindex', '0');
-        article.setAttribute('aria-label', product.name + ' product page');
-        article.addEventListener('click', function() {
-          location.href = product.detailPage;
-        });
-        article.addEventListener('keydown', function(e) {
-          if (e.key === 'Enter' || e.key === ' ') location.href = product.detailPage;
-        });
-
+        article.setAttribute('aria-label', p.name + ' \u2014 view product');
+        article.style.animationDelay = (i * 80) + 'ms';
+        article.style.cursor = 'pointer';
         article.innerHTML =
           '<div class="product-card__img">' +
-            '<img src="' + product.imagePath + '" alt="' + product.name + '" loading="lazy" />' +
-            '<span class="product-card__badge">' + product.series + '</span>' +
+            imgHtml +
+            '<span class="product-card__badge">Featured</span>' +
           '</div>' +
           '<div class="product-card__body">' +
-            '<p class="product-card__series">' + product.series + '</p>' +
-            '<h3 class="product-card__name">' + product.name + '</h3>' +
-            '<p class="product-card__desc">' + product.shortDesc + '</p>' +
+            '<p class="product-card__series">' + (p.series || '') + '</p>' +
+            '<h3 class="product-card__name">' + p.name + '</h3>' +
+            '<p class="product-card__desc">' + desc + '</p>' +
             '<div class="product-card__footer">' +
-              '<span class="product-card__price">₹' + product.price.toLocaleString('en-IN') + '</span>' +
-              '<span class="product-card__link">View Details →</span>' +
+              '<span class="product-card__link">View Details \u2192</span>' +
             '</div>' +
           '</div>';
+
+        article.addEventListener('click', function() { location.href = link; });
+        article.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); location.href = link; }
+        });
 
         grid.appendChild(article);
       });
 
-      /* Re-run fade-up observer for dynamically added cards */
       if (typeof window.initFadeUp === 'function') window.initFadeUp();
-    }());
-  </script>
+    }
 
-  <script src="assets/js/main.js"></script>
+    function renderFromStatic() {
+      if (typeof PRODUCTS === 'undefined') return;
+      var featured = PRODUCTS.filter(function(p) { return p.isFeatured; }).slice(0, 6);
+      if (featured.length === 0) featured = PRODUCTS.slice(0, 6);
+      renderCards(featured);
+    }
+
+    async function boot() {
+      // Try Supabase first
+      if (typeof window.loadFeaturedProductsFromSupabase === 'function') {
+        try {
+          var sbProducts = await window.loadFeaturedProductsFromSupabase(6);
+          if (sbProducts && sbProducts.length > 0) {
+            renderCards(sbProducts);
+            return;
+          }
+        } catch (e) {
+          console.warn('[Azzurra] Featured fetch failed, using static fallback:', e.message);
+        }
+      }
+      // Fallback: use the static PRODUCTS array
+      renderFromStatic();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', boot);
+    } else {
+      boot();
+    }
+  }());
+  </script>
 </body>
 </html>

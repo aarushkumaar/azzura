@@ -183,20 +183,12 @@ input, textarea, select {
   transition: opacity var(--ease-slow), transform var(--ease-slow);
 }
 
-.stagger.visible > *:nth-child(1)  { opacity: 1; transform: translateY(0); transition-delay: 0s; }
-.stagger.visible > *:nth-child(2)  { opacity: 1; transform: translateY(0); transition-delay: 0.08s; }
-.stagger.visible > *:nth-child(3)  { opacity: 1; transform: translateY(0); transition-delay: 0.16s; }
-.stagger.visible > *:nth-child(4)  { opacity: 1; transform: translateY(0); transition-delay: 0.24s; }
-.stagger.visible > *:nth-child(5)  { opacity: 1; transform: translateY(0); transition-delay: 0.32s; }
-.stagger.visible > *:nth-child(6)  { opacity: 1; transform: translateY(0); transition-delay: 0.40s; }
-.stagger.visible > *:nth-child(7)  { opacity: 1; transform: translateY(0); transition-delay: 0.48s; }
-.stagger.visible > *:nth-child(8)  { opacity: 1; transform: translateY(0); transition-delay: 0.56s; }
-.stagger.visible > *:nth-child(9)  { opacity: 1; transform: translateY(0); transition-delay: 0.60s; }
-.stagger.visible > *:nth-child(10) { opacity: 1; transform: translateY(0); transition-delay: 0.60s; }
-.stagger.visible > *:nth-child(11) { opacity: 1; transform: translateY(0); transition-delay: 0.60s; }
-.stagger.visible > *:nth-child(12) { opacity: 1; transform: translateY(0); transition-delay: 0.60s; }
-/* Items beyond 12 appear immediately without delay */
-.stagger.visible > *:nth-child(n+13) { opacity: 1; transform: translateY(0); }
+.stagger.visible > *:nth-child(1) { opacity: 1; transform: translateY(0); transition-delay: 0s; }
+.stagger.visible > *:nth-child(2) { opacity: 1; transform: translateY(0); transition-delay: 0.1s; }
+.stagger.visible > *:nth-child(3) { opacity: 1; transform: translateY(0); transition-delay: 0.2s; }
+.stagger.visible > *:nth-child(4) { opacity: 1; transform: translateY(0); transition-delay: 0.3s; }
+.stagger.visible > *:nth-child(5) { opacity: 1; transform: translateY(0); transition-delay: 0.4s; }
+.stagger.visible > *:nth-child(6) { opacity: 1; transform: translateY(0); transition-delay: 0.5s; }
 
 /* ============================================================
    NAVBAR
@@ -429,35 +421,6 @@ input, textarea, select {
 .btn--text:hover {
   gap: 10px;
   color: var(--color-primary-dark);
-}
-
-/* select dropdown arrow — used on shop sort, admin filter selects */
-select.form-input {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B7280' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 14px center;
-  padding-right: 40px;
-  -webkit-appearance: none;
-  appearance: none;
-}
-
-/* Breadcrumb — checkout.html and sub-pages */
-.page-hero__breadcrumb {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  color: var(--color-grey);
-  margin-bottom: 12px;
-}
-
-.page-hero__breadcrumb a {
-  color: var(--color-primary);
-  font-weight: 500;
-}
-
-.page-hero__breadcrumb a:hover {
-  text-decoration: underline;
 }
 
 /* ============================================================
@@ -2012,444 +1975,503 @@ select.form-input {
 }
 
 /* ============================================================
-   HERO — FLOATING PARTICLES (CSS animated, no libraries)
-   12 small blue circles that float upward in a loop
+   HERO — SPLIT TWO-COLUMN LAYOUT (CHANGE 2)
+   60% text left, 40% visual right
    ============================================================ */
-.hero-particles {
+
+/* Override old centered hero for the split version */
+.hero--split {
+  text-align: left;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 100px 60px 80px;
+  gap: 0;
+  overflow: hidden;
+}
+
+/* Dot-grid background using ::before pseudo-element */
+.hero--split::before {
+  content: '';
   position: absolute;
   inset: 0;
-  overflow: hidden;
+  background-image: radial-gradient(#1A5FA8 1px, transparent 1px);
+  background-size: 28px 28px;
+  opacity: 0.04;
   pointer-events: none;
   z-index: 0;
 }
 
-.hero-particle {
+/* Cancel old large circle ::after on the split hero */
+.hero--split::after {
+  display: none;
+}
+
+/* Text column — 60% wide */
+.hero__text-col {
+  flex: 0 0 58%;
+  max-width: 58%;
+  position: relative;
+  z-index: 1;
+  padding-right: 40px;
+}
+
+/* Visual column — 40% wide */
+.hero__visual-col {
+  flex: 0 0 42%;
+  max-width: 42%;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 480px;
+}
+
+/* ---- Animated blue rule: draws left-to-right ---- */
+.hero__rule--animated {
+  margin: 0 0 32px 0; /* left-aligned instead of auto */
+  width: 0;
+  animation: drawRule 0.8s ease forwards 0.2s;
+}
+
+@keyframes drawRule {
+  to { width: 60px; }
+}
+
+/* ---- Word-by-word heading reveal ---- */
+.hero__heading--words {
+  text-align: left;
+}
+
+/* Each word wrapped in .hw gets staggered fadeSlideUp */
+.hw {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeSlideUp 0.5s ease forwards;
+  margin-right: 12px;
+}
+
+/* Break before the second line */
+.hw--break {
+  display: block;
+  margin-right: 0;
+}
+
+/* Stagger each word by 0.1s */
+.hw:nth-child(1) { animation-delay: 0.3s; }
+.hw:nth-child(2) { animation-delay: 0.4s; }
+.hw:nth-child(3) { animation-delay: 0.5s; }
+.hw:nth-child(4) { animation-delay: 0.6s; }
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Left-align sub and ctas in split hero */
+.hero--split .hero__sub {
+  text-align: left;
+  animation-delay: 0.9s;
+}
+
+.hero--split .hero__ctas {
+  justify-content: flex-start;
+  animation-delay: 1.1s;
+}
+
+/* ---- Trust badges below CTAs ---- */
+.hero__trust {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+  opacity: 0;
+  animation: fadeSlideUp 0.5s ease forwards 1.4s;
+}
+
+.hero__trust-badge {
+  font-size: 12px;
+  color: var(--color-grey);
+  font-family: var(--font-body);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.hero__trust-sep {
+  color: var(--color-border);
+  font-size: 14px;
+}
+
+/* ---- CHANGE 1: Collab text → bottom RIGHT ---- */
+.hero__collab {
   position: absolute;
+  bottom: 32px;
+  right: 40px;  /* moved from left: 40px to right: 40px */
+  left: auto;   /* explicitly override any left value */
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-grey);
+  font-weight: 500;
+  z-index: 2;
+}
+
+/* ============================================================
+   HERO VISUAL COMPOSITION (right column)
+   ============================================================ */
+
+/* Large background orb */
+.hero-orb {
+  position: absolute;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  background: var(--color-primary-light);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 0;
+}
+
+/* ---- Floating cards ---- */
+.hero-card {
+  position: absolute;
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(26,95,168,0.10);
+  z-index: 2;
+  padding: 18px 24px;
+  text-align: center;
+  min-width: 180px;
+}
+
+/* Main card: centered above the orb, floats gently */
+.hero-card--main {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -66%);
+  min-width: 200px;
+  animation: floatCard 3s ease-in-out infinite;
+}
+
+/* Secondary card: bottom-left of orb, offset, delayed float */
+.hero-card--secondary {
+  bottom: 6%;
+  left: 4%;
+  min-width: 140px;
+  animation: floatCard 3s ease-in-out infinite 1.5s;
+}
+
+@keyframes floatCard {
+  0%, 100% { transform: translate(-50%, -66%) translateY(0);  }
+  50%       { transform: translate(-50%, -66%) translateY(-8px); }
+}
+
+.hero-card--secondary {
+  /* Secondary card has different base position — separate animation */
+  animation: floatCardSec 3s ease-in-out infinite 1.5s;
+}
+
+@keyframes floatCardSec {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-8px); }
+}
+
+.hero-card__pill {
+  display: inline-block;
+  background: var(--color-primary);
+  color: var(--color-white);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 100px;
+  margin-bottom: 10px;
+}
+
+.hero-card__number {
+  font-family: var(--font-heading);
+  font-size: 40px;
+  color: var(--color-primary);
+  line-height: 1;
+  font-weight: 400;
+  margin-bottom: 4px;
+}
+
+.hero-card__number--sm {
+  font-size: 30px;
+}
+
+.hero-card__label {
+  font-size: 12px;
+  color: var(--color-grey);
+  font-weight: 500;
+}
+
+/* ---- Pill tags: scattered around orb ---- */
+.hero-pill {
+  position: absolute;
+  background: var(--color-white);
+  border: 1.5px solid var(--color-primary);
+  color: var(--color-primary);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 100px;
+  z-index: 3;
+  white-space: nowrap;
+  animation: pillPulse 2s ease-in-out infinite;
+}
+
+.hero-pill--1 {
+  top: 10%;
+  right: 5%;
+  animation-delay: 0s;
+}
+
+.hero-pill--2 {
+  top: 32%;
+  left: 2%;
+  animation-delay: 0.7s;
+}
+
+.hero-pill--3 {
+  bottom: 22%;
+  right: 8%;
+  animation-delay: 1.4s;
+}
+
+@keyframes pillPulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.6; }
+}
+
+/* ============================================================
+   SCROLL INDICATOR (bottom-center of hero)
+   ============================================================ */
+.hero__scroll-indicator {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  z-index: 2;
+}
+
+.hero__scroll-label {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-grey);
+  font-weight: 600;
+}
+
+.hero__scroll-line {
+  width: 2px;
+  height: 30px;
+  background: var(--color-border);
+  border-radius: 2px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero__scroll-dot {
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
   width: 6px;
   height: 6px;
   border-radius: 50%;
   background: var(--color-primary);
-  opacity: 0.08;
-  animation: floatUp 12s ease-in infinite;
+  animation: scrollDot 1.8s ease-in-out infinite;
 }
 
-/* Randomized positions and delays using nth-child */
-.hero-particle:nth-child(1)  { left: 8%;   animation-delay: 0s;    animation-duration: 14s; }
-.hero-particle:nth-child(2)  { left: 17%;  animation-delay: 1.5s;  animation-duration: 11s; }
-.hero-particle:nth-child(3)  { left: 27%;  animation-delay: 3s;    animation-duration: 15s; }
-.hero-particle:nth-child(4)  { left: 38%;  animation-delay: 0.7s;  animation-duration: 12s; }
-.hero-particle:nth-child(5)  { left: 49%;  animation-delay: 2.2s;  animation-duration: 13s; }
-.hero-particle:nth-child(6)  { left: 58%;  animation-delay: 4s;    animation-duration: 10s; }
-.hero-particle:nth-child(7)  { left: 66%;  animation-delay: 1s;    animation-duration: 16s; }
-.hero-particle:nth-child(8)  { left: 74%;  animation-delay: 3.5s;  animation-duration: 11s; }
-.hero-particle:nth-child(9)  { left: 82%;  animation-delay: 0.3s;  animation-duration: 14s; }
-.hero-particle:nth-child(10) { left: 90%;  animation-delay: 2.8s;  animation-duration: 13s; }
-.hero-particle:nth-child(11) { left: 13%;  animation-delay: 5s;    animation-duration: 12s; }
-.hero-particle:nth-child(12) { left: 54%;  animation-delay: 6s;    animation-duration: 15s; }
-
-@keyframes floatUp {
-  0%   { transform: translateY(100vh); opacity: 0; }
-  10%  { opacity: 0.08; }
-  90%  { opacity: 0.08; }
-  100% { transform: translateY(-60px); opacity: 0; }
+@keyframes scrollDot {
+  0%   { top: -6px; opacity: 0; }
+  20%  { opacity: 1; }
+  80%  { opacity: 1; }
+  100% { top: 30px; opacity: 0; }
 }
 
 /* ============================================================
-   HERO — WATERMARK "AZZURRA" TEXT
-   Large faint text centered behind the heading
+   IMAGE PLACEHOLDERS
+   Styled blue-tinted placeholder blocks with icon + label
+   Replace with <img> tags when real photos are available
    ============================================================ */
-.hero__watermark {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-family: var(--font-heading);
-  font-size: clamp(80px, 18vw, 220px);
-  font-weight: 400;
-  color: var(--color-primary);
-  opacity: 0.03;
-  white-space: nowrap;
-  pointer-events: none;
-  user-select: none;
-  z-index: 0;
-  line-height: 1;
-}
-
-/* Ensure hero content is above watermark and particles */
-.hero__inner,
-.hero__collab {
-  position: relative;
-  z-index: 1;
-}
-
-/* ============================================================
-   STATS BAR — ANIMATED PROGRESS LINE
-   Thin blue bar that fills left-to-right on scroll into view
-   ============================================================ */
-.stats-progress-line {
-  height: 2px;
-  background: var(--color-primary);
-  width: 0%;
-  transition: width 1.6s cubic-bezier(0.4, 0, 0.2, 1);
-  margin-bottom: 4px;
-  border-radius: 2px;
-  max-width: var(--container-max);
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.stats-progress-line.animate {
-  width: 100%;
-}
-
-/* ============================================================
-   STATS BAR — HOVER TOOLTIPS
-   Shows extra context on each stat item on hover
-   ============================================================ */
-.stats-bar__item {
-  position: relative; /* already defined, adding tooltip support */
-}
-
-.stats-bar__item[data-tooltip]::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  bottom: calc(100% + 10px);
-  left: 50%;
-  transform: translateX(-50%) scale(0.92);
-  background: var(--color-dark);
-  color: var(--color-white);
-  font-size: 12px;
-  padding: 8px 12px;
-  border-radius: 8px;
-  white-space: nowrap;
-  max-width: 260px;
-  white-space: normal;
-  text-align: center;
-  line-height: 1.4;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s ease, transform 0.2s ease;
-  z-index: 10;
-  width: 200px;
-}
-
-.stats-bar__item[data-tooltip]:hover::after {
-  opacity: 1;
-  transform: translateX(-50%) scale(1);
-}
-
-/* ============================================================
-   ABOUT SECTION — CSS MOLECULE / HEXAGONAL GRID VISUAL
-   Pure CSS illustration — no images, no SVG files
-   ============================================================ */
-.molecule-grid {
-  position: relative;
-  width: 100%;
-  height: 400px;
+.img-placeholder {
+  background: var(--color-primary-light);
+  border: 1px dashed var(--color-border);
+  border-radius: 16px;
   display: flex;
   flex-direction: column;
+  align-items: center;
   justify-content: center;
-  gap: 16px;
-  padding: 20px;
+  gap: 10px;
+  text-align: center;
+  padding: 24px;
 }
 
-.hex-row {
+.img-placeholder__icon {
+  font-size: 40px;
+  opacity: 0.45;
+}
+
+.img-placeholder__label {
+  font-size: 11px;
+  color: var(--color-grey);
+  font-style: italic;
+  letter-spacing: 0.02em;
+  max-width: 200px;
+  line-height: 1.5;
+}
+
+/* About section: 400×300px placeholder */
+.img-placeholder--about {
+  width: 100%;
+  height: 300px;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+/* Why section: full-width, short strip */
+.img-placeholder--certstrip {
+  width: 100%;
+  height: 120px;
+  border-radius: 12px;
+  max-width: var(--container-max);
+  margin: 0 auto 48px;
+  padding: var(--container-pad);
+}
+
+/* ============================================================
+   CERTIFICATIONS & TRUST SECTION
+   Horizontal scrolling row of 5 badge cards
+   ============================================================ */
+.cert-section {
+  padding: 64px 0 80px;
+  background: var(--color-white);
+  border-top: 1px solid var(--color-border);
+}
+
+.cert-badges-row {
   display: flex;
   gap: 20px;
   justify-content: center;
-  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 40px;
+  overflow-x: auto;
+  padding-bottom: 8px; /* for scrollbar breathing room on mobile */
+  -webkit-overflow-scrolling: touch;
 }
 
-.hex-row--offset {
-  margin-left: 60px;
-}
-
-/* Hexagon cell */
-.hex-cell {
-  width: 90px;
-  height: 90px;
-  clip-path: polygon(50% 0%, 95% 25%, 95% 75%, 50% 100%, 5% 75%, 5% 25%);
+.cert-badge {
+  width: 120px;
+  min-width: 120px;
+  height: 80px;
+  background: var(--color-white);
+  border: 1.5px solid var(--color-primary);
+  border-radius: 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  transition: transform 0.3s ease;
-  flex-shrink: 0;
+  gap: 8px;
+  text-align: center;
+  padding: 10px;
+  transition: transform var(--ease), box-shadow var(--ease);
 }
 
-.hex-cell:hover {
-  transform: scale(1.06);
+.cert-badge:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(26,95,168,0.15);
 }
 
-.hex-cell--filled {
-  background: var(--color-primary);
-  opacity: 0.85;
-}
-
-.hex-cell--border {
-  background: var(--color-primary-light);
-  border: 2px solid var(--color-primary);
-  /* clip-path doesn't support border so we use inner layering */
-  position: relative;
-}
-
-.hex-cell--accent {
-  background: rgba(26, 95, 168, 0.15);
-}
-
-.hex-cell--large {
-  width: 110px;
-  height: 110px;
-  background: var(--color-white);
-  border: none;
-  clip-path: polygon(50% 0%, 95% 25%, 95% 75%, 50% 100%, 5% 75%, 5% 25%);
-  box-shadow: 0 0 0 2px var(--color-primary);
-}
-
-.hex-stat-num {
-  font-family: var(--font-heading);
+.cert-badge__icon {
   font-size: 22px;
-  color: var(--color-primary);
-  line-height: 1;
-  font-weight: 400;
 }
 
-.hex-stat-label {
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--color-grey);
+.cert-badge__text {
+  font-size: 11px;
   font-weight: 700;
-  margin-top: 4px;
-}
-
-/* Connector lines between hexagons */
-.mol-connector {
-  position: absolute;
-  background: var(--color-primary);
-  opacity: 0.25;
-}
-
-.mol-connector--h {
-  height: 2px;
-  width: 28px;
-}
-
-.mol-connector--v {
-  width: 2px;
-  height: 28px;
-}
-
-/* Floating atom dots */
-.mol-atom {
-  position: absolute;
-  border-radius: 50%;
-  background: var(--color-primary);
-  opacity: 0.4;
-  animation: atomPulse 3s ease-in-out infinite alternate;
-}
-
-.mol-atom--sm {
-  animation-delay: 1.2s;
-}
-
-.mol-atom--outline {
-  background: transparent;
-  border: 2px solid var(--color-primary);
-  animation-delay: 0.6s;
-  opacity: 0.5;
-}
-
-@keyframes atomPulse {
-  0%   { transform: scale(1) translateY(0); }
-  100% { transform: scale(1.15) translateY(-4px); }
-}
-
-/* ============================================================
-   SERIES CARDS — PILL BADGE + LEFT BORDER ACCENT
-   Reveals "X Products →" pill on hover via max-height
-   ============================================================ */
-.series-card {
-  position: relative;
-  overflow: hidden;
-  /* Reset left padding to accommodate the accent bar */
-  padding-left: 36px;
-}
-
-/* Left border accent — grows full height on hover */
-.series-card__left-accent {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 3px;
-  height: 0%;
-  background: var(--color-primary);
-  border-radius: 0 2px 2px 0;
-  transition: height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.series-card:hover .series-card__left-accent {
-  height: 100%;
-}
-
-/* Hidden pill badge — revealed on hover */
-.series-card__pill {
-  max-height: 0;
-  overflow: hidden;
-  opacity: 0;
-  margin-top: 0;
-  background: var(--color-primary);
-  color: var(--color-white);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  padding: 0 12px;
-  border-radius: 100px;
-  display: inline-flex;
-  align-items: center;
-  transition: max-height 0.3s ease, opacity 0.3s ease, margin-top 0.3s ease, padding 0.3s ease;
-}
-
-.series-card:hover .series-card__pill {
-  max-height: 36px;
-  opacity: 1;
-  margin-top: 12px;
-  padding: 6px 12px;
-}
-
-/* ============================================================
-   WHY AZZURRA — SVG CIRCLE DRAW ANIMATION
-   Inline SVG circle with stroke-dashoffset animation
-   ============================================================ */
-.why-card__icon {
-  display: none; /* Hide the old emoji icon — replaced by SVG wrap */
-}
-
-.why-card__icon-wrap {
-  position: relative;
-  width: 56px;
-  height: 56px;
-  flex-shrink: 0;
-}
-
-.why-icon-svg {
-  position: absolute;
-  inset: 0;
-  overflow: visible;
-}
-
-.why-icon-circle {
-  fill: none;
-  stroke: var(--color-primary);
-  stroke-width: 2;
-  /* Circle circumference ≈ 2π × 24 ≈ 150.8 */
-  stroke-dasharray: 151;
-  stroke-dashoffset: 151;
-  stroke-linecap: round;
-  transition: stroke-dashoffset 1s ease 0.2s;
-  transform-origin: center;
-  transform: rotate(-90deg);
-}
-
-.why-icon-circle.draw {
-  stroke-dashoffset: 0;
-}
-
-.why-icon-emoji {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
-  background: var(--color-primary-light);
-  border-radius: 50%;
-}
-
-/* ============================================================
-   PRODUCT CARD — PRICE DISPLAY
-   ============================================================ */
-.product-card__price {
-  font-family: var(--font-heading);
-  font-size: 20px;
   color: var(--color-primary);
-  font-weight: 400;
+  letter-spacing: 0.04em;
+  line-height: 1.3;
 }
 
 /* ============================================================
-   NAVBAR — CART ICON
-   Overrides for the cart icon in the main navbar
+   RESPONSIVE — Split Hero & New Components
    ============================================================ */
-.navbar__cart-icon {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  font-size: 20px;
-  cursor: pointer;
-  text-decoration: none;
-  color: var(--color-dark);
-  transition: color var(--ease), transform var(--ease);
-}
-
-.navbar__cart-icon:hover {
-  color: var(--color-primary);
-  transform: scale(1.1);
-}
-
-.navbar__cart-badge {
-  position: absolute;
-  top: 2px;
-  right: 0px;
-  background: #e53e3e;
-  color: white;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  font-size: 10px;
-  font-weight: 700;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-}
-
-/* ============================================================
-   RESPONSIVE ADDITIONS
-   ============================================================ */
-@media (max-width: 768px) {
-  .hero__watermark {
-    font-size: 80px;
+@media (max-width: 960px) {
+  .hero--split {
+    flex-direction: column;
+    padding: 110px 32px 80px;
+    text-align: center;
+    align-items: center;
   }
 
-  .molecule-grid {
-    height: 280px;
+  .hero__text-col,
+  .hero__visual-col {
+    flex: none;
+    max-width: 100%;
+    padding-right: 0;
+    width: 100%;
   }
 
-  .hex-cell {
-    width: 64px;
-    height: 64px;
+  .hero__text-col {
+    text-align: center;
   }
 
-  .hex-cell--large {
-    width: 80px;
-    height: 80px;
+  .hero__heading--words {
+    text-align: center;
   }
 
-  .hex-stat-num {
-    font-size: 16px;
+  .hero--split .hero__ctas {
+    justify-content: center;
   }
 
-  .stats-bar__item[data-tooltip]::after {
-    display: none; /* Tooltips hidden on mobile for UX */
+  .hero__trust {
+    justify-content: center;
+  }
+
+  .hero__visual-col {
+    min-height: 320px;
+    margin-top: 32px;
+    display: none; /* Hide on mobile to keep hero clean */
+  }
+
+  .hero__rule--animated {
+    margin: 0 auto 32px;
+  }
+
+  /* Collab label: move to bottom center on mobile */
+  .hero__collab {
+    right: auto;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
   }
 }
 
-@media (max-width: 480px) {
-  .molecule-grid {
-    transform: scale(0.8);
-    transform-origin: center center;
+@media (max-width: 600px) {
+  .hero--split {
+    padding: 100px 20px 80px;
+  }
+
+  .hero__scroll-indicator {
+    display: none; /* avoid overlap on small screens */
+  }
+
+  .cert-badges-row {
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    padding: 0 20px 12px;
   }
 }
