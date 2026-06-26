@@ -6,7 +6,10 @@
   <meta name="robots" content="noindex, nofollow" />
   <title>Admin Login — Azzurra Pharmaconutrition</title>
 
-  <!-- Google Fonts: Inter + DM Serif Display -->
+  <!-- Supabase UMD — must load BEFORE any script that uses window.supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -16,11 +19,7 @@
 
   <style>
     /* ── Reset & Base ─────────────────────────────────────── */
-    *, *::before, *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
       --color-primary:       #1A5FA8;
@@ -54,10 +53,7 @@
     }
 
     /* ── Card Header ──────────────────────────────────────── */
-    .card-header {
-      text-align: center;
-      margin-bottom: 32px;
-    }
+    .card-header { text-align: center; margin-bottom: 32px; }
 
     .logo-text {
       font-family: 'Inter', sans-serif;
@@ -104,9 +100,7 @@
     }
 
     /* ── Form ─────────────────────────────────────────────── */
-    .form-group {
-      margin-bottom: 16px;
-    }
+    .form-group { margin-bottom: 16px; }
 
     label {
       display: block;
@@ -116,10 +110,7 @@
       margin-bottom: 6px;
     }
 
-    /* Input wrapper: position:relative so toggle sits inside */
-    .input-wrapper {
-      position: relative;
-    }
+    .input-wrapper { position: relative; }
 
     input[type="email"],
     input[type="password"],
@@ -140,15 +131,11 @@
     input[type="password"]:focus,
     input[type="text"]:focus {
       border-color: var(--color-primary);
-      outline: none;
     }
 
-    /* Extra right padding so text doesn't overlap the toggle icon */
-    #password {
-      padding-right: 44px;
-    }
+    #password { padding-right: 44px; }
 
-    /* ── Password Toggle Button ───────────────────────────── */
+    /* ── Password Toggle ──────────────────────────────────── */
     .toggle-password {
       position: absolute;
       right: 12px;
@@ -162,15 +149,9 @@
       padding: 0;
       display: flex;
       align-items: center;
-      justify-content: center;
       color: var(--color-grey);
       user-select: none;
       outline: none;
-    }
-
-    .toggle-password:focus-visible {
-      outline: 2px solid var(--color-primary);
-      border-radius: 4px;
     }
 
     /* ── Sign In Button ───────────────────────────────────── */
@@ -194,20 +175,11 @@
       letter-spacing: 0.01em;
     }
 
-    .btn-signin:hover:not(:disabled) {
-      background-color: var(--color-primary-dark);
-    }
+    .btn-signin:hover:not(:disabled) { background-color: var(--color-primary-dark); }
+    .btn-signin:disabled { opacity: 0.7; cursor: not-allowed; }
 
-    .btn-signin:disabled {
-      opacity: 0.7;
-      cursor: not-allowed;
-    }
-
-    /* ── Spinner Animation ────────────────────────────────── */
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
+    /* ── Spinner ──────────────────────────────────────────── */
+    @keyframes spin { to { transform: rotate(360deg); } }
     .spinner {
       display: inline-block;
       animation: spin 1s linear infinite;
@@ -227,10 +199,7 @@
       margin-top: 14px;
       line-height: 1.5;
     }
-
-    .error-message.show {
-      display: block;
-    }
+    .error-message.show { display: block; }
 
     /* ── Footer ───────────────────────────────────────────── */
     .card-footer {
@@ -257,7 +226,7 @@
       <p class="card-subtitle">Azzurra Pharmaconutrition &mdash; Internal Access Only</p>
     </div>
 
-    <!-- Form -->
+    <!-- Form — always visible immediately, no hiding, no redirects on load -->
     <form id="login-form" novalidate>
 
       <!-- Email -->
@@ -268,7 +237,6 @@
             type="email"
             id="email"
             name="email"
-            value="aarushk0207@gmail.com"
             autocomplete="email"
             required
           />
@@ -286,13 +254,11 @@
             autocomplete="current-password"
             required
           />
-          <!-- Eye toggle — sits absolutely inside .input-wrapper -->
           <button
             type="button"
             class="toggle-password"
             id="toggle-password"
-            aria-label="Toggle password visibility"
-            title="Show/hide password"
+            aria-label="Show password"
           >&#128065;</button>
         </div>
       </div>
@@ -314,178 +280,83 @@
       &copy; 2025 Azzurra Pharmaconutrition. Restricted access.
     </div>
 
-<!-- <<<<<<< Updated upstream
-  <script src="config.js"></script>
+  </div><!-- /.card -->
+
+  <!-- ── Auth Logic ─────────────────────────────────────── -->
   <script>
-    /* ============================================================
-       Admin Login — Supabase Magic Link Auth
-       On submit: calls Supabase Auth signInWithOtp to send a
-       magic link to the provided email. If the email exists in
-       admin_users, auth will succeed; otherwise the admin.html
-       page will deny access.
-       ============================================================ */
-    document.getElementById('login-form').addEventListener('submit', async function(e) {
+    // ── Config ──────────────────────────────────────────────
+    var SUPABASE_URL      = 'https://ilduyhuvpiqhvbnocqxf.supabase.co';
+    var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlsZHV5aHV2cGlxaHZibm9jcXhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4MTMxNTUsImV4cCI6MjA5NjM4OTE1NX0.uuC8dKajsnSSaiTx_wxNeapKPl4EV20s5phcRS-TaZg';
+
+    // Initialize Supabase client ONCE using the UMD global
+    var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // ── DOM refs ─────────────────────────────────────────────
+    var form        = document.getElementById('login-form');
+    var emailInput  = document.getElementById('email');
+    var pwInput     = document.getElementById('password');
+    var signinBtn   = document.getElementById('signin-btn');
+    var errorMsg    = document.getElementById('error-message');
+    var toggleBtn   = document.getElementById('toggle-password');
+
+    // ── Form submit ──────────────────────────────────────────
+    // NO session check on page load — the login page always shows the form.
+    form.addEventListener('submit', async function(e) {
       e.preventDefault();
 
-      const emailInput = document.getElementById('admin-email');
-      const email      = emailInput.value.trim();
-      const errEl      = document.getElementById('login-error');
-      const successEl  = document.getElementById('login-success');
-      const btn        = document.getElementById('login-btn');
-      const emailErrEl = document.getElementById('err-email');
+      errorMsg.classList.remove('show');
+      setLoading(true);
 
-      // Clear previous state
-      errEl.classList.remove('show');
-      successEl.classList.remove('show');
-      emailErrEl.classList.remove('show');
-      emailInput.classList.remove('error');
+      var email    = emailInput.value.trim();
+      var password = pwInput.value;
 
-      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        emailInput.classList.add('error');
-        emailErrEl.classList.add('show');
+      if (!email || !password) {
+        setLoading(false);
+        showError('Please enter both email and password.');
         return;
       }
 
-      btn.disabled    = true;
-      btn.textContent = 'Sending…';
-
       try {
-        /* Supabase Auth REST API — signInWithOtp */
-        const res = await fetch(`${SUPABASE_URL}/auth/v1/otp`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'apikey':       SUPABASE_ANON_KEY,
-          },
-          body: JSON.stringify({
-            email:            email,
-            create_user:      false,  // Don't create new users — only existing admins
-            redirect_to:      `${window.location.origin}/admin.html`,
-          }),
-        });
+        var result = await sb.auth.signInWithPassword({ email: email, password: password });
 
-        if (!res.ok) {
-          const err = await res.json();
-          throw new Error(err.error_description || err.msg || 'Failed to send login link.');
-        }
-
-        successEl.classList.add('show');
-        btn.textContent = 'Link Sent ✓';
-
-      } catch (err) {
-        errEl.textContent = err.message;
-        errEl.classList.add('show');
-        btn.disabled    = false;
-        btn.textContent = 'Send Login Link';
-      }
-    });
-
-    /* If already logged in, redirect straight to admin dashboard */
-    (async function checkExistingSession() {
-      try {
-        const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-          headers: {
-            'apikey':       SUPABASE_ANON_KEY,
-            'Authorization': `Bearer ${localStorage.getItem('sb-access-token') || ''}`,
-          }
-        });
-        if (res.ok) {
-          const user = await res.json();
-          if (user?.id) window.location.href = 'admin.html';
-        }
-      } catch (_) { /* no session — show login form */ }
-    })();
-======= -->
-  </div><!-- /.card -->
-
-  <!-- ── Supabase Auth Logic ─────────────────────────────── -->
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-
-    /* ── Config ───────────────────────────────────────────── */
-    const SUPABASE_URL      = 'https://ilduyhuvpiqhvbnocqxf.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlsZHV5aHV2cGlxaHZibm9jcXhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4MTMxNTUsImV4cCI6MjA5NjM4OTE1NX0.uuC8dKajsnSSaiTx_wxNeapKPl4EV20s5phcRS-TaZg';
-
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    /* ── DOM Refs ─────────────────────────────────────────── */
-    const form          = document.getElementById('login-form');
-    const emailInput    = document.getElementById('email');
-    const passwordInput = document.getElementById('password');
-    const signinBtn     = document.getElementById('signin-btn');
-    const errorMsg      = document.getElementById('error-message');
-    const toggleBtn     = document.getElementById('toggle-password');
-
-    /* ── 1. Session Check on Load ─────────────────────────── */
-    document.addEventListener('DOMContentLoaded', async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          // Already authenticated — skip login
-          window.location.replace('admin.html');
-        }
-      } catch (err) {
-        // Non-blocking: just display the form if check fails
-        console.warn('Session check failed:', err.message);
-      }
-    });
-
-    /* ── 2. Form Submit Handler ───────────────────────────── */
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const email    = emailInput.value.trim();
-      const password = passwordInput.value;
-
-      // Reset error state
-      errorMsg.classList.remove('show');
-
-      // Show loading
-      setLoading(true);
-
-      try {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-
-        if (error) {
-          // Auth failed — restore button and show error
+        if (result.error) {
           setLoading(false);
-          errorMsg.classList.add('show');
-          console.error('Auth error:', error.message);
+          showError('Invalid email or password. Please try again.');
+          console.error('[login] auth error:', result.error.message);
           return;
         }
 
-        // Success — go to admin dashboard
-        window.location.replace('admin.html');
+        // Success — session is now in Supabase's own storage.
+        // Replace (not push) so Back button doesn't return to the login page.
+        window.location.replace('./admin.html');
 
       } catch (err) {
-        // Unexpected network / runtime error
         setLoading(false);
-        errorMsg.classList.add('show');
-        console.error('Unexpected error:', err);
+        showError('Network error. Please check your connection and try again.');
+        console.error('[login] unexpected error:', err);
       }
     });
 
-    /* ── 3. Password Show / Hide Toggle ──────────────────── */
-    toggleBtn.addEventListener('click', () => {
-      const isHidden = passwordInput.type === 'password';
-      // Switch type
-      passwordInput.type = isHidden ? 'text' : 'password';
-      // Update icon: 👁 (visible) vs 🙈 (hidden)
-      toggleBtn.innerHTML = isHidden ? '&#128584;' : '&#128065;';
-      toggleBtn.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
+    // ── Password toggle ──────────────────────────────────────
+    toggleBtn.addEventListener('click', function() {
+      var hidden = pwInput.type === 'password';
+      pwInput.type        = hidden ? 'text' : 'password';
+      toggleBtn.innerHTML = hidden ? '&#128584;' : '&#128065;';
+      toggleBtn.setAttribute('aria-label', hidden ? 'Hide password' : 'Show password');
     });
 
-    /* ── Helper: Loading State ────────────────────────────── */
-    function setLoading(isLoading) {
-      signinBtn.disabled = isLoading;
-      if (isLoading) {
-        // Spinner character + "Signing in…"
-        signinBtn.innerHTML = '<span class="spinner" aria-hidden="true">&#10227;</span> Signing in&hellip;';
-      } else {
-        signinBtn.textContent = 'Sign In';
-      }
+    // ── Helpers ──────────────────────────────────────────────
+    function setLoading(loading) {
+      signinBtn.disabled = loading;
+      signinBtn.innerHTML = loading
+        ? '<span class="spinner" aria-hidden="true">&#10227;</span> Signing in&hellip;'
+        : 'Sign In';
     }
->>>>>>> Stashed changes
+
+    function showError(msg) {
+      errorMsg.textContent = msg;
+      errorMsg.classList.add('show');
+    }
   </script>
 
 </body>

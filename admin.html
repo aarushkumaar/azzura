@@ -9,22 +9,51 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <!-- AUTH GUARD -->
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-    const sb = createClient(
-      'https://ilduyhuvpiqhvbnocqxf.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlsZHV5aHV2cGlxaHZibm9jcXhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4MTMxNTUsImV4cCI6MjA5NjM4OTE1NX0.uuC8dKajsnSSaiTx_wxNeapKPl4EV20s5phcRS-TaZg'
-    );
-    window.supabase = sb;
-    (async () => {
-      const { data: { session } } = await sb.auth.getSession();
-      if (!session) {
-        window.location.replace('admin-login.html');
-      } else {
-        const emailEl = document.getElementById('sidebar-user-email');
+  <!-- ── Supabase UMD — MUST come before any script using window.supabase ── -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- ── AUTH GUARD ────────────────────────────────────────────────────────
+       Runs synchronously as soon as Supabase is available.
+       Body stays opacity:0 until we confirm a valid session.
+       No redirect loops: if no session we go to admin-login.html and return.
+  ─────────────────────────────────────────────────────────────────────── -->
+  <script>
+    (async function authGuard() {
+      var SUPABASE_URL      = 'https://ilduyhuvpiqhvbnocqxf.supabase.co';
+      var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlsZHV5aHV2cGlxaHZibm9jcXhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4MTMxNTUsImV4cCI6MjA5NjM4OTE1NX0.uuC8dKajsnSSaiTx_wxNeapKPl4EV20s5phcRS-TaZg';
+
+      // Create client and expose it globally so the main script can reuse it
+      var client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      window.adminSupabase = client;
+
+      try {
+        var res     = await client.auth.getSession();
+        var session = res.data && res.data.session;
+
+        if (!session) {
+          // Not logged in — go to login page, stop execution
+          window.location.replace('./admin-login.html');
+          return;
+        }
+
+        // Logged in — expose session & populate email in sidebar
+        window.adminSession = session;
+
+        // DOM might not be ready yet; wait for it before touching elements
+        if (document.readyState === 'loading') {
+          await new Promise(function(r) { document.addEventListener('DOMContentLoaded', r, { once: true }); });
+        }
+
+        var emailEl = document.getElementById('sidebar-user-email');
         if (emailEl) emailEl.textContent = session.user.email || '';
-        document.body.style.opacity = '1';
+
+        // Reveal the page
+        if (document.body) document.body.style.opacity = '1';
+
+      } catch (err) {
+        console.error('[authGuard] error:', err);
+        // On any unexpected error, stay safe and redirect to login
+        window.location.replace('./admin-login.html');
       }
     })();
   </script>
@@ -58,7 +87,7 @@
       color: var(--color-dark);
       height: 100vh;
       overflow: hidden;
-      opacity: 0;
+      opacity: 0;                  /* Hidden until auth guard confirms session */
       transition: opacity 0.3s ease;
     }
 
@@ -441,9 +470,7 @@
 
       <!-- SECTION: ORDERS -->
       <section class="admin-section" id="section-orders">
-        <div class="section-toolbar">
-          <h2>Orders</h2>
-        </div>
+        <div class="section-toolbar"><h2>Orders</h2></div>
         <div class="filter-tabs" id="orders-filter-tabs">
           <button class="filter-tab active" data-status="all">All</button>
           <button class="filter-tab" data-status="pending">Pending</button>
@@ -546,10 +573,6 @@
       <input type="number" id="form-price" required min="0" placeholder="e.g. 1299" />
     </div>
     <div class="form-group">
-      <label class="form-label">Net Weight</label>
-      <input type="text" id="form-weight" placeholder="e.g. 400g, 1kg" />
-    </div>
-    <div class="form-group">
       <label class="form-label">Short Description</label>
       <textarea id="form-short-desc" rows="2" placeholder="Brief product description"></textarea>
     </div>
@@ -614,20 +637,26 @@
 <div id="import-modal-container"></div>
 
 <!-- MAIN APP SCRIPT -->
-<script type="module">
+<script>
+// Wait for the auth guard to attach window.adminSupabase
+// The guard runs synchronously right after Supabase UMD loads, so by the time
+// DOMContentLoaded fires the session is either confirmed or the page has redirected.
+document.addEventListener('DOMContentLoaded', function() {
+  var sb = window.adminSupabase;
+  if (!sb) {
+    // Should not happen — guard redirects away if no session.
+    console.error('[admin] adminSupabase not found after DOMContentLoaded');
+    return;
+  }
+  initAdmin(sb);
+});
 
-/* Wait for supabase to be available on window (set by auth guard) */
-function waitForSupabase(cb) {
-  if (window.supabase) { cb(window.supabase); return; }
-  const t = setInterval(() => { if (window.supabase) { clearInterval(t); cb(window.supabase); } }, 50);
-}
-
-waitForSupabase(async (sb) => {
+function initAdmin(sb) {
 
 /* ── CLOCK ── */
-const clockEl = document.getElementById('topbar-clock');
+var clockEl = document.getElementById('topbar-clock');
 function updateClock() {
-  clockEl.textContent = new Date().toLocaleString('en-IN', {
+  if (clockEl) clockEl.textContent = new Date().toLocaleString('en-IN', {
     weekday:'short', day:'2-digit', month:'short', year:'numeric',
     hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:true
   });
@@ -636,33 +665,37 @@ updateClock();
 setInterval(updateClock, 1000);
 
 /* ── TOAST ── */
-window.showToast = function(message, type = 'info', autoDismiss = true) {
-  const icons = { success: '&#10003;', error: '&#10007;', info: '&#9432;', warning: '&#9888;' };
-  const container = document.getElementById('toast-container');
-  const toast = document.createElement('div');
+window.showToast = function(message, type, autoDismiss) {
+  if (type === undefined) type = 'info';
+  if (autoDismiss === undefined) autoDismiss = true;
+  var icons = { success: '&#10003;', error: '&#10007;', info: '&#9432;', warning: '&#9888;' };
+  var container = document.getElementById('toast-container');
+  if (!container) return;
+  var toast = document.createElement('div');
   toast.className = 'toast ' + type;
   toast.innerHTML = '<span class="toast-icon">' + (icons[type] || icons.info) + '</span><span>' + message + '</span>';
   container.appendChild(toast);
-  const dismiss = () => {
+  var dismiss = function() {
     toast.classList.add('exiting');
-    toast.addEventListener('animationend', () => toast.remove(), { once: true });
+    toast.addEventListener('animationend', function() { if (toast.parentNode) toast.remove(); }, { once: true });
   };
   toast.addEventListener('click', dismiss);
   if (autoDismiss && type !== 'error') setTimeout(dismiss, 3000);
 };
 
 /* ── NAVIGATION ── */
-const sectionLoaded = {};
-const sectionTitles = { dashboard:'Dashboard', products:'Products', orders:'Orders', customers:'Customers', settings:'Settings' };
+var sectionLoaded = {};
+var sectionTitles = { dashboard:'Dashboard', products:'Products', orders:'Orders', customers:'Customers', settings:'Settings' };
 
 window.showSection = function(name) {
-  document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
-  const sec  = document.getElementById('section-' + name);
-  const link = document.querySelector('.sidebar-link[data-section="' + name + '"]');
+  document.querySelectorAll('.admin-section').forEach(function(s) { s.classList.remove('active'); });
+  document.querySelectorAll('.sidebar-link').forEach(function(l) { l.classList.remove('active'); });
+  var sec  = document.getElementById('section-' + name);
+  var link = document.querySelector('.sidebar-link[data-section="' + name + '"]');
   if (sec)  sec.classList.add('active');
   if (link) link.classList.add('active');
-  document.getElementById('topbar-title').textContent = sectionTitles[name] || name;
+  var titleEl = document.getElementById('topbar-title');
+  if (titleEl) titleEl.textContent = sectionTitles[name] || name;
   if (!sectionLoaded[name]) {
     sectionLoaded[name] = true;
     if (name === 'dashboard') loadDashboard();
@@ -674,22 +707,29 @@ window.showSection = function(name) {
   closeMobileSidebar();
 };
 
-document.querySelectorAll('.sidebar-link').forEach(link => {
-  link.addEventListener('click', () => showSection(link.dataset.section));
+document.querySelectorAll('.sidebar-link').forEach(function(link) {
+  link.addEventListener('click', function() { showSection(link.dataset.section); });
 });
 
 /* ── MOBILE ── */
-const hamburger = document.getElementById('hamburger');
-const sidebarEl = document.getElementById('sidebar');
-const sidebarOverlay = document.getElementById('sidebar-overlay');
-hamburger.addEventListener('click', () => { sidebarEl.classList.toggle('mobile-open'); sidebarOverlay.classList.toggle('open'); });
-sidebarOverlay.addEventListener('click', closeMobileSidebar);
-function closeMobileSidebar() { sidebarEl.classList.remove('mobile-open'); sidebarOverlay.classList.remove('open'); }
+var hamburger      = document.getElementById('hamburger');
+var sidebarEl      = document.getElementById('sidebar');
+var sidebarOverlay = document.getElementById('sidebar-overlay');
+if (hamburger) hamburger.addEventListener('click', function() {
+  if (sidebarEl) sidebarEl.classList.toggle('mobile-open');
+  if (sidebarOverlay) sidebarOverlay.classList.toggle('open');
+});
+if (sidebarOverlay) sidebarOverlay.addEventListener('click', closeMobileSidebar);
+function closeMobileSidebar() {
+  if (sidebarEl) sidebarEl.classList.remove('mobile-open');
+  if (sidebarOverlay) sidebarOverlay.classList.remove('open');
+}
 
 /* ── SIGN OUT ── */
-document.getElementById('btn-signout').addEventListener('click', async () => {
-  await sb.auth.signOut();
-  window.location.replace('admin-login.html');
+var signoutBtn = document.getElementById('btn-signout');
+if (signoutBtn) signoutBtn.addEventListener('click', async function() {
+  try { await sb.auth.signOut(); } catch(_) {}
+  window.location.replace('./admin-login.html');
 });
 
 /* ── HELPERS ── */
@@ -702,96 +742,123 @@ function fmtDate(ts) {
   return new Date(ts).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
 }
 function statusBadge(status) {
-  const s = (status || 'pending').toLowerCase();
-  const cls = { pending:'badge-pending', confirmed:'badge-confirmed', shipped:'badge-shipped', delivered:'badge-delivered', cancelled:'badge-cancelled' }[s] || 'badge-pending';
+  var s = (status || 'pending').toLowerCase();
+  var cls = { pending:'badge-pending', confirmed:'badge-confirmed', shipped:'badge-shipped', delivered:'badge-delivered', cancelled:'badge-cancelled' }[s] || 'badge-pending';
   return '<span class="badge ' + cls + '">' + esc(s) + '</span>';
 }
 function getFirstImage(imagesField) {
   if (!imagesField) return null;
   try {
-    const parsed = typeof imagesField === 'string' ? JSON.parse(imagesField) : imagesField;
+    var parsed = typeof imagesField === 'string' ? JSON.parse(imagesField) : imagesField;
     if (Array.isArray(parsed) && parsed.length) return parsed[0];
   } catch(_) {}
   if (typeof imagesField === 'string' && imagesField.startsWith('http')) return imagesField;
   return null;
 }
 function countItems(items) {
-  try { const a = typeof items === 'string' ? JSON.parse(items) : (items || []); return Array.isArray(a) ? a.length : 0; }
+  try { var a = typeof items === 'string' ? JSON.parse(items) : (items || []); return Array.isArray(a) ? a.length : 0; }
   catch(_) { return 0; }
 }
 function toTitleCase(str) {
-  return str.replace(/_/g,' ').replace(/\b\w/g, c => c.toUpperCase());
+  return str.replace(/_/g,' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
 }
 
 /* ── DASHBOARD ── */
 async function loadDashboard() {
+  // Stats — each wrapped individually so one failure doesn't crash all
   try {
-    const [
-      { count: pCount }, { count: oCount }, { count: cCount }, { count: oos }
-    ] = await Promise.all([
-      sb.from('products').select('*',{count:'exact',head:true}),
-      sb.from('orders').select('*',{count:'exact',head:true}),
-      sb.from('customers').select('*',{count:'exact',head:true}),
-      sb.from('products').select('*',{count:'exact',head:true}).eq('in_stock',false),
-    ]);
-    document.getElementById('stat-products').textContent   = pCount  ?? 0;
-    document.getElementById('stat-orders').textContent     = oCount  ?? 0;
-    document.getElementById('stat-customers').textContent  = cCount  ?? 0;
-    document.getElementById('stat-outofstock').textContent = oos     ?? 0;
+    var pr = await sb.from('products').select('*',{count:'exact',head:true});
+    var pEl = document.getElementById('stat-products');
+    if (pEl) pEl.textContent = pr.count != null ? pr.count : '—';
+  } catch(_) { var pEl2 = document.getElementById('stat-products'); if (pEl2) pEl2.textContent = '—'; }
 
-    const { data: recentOrders, error: roe } = await sb.from('orders')
+  try {
+    var or = await sb.from('orders').select('*',{count:'exact',head:true});
+    var oEl = document.getElementById('stat-orders');
+    if (oEl) oEl.textContent = or.count != null ? or.count : '—';
+  } catch(_) { var oEl2 = document.getElementById('stat-orders'); if (oEl2) oEl2.textContent = '—'; }
+
+  try {
+    var cr = await sb.from('customers').select('*',{count:'exact',head:true});
+    var cEl = document.getElementById('stat-customers');
+    if (cEl) cEl.textContent = cr.count != null ? cr.count : '—';
+  } catch(_) { var cEl2 = document.getElementById('stat-customers'); if (cEl2) cEl2.textContent = '—'; }
+
+  try {
+    var oor = await sb.from('products').select('*',{count:'exact',head:true}).eq('in_stock',false);
+    var ooEl = document.getElementById('stat-outofstock');
+    if (ooEl) ooEl.textContent = oor.count != null ? oor.count : '—';
+  } catch(_) { var ooEl2 = document.getElementById('stat-outofstock'); if (ooEl2) ooEl2.textContent = '—'; }
+
+  // Recent orders
+  try {
+    var roc = document.getElementById('recent-orders-container');
+    var ror = await sb.from('orders')
       .select('id,customer_name,total_amount,created_at,status')
       .order('created_at',{ascending:false}).limit(5);
-    if (roe) throw roe;
-    renderRecentOrders(recentOrders || []);
-
-    const { data: lowStock, error: lse } = await sb.from('products')
-      .select('id,name,series').eq('in_stock',false).limit(15);
-    if (lse) throw lse;
-    renderLowStock(lowStock || []);
+    if (ror.error) throw ror.error;
+    renderRecentOrders(ror.data || []);
   } catch(err) {
-    showToast('Dashboard load error: ' + err.message, 'error');
+    var roc2 = document.getElementById('recent-orders-container');
+    if (roc2) roc2.innerHTML = '<div class="empty-state"><div class="empty-icon">&#128230;</div><p>No orders yet</p></div>';
+  }
+
+  // Out of stock products
+  try {
+    var lsr = await sb.from('products').select('id,name,series').eq('in_stock',false).limit(15);
+    if (lsr.error) throw lsr.error;
+    renderLowStock(lsr.data || []);
+  } catch(err) {
+    var lsc = document.getElementById('low-stock-container');
+    if (lsc) lsc.innerHTML = '<div class="empty-state"><div class="empty-icon">&#10003;</div><p>All products in stock</p></div>';
   }
 }
 
 function renderRecentOrders(orders) {
-  const c = document.getElementById('recent-orders-container');
+  var c = document.getElementById('recent-orders-container');
+  if (!c) return;
   if (!orders.length) { c.innerHTML = '<div class="empty-state"><div class="empty-icon">&#128230;</div><p>No orders yet</p></div>'; return; }
   c.innerHTML = '<table><thead><tr><th>ID</th><th>Customer</th><th>Amount</th><th>Date</th><th>Status</th></tr></thead><tbody>'
-    + orders.map(o => '<tr><td style="font-size:12px;color:var(--color-grey);">#' + String(o.id).slice(-6) + '</td><td>' + esc(o.customer_name||'&mdash;') + '</td><td>&#8377;' + Number(o.total_amount||0).toLocaleString('en-IN') + '</td><td style="font-size:12px;">' + fmtDate(o.created_at) + '</td><td>' + statusBadge(o.status) + '</td></tr>').join('')
+    + orders.map(function(o) {
+        return '<tr><td style="font-size:12px;color:var(--color-grey);">#' + String(o.id).slice(-6) + '</td><td>' + esc(o.customer_name||'&mdash;') + '</td><td>&#8377;' + Number(o.total_amount||0).toLocaleString('en-IN') + '</td><td style="font-size:12px;">' + fmtDate(o.created_at) + '</td><td>' + statusBadge(o.status) + '</td></tr>';
+      }).join('')
     + '</tbody></table>';
 }
 
 function renderLowStock(products) {
-  const c = document.getElementById('low-stock-container');
+  var c = document.getElementById('low-stock-container');
+  if (!c) return;
   if (!products.length) { c.innerHTML = '<div class="empty-state"><div class="empty-icon">&#10003;</div><p>All products in stock</p></div>'; return; }
-  c.innerHTML = products.map(p =>
-    '<div class="low-stock-item"><span class="badge badge-outofstock">Out of Stock</span><span>' + esc(p.name||'&mdash;') + '</span>'
-    + (p.series ? '<span style="font-size:12px;color:var(--color-grey);margin-left:auto;">' + esc(p.series) + '</span>' : '') + '</div>'
-  ).join('');
+  c.innerHTML = products.map(function(p) {
+    return '<div class="low-stock-item"><span class="badge badge-outofstock">Out of Stock</span><span>' + esc(p.name||'&mdash;') + '</span>'
+      + (p.series ? '<span style="font-size:12px;color:var(--color-grey);margin-left:auto;">' + esc(p.series) + '</span>' : '') + '</div>';
+  }).join('');
 }
 
 /* ── PRODUCTS ── */
-let allProducts     = [];
-let filteredProducts = [];
-let productPage     = 1;
-const PER_PAGE      = 20;
-let searchTimer     = null;
+var allProducts      = [];
+var filteredProducts = [];
+var productPage      = 1;
+var PER_PAGE         = 20;
+var searchTimer      = null;
 
 async function loadProducts() {
-  document.getElementById('products-tbody').innerHTML = '<tr class="loading-row"><td colspan="8"><div class="spinner"></div></td></tr>';
+  var tbody = document.getElementById('products-tbody');
+  if (tbody) tbody.innerHTML = '<tr class="loading-row"><td colspan="8"><div class="spinner"></div></td></tr>';
   try {
-    const { data, error } = await sb.from('products').select('*').order('created_at',{ascending:false});
-    if (error) throw error;
-    allProducts = data || [];
+    var r = await sb.from('products').select('*').order('created_at',{ascending:false});
+    if (r.error) throw r.error;
+    allProducts = r.data || [];
     applyFilters();
   } catch(err) { showToast('Products load error: ' + err.message, 'error'); }
 }
 
 function applyFilters() {
-  const q = document.getElementById('products-search').value.trim().toLowerCase();
-  const s = document.getElementById('products-series-filter').value;
-  filteredProducts = allProducts.filter(p => {
+  var qEl = document.getElementById('products-search');
+  var sEl = document.getElementById('products-series-filter');
+  var q = qEl ? qEl.value.trim().toLowerCase() : '';
+  var s = sEl ? sEl.value : '';
+  filteredProducts = allProducts.filter(function(p) {
     return (!q || (p.name||'').toLowerCase().includes(q)) && (!s || (p.series||'') === s);
   });
   productPage = 1;
@@ -799,36 +866,42 @@ function applyFilters() {
 }
 
 function renderProducts() {
-  const tbody      = document.getElementById('products-tbody');
-  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / PER_PAGE));
-  const start      = (productPage - 1) * PER_PAGE;
-  const slice      = filteredProducts.slice(start, start + PER_PAGE);
-  document.getElementById('products-count').textContent = '(' + filteredProducts.length + ')';
+  var tbody      = document.getElementById('products-tbody');
+  if (!tbody) return;
+  var totalPages = Math.max(1, Math.ceil(filteredProducts.length / PER_PAGE));
+  var start      = (productPage - 1) * PER_PAGE;
+  var slice      = filteredProducts.slice(start, start + PER_PAGE);
+  var countEl    = document.getElementById('products-count');
+  if (countEl) countEl.textContent = '(' + filteredProducts.length + ')';
 
   if (!slice.length) {
     tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">&#129516;</div><p>No products found</p></div></td></tr>';
-    document.getElementById('products-pagination').innerHTML = '';
+    var pg0 = document.getElementById('products-pagination');
+    if (pg0) pg0.innerHTML = '';
     return;
   }
 
-  tbody.innerHTML = slice.map((p, i) => {
-    const imgSrc = getFirstImage(p.images);
-    const thumb  = imgSrc
+  tbody.innerHTML = slice.map(function(p, i) {
+    var imgSrc = getFirstImage(p.images);
+    var thumb  = imgSrc
       ? '<img src="' + esc(imgSrc) + '" class="prod-thumb" loading="lazy" alt="' + esc(p.name||'') + '" />'
       : '<div class="prod-thumb-placeholder">&#129516;</div>';
+    // Use price_inr (correct column name)
+    var priceDisplay = p.price_inr ? '&#8377;' + Number(p.price_inr).toLocaleString('en-IN') : '&mdash;';
     return '<tr id="prod-row-' + p.id + '">'
       + '<td style="color:var(--color-grey);font-size:12px;">' + (start+i+1) + '</td>'
       + '<td>' + thumb + '</td>'
       + '<td style="font-weight:600;max-width:200px;word-break:break-word;">' + esc(p.name||'&mdash;') + '</td>'
       + '<td>' + (p.series ? '<span style="font-size:12px;background:var(--color-primary-light);color:var(--color-primary);padding:3px 8px;border-radius:20px;">' + esc(p.series) + '</span>' : '&mdash;') + '</td>'
-      + '<td>' + (p.price ? '&#8377;' + Number(p.price).toLocaleString('en-IN') : '&mdash;') + '</td>'
+      + '<td>' + priceDisplay + '</td>'
       + '<td><label class="toggle-switch"><input type="checkbox" ' + (p.in_stock?'checked':'') + ' onchange="toggleField(' + p.id + ',\'in_stock\',this.checked)" /><span class="toggle-slider"></span></label></td>'
       + '<td><label class="toggle-switch"><input type="checkbox" ' + (p.is_featured?'checked':'') + ' onchange="toggleField(' + p.id + ',\'is_featured\',this.checked)" /><span class="toggle-slider"></span></label></td>'
       + '<td style="white-space:nowrap;"><button class="btn-icon" onclick="openEditPanel(' + p.id + ')" title="Edit">&#9999;&#65039;</button><button class="btn-icon danger" onclick="deleteProduct(' + p.id + ')" title="Delete">&#128465;&#65039;</button></td>'
       + '</tr>';
   }).join('');
 
-  const pg = document.getElementById('products-pagination');
+  var pg = document.getElementById('products-pagination');
+  if (!pg) return;
   if (totalPages <= 1) { pg.innerHTML = ''; return; }
   pg.innerHTML = '<button onclick="changePage(' + (productPage-1) + ')" ' + (productPage===1?'disabled':'') + '>&larr; Prev</button>'
     + '<span>Page ' + productPage + ' of ' + totalPages + '</span>'
@@ -836,19 +909,20 @@ function renderProducts() {
 }
 
 window.changePage = function(p) {
-  const total = Math.max(1, Math.ceil(filteredProducts.length / PER_PAGE));
+  var total = Math.max(1, Math.ceil(filteredProducts.length / PER_PAGE));
   if (p < 1 || p > total) return;
   productPage = p; renderProducts();
 };
 
 window.toggleField = async function(id, field, value) {
   try {
-    const { error } = await sb.from('products').update({ [field]: value }).eq('id', id);
-    if (error) throw error;
-    const idx = allProducts.findIndex(p => p.id === id);
+    var r = await sb.from('products').update({ [field]: value }).eq('id', id);
+    if (r.error) throw r.error;
+    var idx = allProducts.findIndex(function(p) { return p.id === id; });
     if (idx !== -1) allProducts[idx][field] = value;
     if (field === 'in_stock') {
-      document.getElementById('stat-outofstock').textContent = allProducts.filter(p => !p.in_stock).length;
+      var ooEl = document.getElementById('stat-outofstock');
+      if (ooEl) ooEl.textContent = allProducts.filter(function(p) { return !p.in_stock; }).length;
     }
     showToast('Product updated', 'success');
   } catch(err) { showToast('Update failed: ' + err.message, 'error'); }
@@ -856,12 +930,12 @@ window.toggleField = async function(id, field, value) {
 
 window.deleteProduct = async function(id) {
   if (!window.confirm('Delete this product? This cannot be undone.')) return;
-  const row = document.getElementById('prod-row-' + id);
+  var row = document.getElementById('prod-row-' + id);
   if (row) row.classList.add('fade-out');
   try {
-    const { error } = await sb.from('products').delete().eq('id', id);
-    if (error) throw error;
-    allProducts = allProducts.filter(p => p.id !== id);
+    var r = await sb.from('products').delete().eq('id', id);
+    if (r.error) throw r.error;
+    allProducts = allProducts.filter(function(p) { return p.id !== id; });
     applyFilters();
     showToast('Product deleted', 'success');
   } catch(err) {
@@ -870,127 +944,164 @@ window.deleteProduct = async function(id) {
   }
 };
 
-document.getElementById('products-search').addEventListener('input', () => {
+var psEl = document.getElementById('products-search');
+if (psEl) psEl.addEventListener('input', function() {
   clearTimeout(searchTimer);
   searchTimer = setTimeout(applyFilters, 250);
 });
-document.getElementById('products-series-filter').addEventListener('change', applyFilters);
+var psf = document.getElementById('products-series-filter');
+if (psf) psf.addEventListener('change', applyFilters);
 
 /* ── SLIDE-IN PANEL ── */
-const panelOverlay = document.getElementById('panel-overlay');
-const productPanel = document.getElementById('product-panel');
-const productForm  = document.getElementById('product-form');
+var panelOverlay = document.getElementById('panel-overlay');
+var productPanel = document.getElementById('product-panel');
+var productForm  = document.getElementById('product-form');
 
-function openPanel()  { panelOverlay.classList.add('open'); productPanel.classList.add('open'); document.body.style.overflow = 'hidden'; }
+function openPanel()  {
+  if (panelOverlay) panelOverlay.classList.add('open');
+  if (productPanel) productPanel.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
 function closePanel() {
-  panelOverlay.classList.remove('open'); productPanel.classList.remove('open'); document.body.style.overflow = '';
-  productForm.reset(); document.getElementById('form-product-id').value = ''; document.getElementById('panel-title').textContent = 'Add Product';
+  if (panelOverlay) panelOverlay.classList.remove('open');
+  if (productPanel) productPanel.classList.remove('open');
+  document.body.style.overflow = '';
+  if (productForm) productForm.reset();
+  var pidEl = document.getElementById('form-product-id');
+  if (pidEl) pidEl.value = '';
+  var ptEl = document.getElementById('panel-title');
+  if (ptEl) ptEl.textContent = 'Add Product';
 }
 
-panelOverlay.addEventListener('click', closePanel);
-document.getElementById('btn-close-panel').addEventListener('click', closePanel);
-document.getElementById('btn-cancel-panel').addEventListener('click', closePanel);
-document.getElementById('btn-add-product').addEventListener('click', () => {
-  document.getElementById('form-in-stock').checked = true;
-  document.getElementById('form-featured').checked = false;
+if (panelOverlay) panelOverlay.addEventListener('click', closePanel);
+var closePanelBtn = document.getElementById('btn-close-panel');
+if (closePanelBtn) closePanelBtn.addEventListener('click', closePanel);
+var cancelPanelBtn = document.getElementById('btn-cancel-panel');
+if (cancelPanelBtn) cancelPanelBtn.addEventListener('click', closePanel);
+var addProductBtn = document.getElementById('btn-add-product');
+if (addProductBtn) addProductBtn.addEventListener('click', function() {
+  var inStockEl = document.getElementById('form-in-stock');
+  var featEl    = document.getElementById('form-featured');
+  if (inStockEl) inStockEl.checked = true;
+  if (featEl)    featEl.checked = false;
   openPanel();
 });
 
 window.openEditPanel = function(id) {
-  const p = allProducts.find(x => x.id === id);
+  var p = allProducts.find(function(x) { return x.id === id; });
   if (!p) { showToast('Product not found', 'error'); return; }
-  document.getElementById('form-product-id').value  = p.id;
-  document.getElementById('form-name').value         = p.name || '';
-  document.getElementById('form-series').value       = p.series || '';
-  document.getElementById('form-flavour').value      = p.flavour || '';
-  document.getElementById('form-price').value        = p.price || '';
-  document.getElementById('form-weight').value       = p.net_weight || '';
-  document.getElementById('form-short-desc').value   = p.short_description || '';
-  document.getElementById('form-tags').value         = p.tags || '';
-  document.getElementById('form-benefits').value     = p.key_benefits || '';
-  document.getElementById('form-ingredients').value  = p.ingredients || '';
-  document.getElementById('form-how-to-use').value   = p.how_to_use || '';
-  document.getElementById('form-nutrition').value    = p.nutrition_facts || '';
-  document.getElementById('form-warnings').value     = p.warnings || '';
-  document.getElementById('form-image-folder').value = p.image_folder || '';
-  document.getElementById('form-images').value       = p.images || '';
-  document.getElementById('form-in-stock').checked   = !!p.in_stock;
-  document.getElementById('form-featured').checked   = !!p.is_featured;
-  document.getElementById('panel-title').textContent = 'Edit Product';
+
+  function setVal(elId, val) {
+    var el = document.getElementById(elId);
+    if (el) el.value = val || '';
+  }
+  function setChk(elId, val) {
+    var el = document.getElementById(elId);
+    if (el) el.checked = !!val;
+  }
+
+  setVal('form-product-id',  p.id);
+  setVal('form-name',        p.name);
+  setVal('form-series',      p.series);
+  setVal('form-flavour',     p.flavour);
+  setVal('form-price',       p.price_inr);  // correct column: price_inr
+  setVal('form-short-desc',  p.short_description);
+  setVal('form-tags',        p.tags);
+  setVal('form-benefits',    p.benefits);   // correct column: benefits
+  setVal('form-ingredients', p.ingredients);
+  setVal('form-how-to-use',  p.how_to_use);
+  setVal('form-nutrition',   p.nutrition_facts);
+  setVal('form-warnings',    p.warnings);
+  setVal('form-image-folder',p.image_folder);
+  setVal('form-images',      p.images);
+  setChk('form-in-stock',    p.in_stock);
+  setChk('form-featured',    p.is_featured);
+  var ptEl = document.getElementById('panel-title');
+  if (ptEl) ptEl.textContent = 'Edit Product';
   openPanel();
 };
 
-productForm.addEventListener('submit', async (e) => {
+if (productForm) productForm.addEventListener('submit', async function(e) {
   e.preventDefault();
-  const name  = document.getElementById('form-name').value.trim();
-  const price = document.getElementById('form-price').value.trim();
+  var nameEl  = document.getElementById('form-name');
+  var priceEl = document.getElementById('form-price');
+  var name    = nameEl  ? nameEl.value.trim()  : '';
+  var price   = priceEl ? priceEl.value.trim() : '';
   if (!name)  { showToast('Product name is required', 'error'); return; }
   if (!price) { showToast('Price is required', 'error'); return; }
-  const btn = document.getElementById('btn-save-product');
-  btn.disabled = true; btn.textContent = 'Saving\u2026';
-  const payload = {
-    name, price: parseFloat(price) || 0,
-    series:            document.getElementById('form-series').value || null,
-    flavour:           document.getElementById('form-flavour').value.trim() || null,
-    net_weight:        document.getElementById('form-weight').value.trim() || null,
-    short_description: document.getElementById('form-short-desc').value.trim() || null,
-    tags:              document.getElementById('form-tags').value.trim() || null,
-    key_benefits:      document.getElementById('form-benefits').value.trim() || null,
-    ingredients:       document.getElementById('form-ingredients').value.trim() || null,
-    how_to_use:        document.getElementById('form-how-to-use').value.trim() || null,
-    nutrition_facts:   document.getElementById('form-nutrition').value.trim() || null,
-    warnings:          document.getElementById('form-warnings').value.trim() || null,
-    image_folder:      document.getElementById('form-image-folder').value.trim() || null,
-    images:            document.getElementById('form-images').value.trim() || null,
-    in_stock:          document.getElementById('form-in-stock').checked,
-    is_featured:       document.getElementById('form-featured').checked,
+  var btn = document.getElementById('btn-save-product');
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving\u2026'; }
+
+  function getV(elId) { var el = document.getElementById(elId); return el ? el.value.trim() || null : null; }
+  function getC(elId) { var el = document.getElementById(elId); return el ? el.checked : false; }
+
+  // Column names aligned with the NEW schema (price_inr, benefits, short_description)
+  var payload = {
+    name,
+    price_inr:         parseFloat(price) || 0,
+    series:            getV('form-series'),
+    flavour:           getV('form-flavour'),
+    short_description: getV('form-short-desc'),
+    tags:              getV('form-tags'),
+    benefits:          getV('form-benefits'),
+    ingredients:       getV('form-ingredients'),
+    how_to_use:        getV('form-how-to-use'),
+    nutrition_facts:   getV('form-nutrition'),
+    warnings:          getV('form-warnings'),
+    image_folder:      getV('form-image-folder'),
+    images:            getV('form-images'),
+    in_stock:          getC('form-in-stock'),
+    is_featured:       getC('form-featured'),
   };
   try {
-    const id = document.getElementById('form-product-id').value;
-    let error;
-    if (id) { ({ error } = await sb.from('products').update(payload).eq('id', id)); }
-    else    { ({ error } = await sb.from('products').insert(payload)); }
-    if (error) throw error;
+    var idEl = document.getElementById('form-product-id');
+    var id   = idEl ? idEl.value : '';
+    var r;
+    if (id) { r = await sb.from('products').update(payload).eq('id', id); }
+    else    { r = await sb.from('products').insert(payload); }
+    if (r.error) throw r.error;
     closePanel();
     sectionLoaded['products'] = false;
     await loadProducts();
     showToast(id ? '\u2713 Product updated' : '\u2713 Product added', 'success');
   } catch(err) { showToast('Save failed: ' + err.message, 'error'); }
-  finally { btn.disabled = false; btn.textContent = 'Save Product'; }
+  finally { if (btn) { btn.disabled = false; btn.textContent = 'Save Product'; } }
 });
 
 /* ── CLOUDINARY IMPORT ── */
-document.getElementById('btn-import-cloudinary').addEventListener('click', async () => {
-  const btn = document.getElementById('btn-import-cloudinary');
-  btn.disabled = true; btn.textContent = 'Loading\u2026';
+var importBtn = document.getElementById('btn-import-cloudinary');
+if (importBtn) importBtn.addEventListener('click', async function() {
+  importBtn.disabled = true; importBtn.textContent = 'Loading\u2026';
   try {
-    const res = await fetch('./cloudinary-products-map.json');
-    if (!res.ok) throw new Error('Could not load cloudinary-products-map.json');
-    const mapData = await res.json();
-    const { data: existing } = await sb.from('products').select('image_folder');
-    const existingFolders = new Set((existing || []).map(p => p.image_folder).filter(Boolean));
-    const newItems = [];
-    for (const [seriesKey, products] of Object.entries(mapData)) {
-      for (const [productKey, urls] of Object.entries(products)) {
-        const folder = seriesKey + '/' + productKey;
+    var res = await fetch('./cloudinary-products-map.json');
+    if (!res.ok) throw new Error('Could not load cloudinary-products-map.json — run npm run upload-new-images first');
+    var mapData = await res.json();
+    var existR  = await sb.from('products').select('image_folder');
+    var existingFolders = new Set((existR.data || []).map(function(p) { return p.image_folder; }).filter(Boolean));
+    var newItems = [];
+    for (var seriesKey in mapData) {
+      var products = mapData[seriesKey];
+      for (var productKey in products) {
+        var urls   = products[productKey];
+        var folder = seriesKey + '/' + productKey;
         if (!existingFolders.has(folder)) newItems.push({ seriesKey, productKey, folder, urls });
       }
     }
     showImportModal(newItems);
   } catch(err) { showToast('Import error: ' + err.message, 'error'); }
-  finally { btn.disabled = false; btn.textContent = '\u2601\uFE0F Import from Cloudinary'; }
+  finally { importBtn.disabled = false; importBtn.textContent = '\u2601\uFE0F Import from Cloudinary'; }
 });
 
 function showImportModal(items) {
-  const c = document.getElementById('import-modal-container');
+  var c = document.getElementById('import-modal-container');
+  if (!c) return;
   if (!items.length) { showToast('All Cloudinary products already imported!', 'info'); return; }
-  const itemsHtml = items.map((item, i) =>
-    '<label class="import-item" for="imp-' + i + '">'
-    + '<input type="checkbox" id="imp-' + i + '" data-idx="' + i + '" checked />'
-    + '<div class="import-item-info"><div class="import-item-name">' + esc(toTitleCase(item.productKey)) + '</div>'
-    + '<div class="import-item-sub">' + esc(item.seriesKey) + ' &middot; ' + item.urls.length + ' image' + (item.urls.length!==1?'s':'') + '</div></div></label>'
-  ).join('');
-  const itemsJson = JSON.stringify(items).replace(/\\/g,'\\\\').replace(/"/g,'&quot;');
+  var itemsHtml = items.map(function(item, i) {
+    return '<label class="import-item" for="imp-' + i + '">'
+      + '<input type="checkbox" id="imp-' + i + '" data-idx="' + i + '" checked />'
+      + '<div class="import-item-info"><div class="import-item-name">' + esc(toTitleCase(item.productKey)) + '</div>'
+      + '<div class="import-item-sub">' + esc(item.seriesKey) + ' &middot; ' + item.urls.length + ' image' + (item.urls.length!==1?'s':'') + '</div></div></label>';
+  }).join('');
   c.innerHTML = '<div class="modal-backdrop" id="import-modal">'
     + '<div class="modal-box">'
     + '<div class="modal-header"><h3>&#9729;&#65039; Import from Cloudinary (' + items.length + ' new)</h3>'
@@ -1000,44 +1111,64 @@ function showImportModal(items) {
     + '<button class="btn-primary full-width" onclick="doImport()">Import Selected</button>'
     + '<button class="btn-secondary full-width" onclick="document.getElementById(\'import-modal\').remove()">Cancel</button>'
     + '</div></div>';
-  // store items reference on window for doImport
   window.__importItems = items;
 }
 
 window.selAll = function(checked) {
-  document.querySelectorAll('#import-modal input[data-idx]').forEach(cb => cb.checked = checked);
+  document.querySelectorAll('#import-modal input[data-idx]').forEach(function(cb) { cb.checked = checked; });
 };
 
 window.doImport = async function() {
-  const items = window.__importItems || [];
-  const selected = [];
-  document.querySelectorAll('#import-modal input[data-idx]').forEach(cb => {
+  var items    = window.__importItems || [];
+  var selected = [];
+  document.querySelectorAll('#import-modal input[data-idx]').forEach(function(cb) {
     if (cb.checked) selected.push(items[parseInt(cb.dataset.idx)]);
   });
   if (!selected.length) { showToast('No products selected', 'warning'); return; }
-  const btn = document.querySelector('#import-modal .btn-primary');
+  var btn = document.querySelector('#import-modal .btn-primary');
   if (btn) { btn.disabled = true; btn.textContent = 'Importing\u2026'; }
-  const seriesMap = {
+
+  var seriesMap = {
     'ESENTIAL_SERIES':'Essential','VITAL_SERIES':'Vital','MAX_SERIES':'Max',
-    'PROVIT_SERIES':'Provit','LIFELINE_SERIES':'Lifeline','ORAL_SERIES':'Oral'
+    'PROVIT_SERIES':'Provit','LIFELINE_SERIES':'Lifeline','ORAL_SERIES':'Oral',
+    'OTHERS':'Other','default':'Other'
   };
+
   try {
-    const inserts = selected.map(item => ({
-      name:            toTitleCase(item.productKey),
-      series:          seriesMap[item.seriesKey] || item.seriesKey,
-      image_folder:    item.folder,
-      images:          JSON.stringify(item.urls),
-      in_stock:        true, is_featured: false,
-      flavour:null, price:null, net_weight:null, short_description:null,
-      tags:null, key_benefits:null, ingredients:null, how_to_use:null,
-      nutrition_facts:null, warnings:null,
-    }));
-    const { error } = await sb.from('products').insert(inserts);
-    if (error) throw error;
-    document.getElementById('import-modal')?.remove();
+    var inserts = selected.map(function(item) {
+      return {
+        name:              toTitleCase(item.productKey),
+        series:            seriesMap[item.seriesKey] || item.seriesKey,
+        image_folder:      item.folder,
+        images:            JSON.stringify(item.urls),
+        in_stock:          true,
+        is_featured:       false,
+        price_inr:         0,
+        flavour:           '',
+        short_description: '',
+        tags:              '',
+        benefits:          '',
+        ingredients:       '',
+        how_to_use:        '',
+        nutrition_facts:   '',
+        warnings:          '',
+      };
+    });
+    var total = inserts.length;
+    var batchSize = 20;
+    var imported  = 0;
+    for (var i = 0; i < inserts.length; i += batchSize) {
+      var batch = inserts.slice(i, i + batchSize);
+      var r = await sb.from('products').insert(batch);
+      if (r.error) throw r.error;
+      imported += batch.length;
+      if (btn) btn.textContent = 'Importing\u2026 (' + imported + '/' + total + ')';
+    }
+    var modal = document.getElementById('import-modal');
+    if (modal) modal.remove();
     sectionLoaded['products'] = false;
     await loadProducts();
-    showToast('\u2713 ' + selected.length + ' product' + (selected.length!==1?'s':'') + ' imported', 'success');
+    showToast('\u2713 ' + selected.length + ' product' + (selected.length!==1?'s':'') + ' imported successfully', 'success');
   } catch(err) {
     showToast('Import failed: ' + err.message, 'error');
     if (btn) { btn.disabled = false; btn.textContent = 'Import Selected'; }
@@ -1045,28 +1176,34 @@ window.doImport = async function() {
 };
 
 /* ── ORDERS ── */
-let allOrders   = [];
-let ordersFilter = 'all';
+var allOrders    = [];
+var ordersFilter = 'all';
 
 async function loadOrders() {
-  document.getElementById('orders-tbody').innerHTML = '<tr class="loading-row"><td colspan="7"><div class="spinner"></div></td></tr>';
+  var tbody = document.getElementById('orders-tbody');
+  if (tbody) tbody.innerHTML = '<tr class="loading-row"><td colspan="7"><div class="spinner"></div></td></tr>';
   try {
-    const { data, error } = await sb.from('orders').select('*').order('created_at',{ascending:false});
-    if (error) throw error;
-    allOrders = data || [];
+    var r = await sb.from('orders').select('*').order('created_at',{ascending:false});
+    if (r.error) throw r.error;
+    allOrders = r.data || [];
     renderOrders();
-  } catch(err) { showToast('Orders load error: ' + err.message, 'error'); }
+  } catch(err) {
+    var t2 = document.getElementById('orders-tbody');
+    if (t2) t2.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">&#128230;</div><p>No orders yet</p></div></td></tr>';
+    showToast('Orders load error: ' + err.message, 'error');
+  }
 }
 
 function renderOrders() {
-  const tbody    = document.getElementById('orders-tbody');
-  const filtered = ordersFilter === 'all' ? allOrders : allOrders.filter(o => (o.status||'').toLowerCase() === ordersFilter);
+  var tbody    = document.getElementById('orders-tbody');
+  if (!tbody) return;
+  var filtered = ordersFilter === 'all' ? allOrders : allOrders.filter(function(o) { return (o.status||'').toLowerCase() === ordersFilter; });
   if (!filtered.length) {
     tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">&#128230;</div><p>No ' + (ordersFilter!=='all'?ordersFilter+' ':'') + 'orders found</p></div></td></tr>';
     return;
   }
-  tbody.innerHTML = filtered.map(o => {
-    const itemCount = countItems(o.items);
+  tbody.innerHTML = filtered.map(function(o) {
+    var itemCount = countItems(o.items);
     return '<tr id="order-row-' + o.id + '" class="order-main-row" style="cursor:pointer;" onclick="toggleOrderDetail(' + o.id + ')">'
       + '<td style="font-size:12px;color:var(--color-grey);font-family:monospace;">#' + String(o.id).slice(-8) + '</td>'
       + '<td style="font-weight:600;">' + esc(o.customer_name||'&mdash;') + '</td>'
@@ -1081,60 +1218,63 @@ function renderOrders() {
 }
 
 function buildOrderDetail(o) {
-  let itemsHtml = '';
+  var itemsHtml = '';
   try {
-    const items = typeof o.items === 'string' ? JSON.parse(o.items) : (o.items || []);
+    var items = typeof o.items === 'string' ? JSON.parse(o.items) : (o.items || []);
     if (Array.isArray(items) && items.length) {
       itemsHtml = '<div class="order-items-list">'
-        + items.map(it => '<div class="order-item-row"><span>' + esc(it.name||it.product_name||'Item') + '</span><span>Qty: ' + (it.quantity||it.qty||1) + ' &nbsp;&middot;&nbsp; &#8377;' + Number(it.price||it.unit_price||0).toLocaleString('en-IN') + '</span></div>').join('')
+        + items.map(function(it) {
+            return '<div class="order-item-row"><span>' + esc(it.name||it.product_name||'Item') + '</span><span>Qty: ' + (it.quantity||it.qty||1) + ' &nbsp;&middot;&nbsp; &#8377;' + Number(it.price||it.unit_price||0).toLocaleString('en-IN') + '</span></div>';
+          }).join('')
         + '</div>';
     }
   } catch(_) { itemsHtml = '<p style="font-size:13px;color:var(--color-grey);">Unable to parse items.</p>'; }
 
   return '<div class="order-detail-grid">'
-    + '<div class="order-detail-group"><h4>Customer</h4><p>' + esc(o.customer_name||'&mdash;') + '</p><p style="font-size:13px;color:var(--color-grey);">' + esc(o.customer_email||'&mdash;') + '</p><p style="font-size:13px;color:var(--color-grey);">' + esc(o.customer_phone||o.phone||'&mdash;') + '</p></div>'
-    + '<div class="order-detail-group"><h4>Delivery Address</h4><p style="font-size:13px;">' + esc(o.delivery_address||o.address||'&mdash;') + '</p></div>'
+    + '<div class="order-detail-group"><h4>Customer</h4><p>' + esc(o.customer_name||'&mdash;') + '</p><p style="font-size:13px;color:var(--color-grey);">' + esc(o.customer_email||'&mdash;') + '</p><p style="font-size:13px;color:var(--color-grey);">' + esc(o.customer_phone||'&mdash;') + '</p></div>'
+    + '<div class="order-detail-group"><h4>Delivery Address</h4><p style="font-size:13px;">' + esc(o.address||'&mdash;') + '</p></div>'
     + '</div>' + itemsHtml
     + '<div style="display:flex;align-items:center;gap:12px;margin-top:8px;"><span style="font-size:13px;font-weight:600;">Update Status:</span>'
     + '<select class="status-select" onchange="updateOrderStatus(' + o.id + ',this.value)">'
-    + ['pending','confirmed','shipped','delivered','cancelled'].map(s =>
-        '<option value="' + s + '" ' + ((o.status||'').toLowerCase()===s?'selected':'') + '>' + s.charAt(0).toUpperCase()+s.slice(1) + '</option>'
-      ).join('')
+    + ['pending','confirmed','shipped','delivered','cancelled'].map(function(s) {
+        return '<option value="' + s + '" ' + ((o.status||'').toLowerCase()===s?'selected':'') + '>' + s.charAt(0).toUpperCase()+s.slice(1) + '</option>';
+      }).join('')
     + '</select></div>';
 }
 
 window.toggleOrderDetail = function(id) {
-  const det = document.getElementById('order-detail-' + id);
+  var det = document.getElementById('order-detail-' + id);
   if (!det) return;
-  const wasOpen = det.style.display !== 'none';
-  document.querySelectorAll('.order-detail-row').forEach(r => r.style.display = 'none');
-  document.querySelectorAll('.order-main-row').forEach(r => r.style.background = '');
+  var wasOpen = det.style.display !== 'none';
+  document.querySelectorAll('.order-detail-row').forEach(function(r) { r.style.display = 'none'; });
+  document.querySelectorAll('.order-main-row').forEach(function(r) { r.style.background = ''; });
   if (!wasOpen) {
     det.style.display = 'table-row';
-    const mainRow = document.getElementById('order-row-' + id);
+    var mainRow = document.getElementById('order-row-' + id);
     if (mainRow) mainRow.style.background = '#E8F1FB';
   }
 };
 
 window.updateOrderStatus = async function(id, status) {
   try {
-    const { error } = await sb.from('orders').update({ status }).eq('id', id);
-    if (error) throw error;
-    const idx = allOrders.findIndex(o => o.id === id);
+    var r = await sb.from('orders').update({ status }).eq('id', id);
+    if (r.error) throw r.error;
+    var idx = allOrders.findIndex(function(o) { return o.id === id; });
     if (idx !== -1) allOrders[idx].status = status;
-    const mainRow = document.getElementById('order-row-' + id);
+    var mainRow = document.getElementById('order-row-' + id);
     if (mainRow) {
-      const cell = mainRow.querySelector('td:nth-child(5)');
+      var cell = mainRow.querySelector('td:nth-child(5)');
       if (cell) cell.innerHTML = statusBadge(status);
     }
     showToast('Order status updated to ' + status, 'success');
   } catch(err) { showToast('Status update failed: ' + err.message, 'error'); }
 };
 
-document.getElementById('orders-filter-tabs').addEventListener('click', e => {
-  const tab = e.target.closest('.filter-tab');
+var ordersFilterTabs = document.getElementById('orders-filter-tabs');
+if (ordersFilterTabs) ordersFilterTabs.addEventListener('click', function(e) {
+  var tab = e.target.closest('.filter-tab');
   if (!tab) return;
-  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.filter-tab').forEach(function(t) { t.classList.remove('active'); });
   tab.classList.add('active');
   ordersFilter = tab.dataset.status;
   renderOrders();
@@ -1142,33 +1282,39 @@ document.getElementById('orders-filter-tabs').addEventListener('click', e => {
 
 /* ── CUSTOMERS ── */
 async function loadCustomers() {
-  document.getElementById('customers-tbody').innerHTML = '<tr class="loading-row"><td colspan="5"><div class="spinner"></div></td></tr>';
+  var tbody = document.getElementById('customers-tbody');
+  if (tbody) tbody.innerHTML = '<tr class="loading-row"><td colspan="5"><div class="spinner"></div></td></tr>';
   try {
-    const { data: customers, error } = await sb.from('customers').select('*').order('created_at',{ascending:false});
-    if (error) throw error;
-    const { data: orders } = await sb.from('orders').select('id,customer_email,created_at');
-    const ordersByEmail = {};
-    (orders||[]).forEach(o => {
-      const e = (o.customer_email||'').toLowerCase();
-      if (!ordersByEmail[e]) ordersByEmail[e] = [];
-      ordersByEmail[e].push(o);
+    var r = await sb.from('customers').select('*').order('first_seen',{ascending:false});
+    if (r.error) throw r.error;
+    var r2 = await sb.from('orders').select('id,customer_email,created_at');
+    var ordersByEmail = {};
+    (r2.data||[]).forEach(function(o) {
+      var em = (o.customer_email||'').toLowerCase();
+      if (!ordersByEmail[em]) ordersByEmail[em] = [];
+      ordersByEmail[em].push(o);
     });
-    renderCustomers(customers||[], ordersByEmail);
-  } catch(err) { showToast('Customers load error: ' + err.message, 'error'); }
+    renderCustomers(r.data||[], ordersByEmail);
+  } catch(err) {
+    var t2 = document.getElementById('customers-tbody');
+    if (t2) t2.innerHTML = '<tr><td colspan="5"><div class="empty-state"><div class="empty-icon">&#128101;</div><p>No customers yet</p></div></td></tr>';
+    showToast('Customers load error: ' + err.message, 'error');
+  }
 }
 
 function renderCustomers(customers, ordersByEmail) {
-  const tbody = document.getElementById('customers-tbody');
+  var tbody = document.getElementById('customers-tbody');
+  if (!tbody) return;
   if (!customers.length) {
     tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state"><div class="empty-icon">&#128101;</div><p>No customers yet</p></div></td></tr>';
     return;
   }
-  tbody.innerHTML = customers.map(c => {
-    const email  = (c.email||'').toLowerCase();
-    const orders = ordersByEmail[email] || [];
-    const lastTs = orders.length ? orders.reduce((a,b) => a.created_at > b.created_at ? a : b).created_at : null;
+  tbody.innerHTML = customers.map(function(c) {
+    var email  = (c.email||'').toLowerCase();
+    var orders = ordersByEmail[email] || [];
+    var lastTs = orders.length ? orders.reduce(function(a,b) { return a.created_at > b.created_at ? a : b; }).created_at : null;
     return '<tr id="cust-row-' + c.id + '" style="cursor:pointer;" onclick="toggleCustDetail(' + c.id + ')">'
-      + '<td style="font-weight:600;">' + esc(c.name||c.full_name||'&mdash;') + '</td>'
+      + '<td style="font-weight:600;">' + esc(c.name||'&mdash;') + '</td>'
       + '<td style="font-size:13px;">' + esc(c.email||'&mdash;') + '</td>'
       + '<td style="font-size:13px;">' + esc(c.phone||'&mdash;') + '</td>'
       + '<td>' + orders.length + '</td>'
@@ -1183,19 +1329,21 @@ function buildCustDetail(c, orders) {
   return '<div style="padding:8px 0;">'
     + '<div style="font-size:13px;font-weight:600;margin-bottom:8px;">Order History (' + orders.length + ')</div>'
     + '<div class="order-items-list">'
-    + orders.map(o => '<div class="order-item-row"><span style="font-size:12px;color:var(--color-grey);font-family:monospace;">#' + String(o.id).slice(-8) + '</span><span style="font-size:13px;">' + fmtDate(o.created_at) + '</span></div>').join('')
+    + orders.map(function(o) {
+        return '<div class="order-item-row"><span style="font-size:12px;color:var(--color-grey);font-family:monospace;">#' + String(o.id).slice(-8) + '</span><span style="font-size:13px;">' + fmtDate(o.created_at) + '</span></div>';
+      }).join('')
     + '</div></div>';
 }
 
 window.toggleCustDetail = function(id) {
-  const det = document.getElementById('cust-detail-' + id);
+  var det = document.getElementById('cust-detail-' + id);
   if (!det) return;
-  const wasOpen = det.style.display !== 'none';
-  document.querySelectorAll('.customer-detail-row').forEach(r => r.style.display = 'none');
-  document.querySelectorAll('#customers-tbody tr[id^="cust-row"]').forEach(r => r.style.background = '');
+  var wasOpen = det.style.display !== 'none';
+  document.querySelectorAll('.customer-detail-row').forEach(function(r) { r.style.display = 'none'; });
+  document.querySelectorAll('#customers-tbody tr[id^="cust-row"]').forEach(function(r) { r.style.background = ''; });
   if (!wasOpen) {
     det.style.display = 'table-row';
-    const mr = document.getElementById('cust-row-' + id);
+    var mr = document.getElementById('cust-row-' + id);
     if (mr) mr.style.background = '#E8F1FB';
   }
 };
@@ -1203,53 +1351,62 @@ window.toggleCustDetail = function(id) {
 /* ── SETTINGS ── */
 async function loadSettings() {
   try {
-    const { data, error } = await sb.from('settings').select('*').eq('id',1).single();
-    if (error && error.code !== 'PGRST116') throw error;
-    if (data) {
-      document.getElementById('setting-site-name').value = data.site_name || 'Azzurra';
-      document.getElementById('setting-phone').value     = data.contact_phone || '+91 98 71 648 649';
-      document.getElementById('setting-email').value     = data.contact_email || 'info@azzurrapharmaconutrition.com';
-    } else {
-      document.getElementById('setting-site-name').value = 'Azzurra';
-      document.getElementById('setting-phone').value     = '+91 98 71 648 649';
-      document.getElementById('setting-email').value     = 'info@azzurrapharmaconutrition.com';
-    }
+    // New schema: key/value table — fetch all three rows
+    var r = await sb.from('settings').select('*');
+    if (r.error && r.error.code !== 'PGRST116') throw r.error;
+    var map = {};
+    (r.data || []).forEach(function(row) { map[row.key] = row.value; });
+    var snEl = document.getElementById('setting-site-name');
+    var spEl = document.getElementById('setting-phone');
+    var seEl = document.getElementById('setting-email');
+    if (snEl) snEl.value = map['site_name']     || 'Azzurra';
+    if (spEl) spEl.value = map['contact_phone'] || '+91 98 71 648 649';
+    if (seEl) seEl.value = map['contact_email'] || 'info@azzurrapharmaconutrition.com';
   } catch(_) {
-    document.getElementById('setting-site-name').value = 'Azzurra';
-    document.getElementById('setting-phone').value     = '+91 98 71 648 649';
-    document.getElementById('setting-email').value     = 'info@azzurrapharmaconutrition.com';
+    var snEl2 = document.getElementById('setting-site-name');
+    var spEl2 = document.getElementById('setting-phone');
+    var seEl2 = document.getElementById('setting-email');
+    if (snEl2) snEl2.value = 'Azzurra';
+    if (spEl2) spEl2.value = '+91 98 71 648 649';
+    if (seEl2) seEl2.value = 'info@azzurrapharmaconutrition.com';
   }
 }
 
-document.getElementById('btn-save-settings').addEventListener('click', async () => {
-  const btn = document.getElementById('btn-save-settings');
+var saveSettingsBtn = document.getElementById('btn-save-settings');
+if (saveSettingsBtn) saveSettingsBtn.addEventListener('click', async function() {
+  var btn = document.getElementById('btn-save-settings');
+  if (!btn) return;
   btn.disabled = true; btn.textContent = 'Saving\u2026';
   try {
-    const payload = {
-      id: 1,
-      site_name:     document.getElementById('setting-site-name').value.trim(),
-      contact_phone: document.getElementById('setting-phone').value.trim(),
-      contact_email: document.getElementById('setting-email').value.trim(),
-    };
-    const { error } = await sb.from('settings').upsert(payload, { onConflict: 'id' });
-    if (error) throw error;
+    var snEl = document.getElementById('setting-site-name');
+    var spEl = document.getElementById('setting-phone');
+    var seEl = document.getElementById('setting-email');
+    // Upsert using key/value schema
+    var rows = [
+      { key: 'site_name',     value: snEl ? snEl.value.trim() : '' },
+      { key: 'contact_phone', value: spEl ? spEl.value.trim() : '' },
+      { key: 'contact_email', value: seEl ? seEl.value.trim() : '' },
+    ];
+    var r = await sb.from('settings').upsert(rows, { onConflict: 'key' });
+    if (r.error) throw r.error;
     showToast('\u2713 Settings saved', 'success');
   } catch(err) { showToast('Save failed: ' + err.message, 'error'); }
-  finally { btn.disabled = false; btn.textContent = 'Save Settings'; }
+  finally { if (btn) { btn.disabled = false; btn.textContent = 'Save Settings'; } }
 });
 
-document.getElementById('btn-clear-sessions').addEventListener('click', async () => {
+var clearSessionsBtn = document.getElementById('btn-clear-sessions');
+if (clearSessionsBtn) clearSessionsBtn.addEventListener('click', async function() {
   if (!window.confirm('Sign out all admin sessions globally? You will be redirected to login.')) return;
   try {
     await sb.auth.signOut({ scope: 'global' });
-    window.location.replace('admin-login.html');
+    window.location.replace('./admin-login.html');
   } catch(err) { showToast('Failed: ' + err.message, 'error'); }
 });
 
 /* ── INITIAL LOAD ── */
 showSection('dashboard');
 
-}); // end waitForSupabase
+} // end initAdmin
 </script>
 
 </body>

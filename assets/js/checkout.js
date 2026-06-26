@@ -1,15 +1,43 @@
 /* ============================================================
    AZZURRA — CHECKOUT JAVASCRIPT
-   checkout.js — Form validation, order creation, Razorpay modal.
-   Depends on: config.js, shop.js (getCart, SITE_CONFIG, SUPABASE_URL,
-               SUPABASE_ANON_KEY, RAZORPAY_KEY_ID)
+   checkout.js — Form validation, cart display, Supabase order save.
+   Saves orders directly to Supabase `orders` table.
    ============================================================ */
+
+/* ── Supabase credentials ─────────────────────────────────── */
+var _CHECKOUT_SUPABASE_URL      = 'https://ilduyhuvpiqhvbnocqxf.supabase.co';
+var _CHECKOUT_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlsZHV5aHV2cGlxaHZibm9jcXhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4MTMxNTUsImV4cCI6MjA5NjM4OTE1NX0.uuC8dKajsnSSaiTx_wxNeapKPl4EV20s5phcRS-TaZg';
+
+/* ── Cart helpers (work with both cart key naming conventions) ─ */
+function getCartFromStorage() {
+  // Try both cart key names used across the codebase
+  var raw = localStorage.getItem('azzurra_cart') || localStorage.getItem('azzurra_cart_v1');
+  if (!raw) return [];
+  try { return JSON.parse(raw) || []; } catch(_) { return []; }
+}
+
+function getCartTotal(cart) {
+  return cart.reduce(function(sum, item) {
+    return sum + (Number(item.price || item.unit_price || 0) * Number(item.quantity || item.qty || 1));
+  }, 0);
+}
+
+function clearCart() {
+  localStorage.removeItem('azzurra_cart');
+  localStorage.removeItem('azzurra_cart_v1');
+}
+
+/* ── Currency symbol ──────────────────────────────────────── */
+var CURRENCY_SYMBOL = '₹';
+if (typeof SITE_CONFIG !== 'undefined' && SITE_CONFIG.currencySymbol) {
+  CURRENCY_SYMBOL = SITE_CONFIG.currencySymbol;
+}
 
 /* ============================================================
    RENDER ORDER SUMMARY (right column)
    ============================================================ */
 function renderOrderSummary() {
-  const cart = getCart();
+  var cart = getCartFromStorage();
 
   // Redirect to shop if cart is empty
   if (cart.length === 0) {
@@ -17,43 +45,37 @@ function renderOrderSummary() {
     return;
   }
 
-  const itemsEl    = document.getElementById('summary-items');
-  const subtotalEl = document.getElementById('summary-subtotal');
-  const totalEl    = document.getElementById('summary-total');
+  var itemsEl    = document.getElementById('summary-items');
+  var subtotalEl = document.getElementById('summary-subtotal');
+  var totalEl    = document.getElementById('summary-total');
 
   if (itemsEl) {
     itemsEl.innerHTML = cart.map(function(item) {
-      return `
-        <div class="summary-item">
-          <img
-            class="summary-item__img"
-            src="${item.image_url}"
-            alt="${item.name}"
-            onerror="this.style.visibility='hidden';"
-          />
-          <span class="summary-item__name">${item.name}</span>
-          <span class="summary-item__qty">×${item.quantity}</span>
-          <span class="summary-item__price">
-            ${SITE_CONFIG.currencySymbol}${(item.price * item.quantity).toLocaleString('en-IN')}
-          </span>
-        </div>`;
+      var price = Number(item.price || item.unit_price || 0);
+      var qty   = Number(item.quantity || item.qty || 1);
+      return '<div class="summary-item">'
+        + '<img class="summary-item__img" src="' + (item.image_url || item.imagePath || '') + '" alt="' + (item.name || '') + '" onerror="this.style.visibility=\'hidden\';" />'
+        + '<span class="summary-item__name">' + (item.name || 'Product') + '</span>'
+        + '<span class="summary-item__qty">&times;' + qty + '</span>'
+        + '<span class="summary-item__price">' + CURRENCY_SYMBOL + (price * qty).toLocaleString('en-IN') + '</span>'
+        + '</div>';
     }).join('');
   }
 
-  const total = getCartTotal();
-  if (subtotalEl) subtotalEl.textContent = `${SITE_CONFIG.currencySymbol}${total.toLocaleString('en-IN')}`;
-  if (totalEl)    totalEl.textContent    = `${SITE_CONFIG.currencySymbol}${total.toLocaleString('en-IN')}`;
+  var total = getCartTotal(cart);
+  if (subtotalEl) subtotalEl.textContent = CURRENCY_SYMBOL + total.toLocaleString('en-IN');
+  if (totalEl)    totalEl.textContent    = CURRENCY_SYMBOL + total.toLocaleString('en-IN');
 }
 
 /* ============================================================
    FORM VALIDATION
    ============================================================ */
 function validateCheckoutForm(data) {
-  let valid = true;
+  var valid = true;
 
   function setErr(inputId, errId, condition, msg) {
-    const input = document.getElementById(inputId);
-    const err   = document.getElementById(errId);
+    var input = document.getElementById(inputId);
+    var err   = document.getElementById(errId);
     if (!input || !err) return;
     if (condition) {
       input.classList.add('error');
@@ -83,133 +105,131 @@ function validateCheckoutForm(data) {
 }
 
 /* ============================================================
-   STEP 1 — Create order in Supabase via Edge Function
-   Edge Function URL: SUPABASE_URL + /functions/v1/createOrder
+   SAVE ORDER TO SUPABASE
+   Inserts directly into the orders table via the REST API.
    ============================================================ */
-async function createOrder(formData) {
-  const cart = getCart();
+async function saveOrderToSupabase(formData) {
+  var cart  = getCartFromStorage();
+  var total = getCartTotal(cart);
 
-  const payload = {
-    cart: cart.map(function(item) {
-      return {
-        product_id: item.id,
-        quantity:   item.quantity,
-        unit_price: item.price,
-        subtotal:   item.price * item.quantity
-      };
-    }),
-    total_amount:     getCartTotal(),
-    shipping_address: formData,
-    currency:         SITE_CONFIG.currency
+  // Build the full address string
+  var fullAddress = [
+    formData.address,
+    formData.city,
+    formData.state,
+    formData.pincode
+  ].filter(Boolean).join(', ');
+
+  // Map cart items to a consistent shape
+  var items = cart.map(function(item) {
+    return {
+      id:           item.id,
+      name:         item.name || 'Product',
+      quantity:     Number(item.quantity || item.qty || 1),
+      price:        Number(item.price || item.unit_price || 0),
+      image_url:    item.image_url || item.imagePath || ''
+    };
+  });
+
+  var payload = {
+    customer_name:  formData.name,
+    customer_email: formData.email,
+    customer_phone: formData.phone,
+    address:        fullAddress,
+    items:          JSON.stringify(items),
+    total_amount:   total,
+    status:         'pending'
   };
 
-  const res = await fetch(`${SUPABASE_URL}/functions/v1/createOrder`, {
+  var res = await fetch(_CHECKOUT_SUPABASE_URL + '/rest/v1/orders', {
     method:  'POST',
     headers: {
+      'apikey':        _CHECKOUT_SUPABASE_ANON_KEY,
+      'Authorization': 'Bearer ' + _CHECKOUT_SUPABASE_ANON_KEY,
       'Content-Type':  'application/json',
-      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+      'Accept':        'application/json',
+      'Prefer':        'return=representation'
     },
     body: JSON.stringify(payload)
   });
 
   if (!res.ok) {
-    const errText = await res.text();
-    throw new Error(`Order creation failed: ${errText}`);
+    var errText = await res.text();
+    throw new Error('Order save failed (' + res.status + '): ' + errText);
   }
 
-  return res.json();
-  // Returns: { orderId, razorpayOrderId, amount, currency, keyId }
+  var data = await res.json();
+  // Supabase returns an array when Prefer:return=representation is set
+  return Array.isArray(data) ? data[0] : data;
 }
 
 /* ============================================================
-   STEP 2 — Open Razorpay checkout modal
+   UPSERT CUSTOMER (best-effort, non-blocking)
    ============================================================ */
-function openRazorpay(orderData, formData) {
-  const options = {
-    key:      orderData.keyId || RAZORPAY_KEY_ID,
-    amount:   orderData.amount,           // In paise (₹1 = 100 paise)
-    currency: orderData.currency || 'INR',
-    name:     'Azzurra Pharmaconutrition',
-    description: 'Biotech Wellness Products',
-    order_id: orderData.razorpayOrderId,
-
-    prefill: {
-      name:    formData.name,
-      email:   formData.email,
-      contact: formData.phone
-    },
-
-    theme: {
-      color: '#1A5FA8'  /* Azzurra primary blue */
-    },
-
-    modal: {
-      ondismiss: function() {
-        showCheckoutError('Payment was cancelled. Your order has not been processed.');
-        setSubmitLoading(false);
-      }
-    },
-
-    handler: function(response) {
-      /* Payment succeeded in Razorpay modal.
-         Now verify the payment signature via our Edge Function. */
-      verifyPayment({
-        razorpay_payment_id:  response.razorpay_payment_id,
-        razorpay_order_id:    response.razorpay_order_id,
-        razorpay_signature:   response.razorpay_signature,
-        orderId:              orderData.orderId
-      });
-    }
-  };
-
-  const rzp = new Razorpay(options);
-  rzp.on('payment.failed', function(response) {
-    showCheckoutError(`Payment failed: ${response.error.description}. Please try again.`);
-    setSubmitLoading(false);
-  });
-
-  rzp.open();
-}
-
-/* ============================================================
-   STEP 3 — Verify payment signature via Edge Function
-   ============================================================ */
-async function verifyPayment(verifyData) {
-  try {
-    const res = await fetch(`${SUPABASE_URL}/functions/v1/verifypayment`, {
-      method:  'POST',
-      headers: {
-        'Content-Type':  'application/json',
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-      },
-      body: JSON.stringify(verifyData)
+function upsertCustomer(formData) {
+  // If supabase-products.js already exposed this helper, use it
+  if (typeof window.upsertCustomerInSupabase === 'function') {
+    window.upsertCustomerInSupabase({
+      name:  formData.name,
+      email: formData.email,
+      phone: formData.phone
     });
-
-    if (!res.ok) {
-      const errText = await res.text();
-      throw new Error(`Verification failed: ${errText}`);
-    }
-
-    const result = await res.json();
-
-    if (result.success) {
-      // Clear cart and redirect to confirmation
-      localStorage.removeItem('azzurra_cart_v1');
-      window.location.href = `order-confirmation.html?orderId=${result.orderId}`;
-    } else {
-      throw new Error('Payment verification returned false.');
-    }
-  } catch (err) {
-    showCheckoutError(`Payment verification failed: ${err.message}. Please contact support.`);
-    setSubmitLoading(false);
+    return;
   }
+
+  // Fallback: direct REST call
+  fetch(_CHECKOUT_SUPABASE_URL + '/rest/v1/customers', {
+    method:  'POST',
+    headers: {
+      'apikey':        _CHECKOUT_SUPABASE_ANON_KEY,
+      'Authorization': 'Bearer ' + _CHECKOUT_SUPABASE_ANON_KEY,
+      'Content-Type':  'application/json',
+      'Accept':        'application/json',
+      'Prefer':        'resolution=merge-duplicates'
+    },
+    body: JSON.stringify({
+      name:          formData.name,
+      email:         formData.email,
+      phone:         formData.phone,
+      last_activity: new Date().toISOString()
+    })
+  }).catch(function() { /* non-critical */ });
+}
+
+/* ============================================================
+   SHOW ORDER CONFIRMATION
+   ============================================================ */
+function showOrderConfirmation(orderId) {
+  var formSection = document.querySelector('.checkout-form-section');
+  var summary     = document.querySelector('.checkout-summary');
+  var heading     = document.querySelector('.checkout-heading');
+  var sub         = document.querySelector('.checkout-sub');
+
+  if (heading) heading.textContent  = '✅ Order Placed Successfully!';
+  if (sub)     sub.textContent      = 'Thank you for your order. We will contact you shortly.';
+
+  if (formSection) {
+    formSection.innerHTML =
+      '<div style="text-align:center;padding:40px 20px;">'
+      + '<div style="font-size:64px;margin-bottom:16px;">🎉</div>'
+      + '<h2 style="font-size:22px;font-weight:700;color:#1A1A2E;margin-bottom:8px;">Order Confirmed!</h2>'
+      + '<p style="color:#6B7280;margin-bottom:24px;">Your order ID is:</p>'
+      + '<div style="background:#E8F1FB;border-radius:12px;padding:16px 24px;display:inline-block;margin-bottom:24px;">'
+      + '<span style="font-family:monospace;font-size:18px;font-weight:700;color:#1A5FA8;">#' + String(orderId).padStart(6, '0') + '</span>'
+      + '</div>'
+      + '<p style="color:#6B7280;margin-bottom:32px;">We have received your order and will process it shortly. Our team will call you to confirm delivery details.</p>'
+      + '<a href="productss.html" style="display:inline-block;background:#1A5FA8;color:#fff;padding:12px 28px;border-radius:100px;text-decoration:none;font-weight:700;">Continue Shopping</a>'
+      + '</div>';
+  }
+
+  if (summary) summary.style.display = 'none';
 }
 
 /* ============================================================
    UI HELPERS
    ============================================================ */
 function showCheckoutError(msg) {
-  const errEl = document.getElementById('checkout-error');
+  var errEl = document.getElementById('checkout-error');
   if (!errEl) return;
   errEl.textContent = msg;
   errEl.classList.add('show');
@@ -217,12 +237,12 @@ function showCheckoutError(msg) {
 }
 
 function hideCheckoutError() {
-  const errEl = document.getElementById('checkout-error');
+  var errEl = document.getElementById('checkout-error');
   if (errEl) errEl.classList.remove('show');
 }
 
 function setSubmitLoading(isLoading) {
-  const btn = document.getElementById('checkout-submit-btn');
+  var btn = document.getElementById('checkout-submit-btn');
   if (!btn) return;
   btn.disabled = isLoading;
   btn.classList.toggle('loading', isLoading);
@@ -235,21 +255,29 @@ function setSubmitLoading(isLoading) {
 function initCheckout() {
   renderOrderSummary();
 
-  const form = document.getElementById('checkout-form');
+  var form = document.getElementById('checkout-form');
   if (!form) return;
 
   form.addEventListener('submit', async function(e) {
     e.preventDefault();
     hideCheckoutError();
 
-    const formData = {
-      name:     document.getElementById('ch-name')?.value.trim()    || '',
-      phone:    document.getElementById('ch-phone')?.value.trim()   || '',
-      email:    document.getElementById('ch-email')?.value.trim()   || '',
-      address:  document.getElementById('ch-address')?.value.trim() || '',
-      city:     document.getElementById('ch-city')?.value.trim()    || '',
-      state:    document.getElementById('ch-state')?.value.trim()   || '',
-      pincode:  document.getElementById('ch-pincode')?.value.trim() || ''
+    var nameEl    = document.getElementById('ch-name');
+    var phoneEl   = document.getElementById('ch-phone');
+    var emailEl   = document.getElementById('ch-email');
+    var addressEl = document.getElementById('ch-address');
+    var cityEl    = document.getElementById('ch-city');
+    var stateEl   = document.getElementById('ch-state');
+    var pincodeEl = document.getElementById('ch-pincode');
+
+    var formData = {
+      name:    nameEl    ? nameEl.value.trim()    : '',
+      phone:   phoneEl   ? phoneEl.value.trim()   : '',
+      email:   emailEl   ? emailEl.value.trim()   : '',
+      address: addressEl ? addressEl.value.trim() : '',
+      city:    cityEl    ? cityEl.value.trim()    : '',
+      state:   stateEl   ? stateEl.value.trim()   : '',
+      pincode: pincodeEl ? pincodeEl.value.trim() : ''
     };
 
     if (!validateCheckoutForm(formData)) return;
@@ -257,14 +285,20 @@ function initCheckout() {
     setSubmitLoading(true);
 
     try {
-      // Step 1: Create order + Razorpay order via Edge Function
-      const orderData = await createOrder(formData);
+      // Save order to Supabase
+      var order = await saveOrderToSupabase(formData);
 
-      // Step 2: Open Razorpay modal
-      openRazorpay(orderData, formData);
+      // Best-effort: upsert customer record
+      upsertCustomer(formData);
+
+      // Clear cart from localStorage
+      clearCart();
+
+      // Show confirmation
+      showOrderConfirmation(order.id || '');
 
     } catch (err) {
-      showCheckoutError(`Could not initiate checkout: ${err.message}`);
+      showCheckoutError('Could not place order: ' + err.message + '. Please try again or contact us.');
       setSubmitLoading(false);
     }
   });
