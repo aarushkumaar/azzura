@@ -53,6 +53,45 @@
        Dot-grid background, scroll indicator at bottom
        ======================================================== -->
   <section class="hero hero--split" id="hero" aria-label="Hero">
+    <!-- Hero background blobs -->
+    <div class="hero-bg-blob hero-bg-blob--1" aria-hidden="true"></div>
+    <div class="hero-bg-blob hero-bg-blob--2" aria-hidden="true"></div>
+    <div class="hero-bg-blob hero-bg-blob--3" aria-hidden="true"></div>
+
+    <!-- Floating Background Medical Shapes -->
+    <div class="floating-shapes-container" aria-hidden="true">
+      <!-- Hexagon -->
+      <svg class="floating-shape float-slow-up" style="top: 10%; left: 4%; width: 45px; height: 45px;" viewBox="0 0 100 100" fill="currentColor">
+        <polygon points="50,1 93,25 93,75 50,99 7,75 7,25"/>
+      </svg>
+      <!-- Medical Cross -->
+      <svg class="floating-shape floating-shape--cyan float-medium-down" style="top: 70%; left: 88%; width: 50px; height: 50px;" viewBox="0 0 100 100" fill="currentColor">
+        <path d="M35 15h30v20h20v30h-20v20h-30v-20h-20v-30h20z"/>
+      </svg>
+      <!-- Capsule/Pill -->
+      <svg class="floating-shape floating-shape--white float-fast-up" style="top: 20%; left: 82%; width: 55px; height: 55px;" viewBox="0 0 100 100" fill="currentColor">
+        <rect x="15" y="30" width="70" height="40" rx="20" ry="20" transform="rotate(-45 50 50)"/>
+      </svg>
+      <!-- Molecule -->
+      <svg class="floating-shape float-slow-diag" style="top: 80%; left: 12%; width: 60px; height: 60px;" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="8">
+        <circle cx="25" cy="25" r="12" fill="currentColor"/>
+        <circle cx="75" cy="35" r="10" fill="currentColor"/>
+        <circle cx="50" cy="75" r="14" fill="currentColor"/>
+        <line x1="25" y1="25" x2="75" y2="35"/>
+        <line x1="75" y1="35" x2="50" y2="75"/>
+        <line x1="50" y1="75" x2="25" y2="25"/>
+      </svg>
+      <!-- DNA Inspired Element -->
+      <svg class="floating-shape floating-shape--cyan float-slow-up" style="top: 45%; left: 2%; width: 70px; height: 70px;" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="6">
+        <path d="M10,30 Q25,70 50,30 T90,70" />
+        <path d="M10,70 Q25,30 50,70 T90,30" stroke-dasharray="4,4"/>
+        <line x1="20" y1="42" x2="20" y2="58" />
+        <line x1="35" y1="38" x2="35" y2="62" />
+        <line x1="50" y1="30" x2="50" y2="70" />
+        <line x1="65" y1="38" x2="65" y2="62" />
+        <line x1="80" y1="42" x2="80" y2="58" />
+      </svg>
+    </div>
 
     <!-- Dot-grid background pattern (::before in CSS) -->
 
@@ -90,30 +129,13 @@
 
     </div><!-- /hero__text-col -->
 
-    <!-- RIGHT COLUMN: Animated CSS composition -->
+    <!-- RIGHT COLUMN: Hero Doctor Image -->
     <div class="hero__visual-col" aria-hidden="true">
-
-      <!-- Large background orb -->
-      <div class="hero-orb"></div>
-
-      <!-- Floating card 1: Main stat card -->
-      <div class="hero-card hero-card--main">
-        <span class="hero-card__pill">CLINICAL GRADE</span>
-        <div class="hero-card__number">98%</div>
-        <div class="hero-card__label">Absorption Rate</div>
-      </div>
-
-      <!-- Floating card 2: Years of research (offset bottom-left) -->
-      <div class="hero-card hero-card--secondary">
-        <div class="hero-card__number hero-card__number--sm">10+</div>
-        <div class="hero-card__label">Years of Research</div>
-      </div>
-
-      <!-- Pill tags scattered around the orb -->
-      <span class="hero-pill hero-pill--1">L-Glutamine</span>
-      <span class="hero-pill hero-pill--2">Whey Peptide</span>
-      <span class="hero-pill hero-pill--3">MCT</span>
-
+      <img
+        src="assets/images/hero-doctor.jpg"
+        alt="Clinically formulated precision nutrition solutions by Azzurra"
+        class="hero__doctor-img"
+      />
     </div><!-- /hero__visual-col -->
 
     <!-- Bottom-RIGHT floating collab label (CHANGE 1: moved from left) -->
@@ -129,6 +151,7 @@
 
   </section>
 
+  <div class="section-divider"></div>
 
   <!-- ========================================================
        SECTION 2 — STATS BAR
@@ -160,12 +183,48 @@
     </div>
   </section>
 
+  <div class="section-divider"></div>
 
   <!-- ========================================================
        SECTION 3 — ABOUT AZZURRA
        Two-column: text left, image placeholder right
        ======================================================== -->
   <section class="about-section section" aria-labelledby="about-heading">
+
+    <!-- Floating Background Medical Shapes -->
+    <div class="floating-shapes-container" aria-hidden="true">
+      <!-- Hexagon -->
+      <svg class="floating-shape float-slow-up" style="top: 10%; left: 4%; width: 45px; height: 45px;" viewBox="0 0 100 100" fill="currentColor">
+        <polygon points="50,1 93,25 93,75 50,99 7,75 7,25"/>
+      </svg>
+      <!-- Medical Cross -->
+      <svg class="floating-shape floating-shape--cyan float-medium-down" style="top: 70%; left: 88%; width: 50px; height: 50px;" viewBox="0 0 100 100" fill="currentColor">
+        <path d="M35 15h30v20h20v30h-20v20h-30v-20h-20v-30h20z"/>
+      </svg>
+      <!-- Capsule/Pill -->
+      <svg class="floating-shape floating-shape--white float-fast-up" style="top: 20%; left: 82%; width: 55px; height: 55px;" viewBox="0 0 100 100" fill="currentColor">
+        <rect x="15" y="30" width="70" height="40" rx="20" ry="20" transform="rotate(-45 50 50)"/>
+      </svg>
+      <!-- Molecule -->
+      <svg class="floating-shape float-slow-diag" style="top: 80%; left: 12%; width: 60px; height: 60px;" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="8">
+        <circle cx="25" cy="25" r="12" fill="currentColor"/>
+        <circle cx="75" cy="35" r="10" fill="currentColor"/>
+        <circle cx="50" cy="75" r="14" fill="currentColor"/>
+        <line x1="25" y1="25" x2="75" y2="35"/>
+        <line x1="75" y1="35" x2="50" y2="75"/>
+        <line x1="50" y1="75" x2="25" y2="25"/>
+      </svg>
+      <!-- DNA Inspired Element -->
+      <svg class="floating-shape floating-shape--cyan float-slow-up" style="top: 45%; left: 2%; width: 70px; height: 70px;" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="6">
+        <path d="M10,30 Q25,70 50,30 T90,70" />
+        <path d="M10,70 Q25,30 50,70 T90,30" stroke-dasharray="4,4"/>
+        <line x1="20" y1="42" x2="20" y2="58" />
+        <line x1="35" y1="38" x2="35" y2="62" />
+        <line x1="50" y1="30" x2="50" y2="70" />
+        <line x1="65" y1="38" x2="65" y2="62" />
+        <line x1="80" y1="42" x2="80" y2="58" />
+      </svg>
+    </div>
     <div class="about-section__grid">
 
       <!-- Left: text content -->
@@ -205,22 +264,24 @@
         <a href="about.html" class="btn btn--outline" style="margin-top: 8px;">Learn More</a>
       </div>
 
-      <!-- Right: Image placeholder (replace with real photo later) -->
-      <!-- REPLACE WITH ACTUAL IMAGE: doctor-research-lab -->
+      <!-- Right: Company banner image -->
       <div class="about-section__visual fade-up">
-        <div
-          class="img-placeholder img-placeholder--about"
-          data-image-slot="doctor-research-lab"
-          aria-label="Image placeholder: Research team / lab setting"
-        >
-          <span class="img-placeholder__icon" aria-hidden="true">⚕️</span>
-          <span class="img-placeholder__label">Image: Research team / lab setting</span>
+        <img
+          src="assets/images/operation-theatre.jpg"
+          alt="State-of-the-art clinical infrastructure and facilities"
+          loading="lazy"
+          style="width:100%;border-radius:16px;display:block;"
+          onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
+        />
+        <div class="img-placeholder img-placeholder--about" style="display:none;" aria-hidden="true">
+          <span class="img-placeholder__icon">⚕️</span>
         </div>
       </div>
 
     </div>
   </section>
 
+  <div class="section-divider"></div>
 
   <!-- ========================================================
        SECTION 4 — PRODUCT SERIES
@@ -282,12 +343,48 @@
     </div>
   </section>
 
+  <div class="section-divider"></div>
 
   <!-- ========================================================
        SECTION 5 — FEATURED PRODUCTS
        Dynamically rendered from PRODUCTS array (products-data.js)
        ======================================================== -->
   <section class="featured-section section" aria-labelledby="featured-heading">
+
+    <!-- Floating Background Medical Shapes -->
+    <div class="floating-shapes-container" aria-hidden="true">
+      <!-- Hexagon -->
+      <svg class="floating-shape float-slow-up" style="top: 10%; left: 4%; width: 45px; height: 45px;" viewBox="0 0 100 100" fill="currentColor">
+        <polygon points="50,1 93,25 93,75 50,99 7,75 7,25"/>
+      </svg>
+      <!-- Medical Cross -->
+      <svg class="floating-shape floating-shape--cyan float-medium-down" style="top: 70%; left: 88%; width: 50px; height: 50px;" viewBox="0 0 100 100" fill="currentColor">
+        <path d="M35 15h30v20h20v30h-20v20h-30v-20h-20v-30h20z"/>
+      </svg>
+      <!-- Capsule/Pill -->
+      <svg class="floating-shape floating-shape--white float-fast-up" style="top: 20%; left: 82%; width: 55px; height: 55px;" viewBox="0 0 100 100" fill="currentColor">
+        <rect x="15" y="30" width="70" height="40" rx="20" ry="20" transform="rotate(-45 50 50)"/>
+      </svg>
+      <!-- Molecule -->
+      <svg class="floating-shape float-slow-diag" style="top: 80%; left: 12%; width: 60px; height: 60px;" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="8">
+        <circle cx="25" cy="25" r="12" fill="currentColor"/>
+        <circle cx="75" cy="35" r="10" fill="currentColor"/>
+        <circle cx="50" cy="75" r="14" fill="currentColor"/>
+        <line x1="25" y1="25" x2="75" y2="35"/>
+        <line x1="75" y1="35" x2="50" y2="75"/>
+        <line x1="50" y1="75" x2="25" y2="25"/>
+      </svg>
+      <!-- DNA Inspired Element -->
+      <svg class="floating-shape floating-shape--cyan float-slow-up" style="top: 45%; left: 2%; width: 70px; height: 70px;" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="6">
+        <path d="M10,30 Q25,70 50,30 T90,70" />
+        <path d="M10,70 Q25,30 50,70 T90,30" stroke-dasharray="4,4"/>
+        <line x1="20" y1="42" x2="20" y2="58" />
+        <line x1="35" y1="38" x2="35" y2="62" />
+        <line x1="50" y1="30" x2="50" y2="70" />
+        <line x1="65" y1="38" x2="65" y2="62" />
+        <line x1="80" y1="42" x2="80" y2="58" />
+      </svg>
+    </div>
     <div class="section-header container">
       <span class="label">Clinical Choice</span>
       <h2 class="heading-xl" id="featured-heading">Featured Products</h2>
@@ -305,26 +402,62 @@
     </div>
   </section>
 
+  <div class="section-divider"></div>
 
   <!-- ========================================================
        SECTION 6 — WHY AZZURRA
        2×2 feature grid
        ======================================================== -->
   <section class="why-section section" aria-labelledby="why-heading">
+
+    <!-- Floating Background Medical Shapes -->
+    <div class="floating-shapes-container" aria-hidden="true">
+      <!-- Hexagon -->
+      <svg class="floating-shape float-slow-up" style="top: 10%; left: 4%; width: 45px; height: 45px;" viewBox="0 0 100 100" fill="currentColor">
+        <polygon points="50,1 93,25 93,75 50,99 7,75 7,25"/>
+      </svg>
+      <!-- Medical Cross -->
+      <svg class="floating-shape floating-shape--cyan float-medium-down" style="top: 70%; left: 88%; width: 50px; height: 50px;" viewBox="0 0 100 100" fill="currentColor">
+        <path d="M35 15h30v20h20v30h-20v20h-30v-20h-20v-30h20z"/>
+      </svg>
+      <!-- Capsule/Pill -->
+      <svg class="floating-shape floating-shape--white float-fast-up" style="top: 20%; left: 82%; width: 55px; height: 55px;" viewBox="0 0 100 100" fill="currentColor">
+        <rect x="15" y="30" width="70" height="40" rx="20" ry="20" transform="rotate(-45 50 50)"/>
+      </svg>
+      <!-- Molecule -->
+      <svg class="floating-shape float-slow-diag" style="top: 80%; left: 12%; width: 60px; height: 60px;" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="8">
+        <circle cx="25" cy="25" r="12" fill="currentColor"/>
+        <circle cx="75" cy="35" r="10" fill="currentColor"/>
+        <circle cx="50" cy="75" r="14" fill="currentColor"/>
+        <line x1="25" y1="25" x2="75" y2="35"/>
+        <line x1="75" y1="35" x2="50" y2="75"/>
+        <line x1="50" y1="75" x2="25" y2="25"/>
+      </svg>
+      <!-- DNA Inspired Element -->
+      <svg class="floating-shape floating-shape--cyan float-slow-up" style="top: 45%; left: 2%; width: 70px; height: 70px;" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="6">
+        <path d="M10,30 Q25,70 50,30 T90,70" />
+        <path d="M10,70 Q25,30 50,70 T90,30" stroke-dasharray="4,4"/>
+        <line x1="20" y1="42" x2="20" y2="58" />
+        <line x1="35" y1="38" x2="35" y2="62" />
+        <line x1="50" y1="30" x2="50" y2="70" />
+        <line x1="65" y1="38" x2="65" y2="62" />
+        <line x1="80" y1="42" x2="80" y2="58" />
+      </svg>
+    </div>
     <div class="section-header container">
       <span class="label">Our Difference</span>
       <h2 class="heading-xl" id="why-heading">Why Azzurra?</h2>
     </div>
 
-    <!-- Certifications background placeholder strip inside why section -->
-    <!-- REPLACE WITH ACTUAL IMAGE: certifications-strip -->
-    <div
-      class="img-placeholder img-placeholder--certstrip fade-up"
-      data-image-slot="certifications-strip"
-      aria-label="Image placeholder: Certification logos / FSSAI / ISO badges"
-    >
-      <span class="img-placeholder__icon" aria-hidden="true">🏅</span>
-      <span class="img-placeholder__label">Image: Certification logos / FSSAI / ISO badges</span>
+    <!-- Medical shield / quality assurance image -->
+    <div class="fade-up" style="text-align:center;margin:0 auto 48px;max-width:480px;">
+      <img
+        src="https://res.cloudinary.com/dfiskvjbl/image/upload/f_auto,q_auto,w_480/azzurra/site/medical-shield"
+        alt="Azzurra quality assurance — clinically validated, immune nutrition, medical grade"
+        loading="lazy"
+        style="width:100%;max-width:380px;border-radius:20px;display:block;margin:0 auto;"
+        onerror="this.style.display='none';"
+      />
     </div>
 
     <div class="why-grid stagger">
@@ -376,6 +509,7 @@
     </div>
   </section>
 
+  <div class="section-divider"></div>
 
   <!-- ========================================================
        SECTION 7 — AAECEN BADGE STRIP
@@ -390,6 +524,7 @@
     </div>
   </div>
 
+  <div class="section-divider"></div>
 
   <!-- ========================================================
        SECTION 8 — CERTIFICATIONS & TRUST (new section)
@@ -433,11 +568,47 @@
     </div>
   </section>
 
+  <div class="section-divider"></div>
 
   <!-- ========================================================
        SECTION 9 — CONTACT STRIP
        ======================================================== -->
   <section class="contact-strip section" aria-labelledby="contact-strip-heading">
+
+    <!-- Floating Background Medical Shapes -->
+    <div class="floating-shapes-container" aria-hidden="true">
+      <!-- Hexagon -->
+      <svg class="floating-shape float-slow-up" style="top: 10%; left: 4%; width: 45px; height: 45px;" viewBox="0 0 100 100" fill="currentColor">
+        <polygon points="50,1 93,25 93,75 50,99 7,75 7,25"/>
+      </svg>
+      <!-- Medical Cross -->
+      <svg class="floating-shape floating-shape--cyan float-medium-down" style="top: 70%; left: 88%; width: 50px; height: 50px;" viewBox="0 0 100 100" fill="currentColor">
+        <path d="M35 15h30v20h20v30h-20v20h-30v-20h-20v-30h20z"/>
+      </svg>
+      <!-- Capsule/Pill -->
+      <svg class="floating-shape floating-shape--white float-fast-up" style="top: 20%; left: 82%; width: 55px; height: 55px;" viewBox="0 0 100 100" fill="currentColor">
+        <rect x="15" y="30" width="70" height="40" rx="20" ry="20" transform="rotate(-45 50 50)"/>
+      </svg>
+      <!-- Molecule -->
+      <svg class="floating-shape float-slow-diag" style="top: 80%; left: 12%; width: 60px; height: 60px;" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="8">
+        <circle cx="25" cy="25" r="12" fill="currentColor"/>
+        <circle cx="75" cy="35" r="10" fill="currentColor"/>
+        <circle cx="50" cy="75" r="14" fill="currentColor"/>
+        <line x1="25" y1="25" x2="75" y2="35"/>
+        <line x1="75" y1="35" x2="50" y2="75"/>
+        <line x1="50" y1="75" x2="25" y2="25"/>
+      </svg>
+      <!-- DNA Inspired Element -->
+      <svg class="floating-shape floating-shape--cyan float-slow-up" style="top: 45%; left: 2%; width: 70px; height: 70px;" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="6">
+        <path d="M10,30 Q25,70 50,30 T90,70" />
+        <path d="M10,70 Q25,30 50,70 T90,30" stroke-dasharray="4,4"/>
+        <line x1="20" y1="42" x2="20" y2="58" />
+        <line x1="35" y1="38" x2="35" y2="62" />
+        <line x1="50" y1="30" x2="50" y2="70" />
+        <line x1="65" y1="38" x2="65" y2="62" />
+        <line x1="80" y1="42" x2="80" y2="58" />
+      </svg>
+    </div>
     <div style="text-align: center;">
       <span class="label" style="color: var(--color-primary);">Reach Us</span>
       <h2 class="heading-xl" id="contact-strip-heading" style="margin-top: 12px;">Get In Touch</h2>
