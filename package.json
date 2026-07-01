@@ -12,7 +12,8 @@
     "upload-new-images": "node scripts/upload-new-images.js",
     "sync-products": "node scripts/sync-to-supabase.js",
     "upload-and-sync": "node scripts/upload-to-cloudinary.js && node scripts/sync-to-supabase.js",
-    "seed-products": "node scripts/seed-products.js"
+    "seed-products": "node scripts/seed-products.js",
+    "fix-products": "node scripts/fix-product-grouping.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",

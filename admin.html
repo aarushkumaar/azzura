@@ -262,13 +262,90 @@
     .panel-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 900; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
     .panel-overlay.open { opacity: 1; pointer-events: all; }
     .slide-panel {
-      position: fixed; right: 0; top: 0; width: 420px; height: 100vh; background: #fff;
-      z-index: 1000; padding: 32px 24px; overflow-y: auto;
+      position: fixed; right: 0; top: 0; width: 560px; height: 100vh; background: #fff;
+      z-index: 1000; padding: 0; overflow: hidden; display: flex; flex-direction: column;
       transform: translateX(100%); transition: transform 0.3s ease; box-shadow: -4px 0 24px rgba(0,0,0,0.12);
     }
     .slide-panel.open { transform: translateX(0); }
-    .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--color-border); }
-    .panel-header h3 { font-family: var(--font-heading); font-size: 22px; color: var(--color-dark); }
+    .panel-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 24px 16px; border-bottom: 1px solid var(--color-border); flex-shrink: 0;
+    }
+    .panel-header h3 { font-family: var(--font-heading); font-size: 20px; color: var(--color-dark); }
+
+    /* Panel tabs */
+    .panel-tabs { display: flex; gap: 0; border-bottom: 1.5px solid var(--color-border); flex-shrink: 0; background: #fff; }
+    .panel-tab {
+      padding: 12px 20px; border: none; background: none;
+      font-family: var(--font-body); font-size: 13px; font-weight: 600;
+      color: var(--color-grey); cursor: pointer;
+      border-bottom: 3px solid transparent; margin-bottom: -1.5px;
+      transition: color 0.2s ease, border-color 0.2s ease;
+    }
+    .panel-tab.active { color: var(--color-primary); border-bottom-color: var(--color-primary); }
+    .panel-tab:hover { color: var(--color-primary); }
+    .panel-body { flex: 1; overflow-y: auto; padding: 24px; }
+    .panel-tab-content { display: none; }
+    .panel-tab-content.active { display: block; }
+
+    /* Image editor */
+    .img-editor-layout { display: flex; gap: 16px; }
+    .img-editor-current { flex: 7; min-width: 0; }
+    .img-editor-upload  { flex: 3; min-width: 120px; }
+    .img-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(120px,1fr)); gap: 10px; margin-bottom: 16px; }
+    .img-card {
+      position: relative; border-radius: 10px; overflow: hidden;
+      border: 1.5px solid var(--color-border);
+      aspect-ratio: 1/1; background: #f8fbff;
+    }
+    .img-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .img-card-actions {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      display: flex; justify-content: center; gap: 2px;
+      padding: 4px; background: rgba(0,0,0,0.55);
+    }
+    .img-action-btn {
+      width: 26px; height: 26px; border: none; border-radius: 4px;
+      background: rgba(255,255,255,0.2); color: #fff;
+      font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s ease;
+    }
+    .img-action-btn:hover { background: rgba(255,255,255,0.45); }
+    .img-action-btn.cover-active { background: #C9A84C; }
+    .img-action-btn.danger { color: #FC8181; }
+    .img-cover-badge {
+      position: absolute; top: 4px; left: 4px;
+      background: #C9A84C; color: #fff; font-size: 10px; font-weight: 700;
+      padding: 2px 6px; border-radius: 4px;
+    }
+    .img-confirm-overlay {
+      position: absolute; inset: 0; background: rgba(0,0,0,0.7);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+      border-radius: 8px;
+    }
+    .img-confirm-overlay p { color: #fff; font-size: 11px; text-align: center; padding: 0 8px; }
+    .img-confirm-btn { padding: 4px 10px; border-radius: 6px; border: none; cursor: pointer; font-size: 12px; font-weight: 600; }
+    .img-confirm-btn.yes { background: var(--color-red); color: #fff; }
+    .img-confirm-btn.no  { background: rgba(255,255,255,0.2); color: #fff; }
+
+    /* Upload area */
+    .upload-area {
+      border: 2px dashed var(--color-border); border-radius: 10px;
+      padding: 20px 12px; text-align: center; cursor: pointer;
+      font-size: 12px; color: var(--color-grey);
+      transition: border-color 0.2s ease, background 0.2s ease;
+    }
+    .upload-area:hover, .upload-area.drag-over {
+      border-color: var(--color-primary); background: var(--color-primary-light);
+    }
+    .upload-previews { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .upload-preview {
+      width: 52px; height: 52px; object-fit: cover;
+      border-radius: 6px; border: 1.5px solid var(--color-border);
+    }
+    .save-images-btn { width: 100%; margin-top: 16px; }
+    .save-images-btn.has-changes { border: 2px solid var(--color-primary); animation: pulseBlue 1.5s ease infinite; }
+    @keyframes pulseBlue { 0%,100%{box-shadow:none} 50%{box-shadow:0 0 0 3px rgba(26,95,168,0.25)} }
     .btn-close-panel { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--color-grey); line-height: 1; padding: 4px; border-radius: 6px; transition: background 0.2s ease; }
     .btn-close-panel:hover { background: #f5f7fa; color: var(--color-dark); }
 
@@ -360,6 +437,7 @@
       .topbar { padding: 12px 16px; }
       .slide-panel { width: 100%; }
       .order-detail-grid { grid-template-columns: 1fr; }
+      .img-editor-layout { flex-direction: column; }
     }
   </style>
 </head>
@@ -542,93 +620,133 @@
 <!-- SLIDE-IN PANEL -->
 <div class="panel-overlay" id="panel-overlay"></div>
 <div class="slide-panel" id="product-panel">
+  <!-- Panel Header -->
   <div class="panel-header">
     <h3 id="panel-title">Add Product</h3>
     <button class="btn-close-panel" id="btn-close-panel">&times;</button>
   </div>
-  <form id="product-form" novalidate>
-    <input type="hidden" id="form-product-id" />
-    <div class="form-group">
-      <label class="form-label">Product Name <span class="req">*</span></label>
-      <input type="text" id="form-name" required placeholder="e.g. Essential Chocolate 350g" />
+  <!-- Tab Nav -->
+  <div class="panel-tabs" id="panel-tabs">
+    <button class="panel-tab active" data-ptab="details" id="ptab-details">&#128221; Details</button>
+    <button class="panel-tab" data-ptab="images" id="ptab-images">&#128247; Images</button>
+  </div>
+  <!-- Panel Body -->
+  <div class="panel-body">
+
+    <!-- DETAILS TAB -->
+    <div class="panel-tab-content active" id="ptab-content-details">
+      <form id="product-form" novalidate>
+        <input type="hidden" id="form-product-id" />
+        <div class="form-group">
+          <label class="form-label">Product Name <span class="req">*</span></label>
+          <input type="text" id="form-name" required placeholder="e.g. Essential Chocolate 350g" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Series</label>
+          <select id="form-series">
+            <option value="">&#8212; Select Series &#8212;</option>
+            <option value="Essential Series">Essential Series</option>
+            <option value="ABC Series">ABC Series</option>
+            <option value="EG Series">EG Series</option>
+            <option value="Enpedia Series">Enpedia Series</option>
+            <option value="Glutamax Series">Glutamax Series</option>
+            <option value="Neu Series">Neu Series</option>
+            <option value="Micro Series">Micro Series</option>
+            <option value="Fibero Series">Fibero Series</option>
+            <option value="Azo Series">Azo Series</option>
+            <option value="Others">Others</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Flavour</label>
+          <input type="text" id="form-flavour" placeholder="e.g. Chocolate, Vanilla" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Price in &#8377;</label>
+          <input type="number" id="form-price" min="0" placeholder="0 = Contact for price" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Short Description</label>
+          <textarea id="form-short-desc" rows="2" placeholder="Brief product description"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tags <small style="font-weight:400;color:var(--color-grey);">(comma-separated)</small></label>
+          <input type="text" id="form-tags" placeholder="protein, clinical, renal" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Key Benefits <small style="font-weight:400;color:var(--color-grey);">(one per line)</small></label>
+          <textarea id="form-benefits" rows="4" placeholder="Supports muscle recovery&#10;Boosts immunity"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ingredients</label>
+          <textarea id="form-ingredients" rows="3" placeholder="Whey protein, maltodextrin, vitamins&hellip;"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">How to Use</label>
+          <textarea id="form-how-to-use" rows="3" placeholder="Mix 2 scoops with 200ml water&hellip;"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nutrition Facts</label>
+          <textarea id="form-nutrition" rows="4" placeholder="Per 100g: Protein 70g, Carbs 8g&hellip;"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Warnings</label>
+          <textarea id="form-warnings" rows="2" placeholder="Keep out of reach of children&hellip;"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Image Folder</label>
+          <input type="text" id="form-image-folder" placeholder="ESSENTIAL_VANILLA_BLUE" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" style="display:flex;align-items:center;gap:12px;">
+            <span>In Stock</span>
+            <label class="toggle-switch">
+              <input type="checkbox" id="form-in-stock" checked />
+              <span class="toggle-slider"></span>
+            </label>
+          </label>
+        </div>
+        <div class="form-group">
+          <label class="form-label" style="display:flex;align-items:center;gap:12px;">
+            <span>Is Featured</span>
+            <label class="toggle-switch">
+              <input type="checkbox" id="form-featured" />
+              <span class="toggle-slider"></span>
+            </label>
+          </label>
+        </div>
+        <button type="submit" class="btn-primary full-width" id="btn-save-product">Save Product</button>
+        <button type="button" class="btn-secondary full-width" id="btn-cancel-panel">Cancel</button>
+      </form>
     </div>
-    <div class="form-group">
-      <label class="form-label">Series</label>
-      <select id="form-series">
-        <option value="">&#8212; Select Series &#8212;</option>
-        <option value="Essential">Essential</option>
-        <option value="Vital">Vital</option>
-        <option value="Max">Max</option>
-        <option value="Provit">Provit</option>
-        <option value="Lifeline">Lifeline</option>
-        <option value="Oral">Oral</option>
-      </select>
+
+    <!-- IMAGES TAB -->
+    <div class="panel-tab-content" id="ptab-content-images">
+      <p style="font-size:12px;color:var(--color-grey);margin-bottom:16px;">Manage product images. Drag to reorder, set the cover (⭐), or delete. Click &ldquo;Save Image Changes&rdquo; to persist.</p>
+      <div class="img-editor-layout">
+        <!-- Current images -->
+        <div class="img-editor-current">
+          <div style="font-size:13px;font-weight:600;margin-bottom:10px;">Current Images</div>
+          <div class="img-grid" id="img-editor-grid">
+            <p style="font-size:13px;color:var(--color-grey);">No images yet.</p>
+          </div>
+          <button class="btn-primary save-images-btn" id="btn-save-images" type="button">&#128190; Save Image Changes</button>
+        </div>
+        <!-- Upload new images -->
+        <div class="img-editor-upload">
+          <div style="font-size:13px;font-weight:600;margin-bottom:10px;">Add Images</div>
+          <div class="upload-area" id="upload-area">
+            &#128247; Click or drag images here
+            <input type="file" id="upload-file-input" accept="image/jpeg,image/png,image/jpg" multiple style="display:none;" />
+          </div>
+          <div class="upload-previews" id="upload-previews"></div>
+          <div id="upload-progress" style="font-size:12px;color:var(--color-grey);margin-top:8px;"></div>
+          <button class="btn-primary full-width" id="btn-do-upload" type="button" style="margin-top:10px;display:none;">&#8593; Upload Images</button>
+        </div>
+      </div>
     </div>
-    <div class="form-group">
-      <label class="form-label">Flavour</label>
-      <input type="text" id="form-flavour" placeholder="e.g. Chocolate, Vanilla" />
-    </div>
-    <div class="form-group">
-      <label class="form-label">Price in &#8377; <span class="req">*</span></label>
-      <input type="number" id="form-price" required min="0" placeholder="e.g. 1299" />
-    </div>
-    <div class="form-group">
-      <label class="form-label">Short Description</label>
-      <textarea id="form-short-desc" rows="2" placeholder="Brief product description"></textarea>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Tags <small style="font-weight:400;color:var(--color-grey);">(comma-separated)</small></label>
-      <input type="text" id="form-tags" placeholder="protein, clinical, renal" />
-    </div>
-    <div class="form-group">
-      <label class="form-label">Key Benefits <small style="font-weight:400;color:var(--color-grey);">(one per line)</small></label>
-      <textarea id="form-benefits" rows="4" placeholder="Supports muscle recovery&#10;Boosts immunity"></textarea>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Ingredients</label>
-      <textarea id="form-ingredients" rows="3" placeholder="Whey protein, maltodextrin, vitamins&hellip;"></textarea>
-    </div>
-    <div class="form-group">
-      <label class="form-label">How to Use</label>
-      <textarea id="form-how-to-use" rows="3" placeholder="Mix 2 scoops with 200ml water&hellip;"></textarea>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Nutrition Facts</label>
-      <textarea id="form-nutrition" rows="4" placeholder="Per 100g: Protein 70g, Carbs 8g&hellip;"></textarea>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Warnings</label>
-      <textarea id="form-warnings" rows="2" placeholder="Keep out of reach of children&hellip;"></textarea>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Image Folder</label>
-      <input type="text" id="form-image-folder" placeholder="ESENTIAL_SERIES/ESSENTIAL_BLCD_CHOCOLATE_350" />
-    </div>
-    <div class="form-group">
-      <label class="form-label">Cloudinary Image URLs <small style="font-weight:400;color:var(--color-grey);">(JSON array)</small></label>
-      <textarea id="form-images" rows="4" placeholder='["https://res.cloudinary.com/...webp"]'></textarea>
-    </div>
-    <div class="form-group">
-      <label class="form-label" style="display:flex;align-items:center;gap:12px;">
-        <span>In Stock</span>
-        <label class="toggle-switch">
-          <input type="checkbox" id="form-in-stock" checked />
-          <span class="toggle-slider"></span>
-        </label>
-      </label>
-    </div>
-    <div class="form-group">
-      <label class="form-label" style="display:flex;align-items:center;gap:12px;">
-        <span>Is Featured</span>
-        <label class="toggle-switch">
-          <input type="checkbox" id="form-featured" />
-          <span class="toggle-slider"></span>
-        </label>
-      </label>
-    </div>
-    <button type="submit" class="btn-primary full-width" id="btn-save-product">Save Product</button>
-    <button type="button" class="btn-secondary full-width" id="btn-cancel-panel">Cancel</button>
-  </form>
+
+  </div>
 </div>
 
 <!-- TOAST CONTAINER -->
@@ -883,15 +1001,19 @@ function renderProducts() {
 
   tbody.innerHTML = slice.map(function(p, i) {
     var imgSrc = getFirstImage(p.images);
+    // Add f_auto,q_auto,w_120 for admin thumbnails
+    if (imgSrc && imgSrc.indexOf('res.cloudinary.com') !== -1) {
+      imgSrc = imgSrc.replace('/image/upload/', '/image/upload/f_auto,q_auto,w_120/');
+    }
     var thumb  = imgSrc
       ? '<img src="' + esc(imgSrc) + '" class="prod-thumb" loading="lazy" alt="' + esc(p.name||'') + '" />'
       : '<div class="prod-thumb-placeholder">&#129516;</div>';
-    // Use price_inr (correct column name)
     var priceDisplay = p.price_inr ? '&#8377;' + Number(p.price_inr).toLocaleString('en-IN') : '&mdash;';
+    var detailLink = 'product-detail.html?id=' + p.id;
     return '<tr id="prod-row-' + p.id + '">'
       + '<td style="color:var(--color-grey);font-size:12px;">' + (start+i+1) + '</td>'
       + '<td>' + thumb + '</td>'
-      + '<td style="font-weight:600;max-width:200px;word-break:break-word;">' + esc(p.name||'&mdash;') + '</td>'
+      + '<td style="font-weight:600;max-width:200px;word-break:break-word;"><a href="' + detailLink + '" target="_blank" style="color:var(--color-dark);text-decoration:none;" onmouseover="this.style.color=\'var(--color-primary)\'" onmouseout="this.style.color=\'var(--color-dark)\'">' + esc(p.name||'&mdash;') + ' &#8599;</a></td>'
       + '<td>' + (p.series ? '<span style="font-size:12px;background:var(--color-primary-light);color:var(--color-primary);padding:3px 8px;border-radius:20px;">' + esc(p.series) + '</span>' : '&mdash;') + '</td>'
       + '<td>' + priceDisplay + '</td>'
       + '<td><label class="toggle-switch"><input type="checkbox" ' + (p.in_stock?'checked':'') + ' onchange="toggleField(' + p.id + ',\'in_stock\',this.checked)" /><span class="toggle-slider"></span></label></td>'
@@ -953,14 +1075,38 @@ var psf = document.getElementById('products-series-filter');
 if (psf) psf.addEventListener('change', applyFilters);
 
 /* ── SLIDE-IN PANEL ── */
-var panelOverlay = document.getElementById('panel-overlay');
-var productPanel = document.getElementById('product-panel');
-var productForm  = document.getElementById('product-form');
+var panelOverlay   = document.getElementById('panel-overlay');
+var productPanel   = document.getElementById('product-panel');
+var productForm    = document.getElementById('product-form');
+var currentEditId  = null;          // product ID being edited
+var currentImgs    = [];            // image URLs for the editor
+var pendingUploads = [];            // files queued for upload
+
+/* Switch tabs inside panel */
+document.querySelectorAll('.panel-tab').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.panel-tab').forEach(function(b) { b.classList.remove('active'); });
+    document.querySelectorAll('.panel-tab-content').forEach(function(c) { c.classList.remove('active'); });
+    btn.classList.add('active');
+    var content = document.getElementById('ptab-content-' + btn.dataset.ptab);
+    if (content) content.classList.add('active');
+  });
+});
+
+function switchPanelTab(tabName) {
+  document.querySelectorAll('.panel-tab').forEach(function(b) { b.classList.remove('active'); });
+  document.querySelectorAll('.panel-tab-content').forEach(function(c) { c.classList.remove('active'); });
+  var btn = document.querySelector('.panel-tab[data-ptab="' + tabName + '"]');
+  var content = document.getElementById('ptab-content-' + tabName);
+  if (btn) btn.classList.add('active');
+  if (content) content.classList.add('active');
+}
 
 function openPanel()  {
   if (panelOverlay) panelOverlay.classList.add('open');
   if (productPanel) productPanel.classList.add('open');
   document.body.style.overflow = 'hidden';
+  switchPanelTab('details');
 }
 function closePanel() {
   if (panelOverlay) panelOverlay.classList.remove('open');
@@ -971,6 +1117,10 @@ function closePanel() {
   if (pidEl) pidEl.value = '';
   var ptEl = document.getElementById('panel-title');
   if (ptEl) ptEl.textContent = 'Add Product';
+  currentEditId  = null;
+  currentImgs    = [];
+  pendingUploads = [];
+  renderImgEditor();
 }
 
 if (panelOverlay) panelOverlay.addEventListener('click', closePanel);
@@ -984,7 +1134,205 @@ if (addProductBtn) addProductBtn.addEventListener('click', function() {
   var featEl    = document.getElementById('form-featured');
   if (inStockEl) inStockEl.checked = true;
   if (featEl)    featEl.checked = false;
+  currentEditId = null;
+  currentImgs   = [];
+  pendingUploads = [];
+  renderImgEditor();
   openPanel();
+});
+
+/* ── IMAGE EDITOR ── */
+function parseImgsAdmin(raw) {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw;
+  try { var a = JSON.parse(raw); return Array.isArray(a) ? a : []; }
+  catch(_) { return typeof raw === 'string' && raw.startsWith('http') ? [raw] : []; }
+}
+
+function renderImgEditor() {
+  var grid = document.getElementById('img-editor-grid');
+  if (!grid) return;
+  if (!currentImgs.length) {
+    grid.innerHTML = '<p style="font-size:13px;color:var(--color-grey);">No images yet. Upload some from the right panel.</p>';
+    return;
+  }
+  grid.innerHTML = currentImgs.map(function(url, idx) {
+    var isCover = idx === 0;
+    return '<div class="img-card" id="imgcard-' + idx + '" data-idx="' + idx + '">'
+      + '<img src="' + esc(url.replace('/image/upload/', '/image/upload/f_auto,q_auto,w_200/')) + '" alt="Image ' + (idx+1) + '" loading="lazy" />'
+      + (isCover ? '<div class="img-cover-badge">&#11088; Cover</div>' : '')
+      + '<div class="img-card-actions">'
+        + '<button class="img-action-btn' + (isCover?' cover-active':'') + '" title="Set as cover" onclick="imgSetCover(' + idx + ')" type="button">&#11088;</button>'
+        + '<button class="img-action-btn" title="Rotate left" onclick="imgRotate(' + idx + ',-90)" type="button">&#8634;</button>'
+        + '<button class="img-action-btn" title="Rotate right" onclick="imgRotate(' + idx + ',90)" type="button">&#8635;</button>'
+        + '<button class="img-action-btn danger" title="Delete" onclick="imgConfirmDelete(' + idx + ')" type="button">&#10005;</button>'
+      + '</div>'
+    + '</div>';
+  }).join('');
+}
+
+window.imgSetCover = function(idx) {
+  if (idx === 0) return;
+  var url = currentImgs.splice(idx, 1)[0];
+  currentImgs.unshift(url);
+  renderImgEditor();
+  var saveBtn = document.getElementById('btn-save-images');
+  if (saveBtn) saveBtn.classList.add('has-changes');
+};
+
+var imgRotations = {};
+window.imgRotate = function(idx, deg) {
+  var card = document.getElementById('imgcard-' + idx);
+  if (!card) return;
+  var img = card.querySelector('img');
+  if (!img) return;
+  imgRotations[idx] = ((imgRotations[idx] || 0) + deg + 360) % 360;
+  img.style.transform = 'rotate(' + imgRotations[idx] + 'deg)';
+};
+
+window.imgConfirmDelete = function(idx) {
+  var card = document.getElementById('imgcard-' + idx);
+  if (!card) return;
+  // Build inline confirm overlay
+  var overlay = document.createElement('div');
+  overlay.className = 'img-confirm-overlay';
+  overlay.innerHTML = '<p>Remove this image?</p>'
+    + '<div style="display:flex;gap:6px;">'
+      + '<button class="img-confirm-btn yes" type="button" onclick="imgDoDelete(' + idx + ')">Yes</button>'
+      + '<button class="img-confirm-btn no" type="button" onclick="this.closest(\'.img-confirm-overlay\').remove()">No</button>'
+    + '</div>';
+  card.appendChild(overlay);
+};
+
+window.imgDoDelete = function(idx) {
+  currentImgs.splice(idx, 1);
+  renderImgEditor();
+  var saveBtn = document.getElementById('btn-save-images');
+  if (saveBtn) saveBtn.classList.add('has-changes');
+};
+
+/* Save image order/changes to Supabase */
+var saveImagesBtn = document.getElementById('btn-save-images');
+if (saveImagesBtn) saveImagesBtn.addEventListener('click', async function() {
+  if (!currentEditId) { showToast('Open an existing product to save images', 'warning'); return; }
+  this.disabled = true; this.textContent = 'Saving\u2026';
+  try {
+    var r = await sb.from('products').update({ images: JSON.stringify(currentImgs) }).eq('id', currentEditId);
+    if (r.error) throw r.error;
+    // Update in-memory
+    var p = allProducts.find(function(x) { return x.id === currentEditId; });
+    if (p) p.images = JSON.stringify(currentImgs);
+    this.classList.remove('has-changes');
+    // Refresh thumbnail in table
+    var img = document.querySelector('#prod-row-' + currentEditId + ' .prod-thumb');
+    if (img && currentImgs[0]) img.src = currentImgs[0].replace('/image/upload/', '/image/upload/f_auto,q_auto,w_120/');
+    showToast('\u2713 Images saved', 'success');
+  } catch(err) { showToast('Save failed: ' + err.message, 'error'); }
+  finally { this.disabled = false; this.textContent = '\u{1F4BE} Save Image Changes'; }
+});
+
+/* Upload area */
+var uploadArea  = document.getElementById('upload-area');
+var uploadInput = document.getElementById('upload-file-input');
+var doUploadBtn = document.getElementById('btn-do-upload');
+if (uploadArea) {
+  uploadArea.addEventListener('click', function() { if (uploadInput) uploadInput.click(); });
+  uploadArea.addEventListener('dragover', function(e) { e.preventDefault(); this.classList.add('drag-over'); });
+  uploadArea.addEventListener('dragleave', function() { this.classList.remove('drag-over'); });
+  uploadArea.addEventListener('drop', function(e) {
+    e.preventDefault(); this.classList.remove('drag-over');
+    handleFileSelect(e.dataTransfer.files);
+  });
+}
+if (uploadInput) uploadInput.addEventListener('change', function() { handleFileSelect(this.files); });
+
+function handleFileSelect(files) {
+  pendingUploads = Array.from(files).filter(function(f) { return f.type.startsWith('image/'); });
+  var previews = document.getElementById('upload-previews');
+  if (previews) {
+    previews.innerHTML = pendingUploads.map(function(f) {
+      var url = URL.createObjectURL(f);
+      return '<img class="upload-preview" src="' + url + '" alt="Preview" />';
+    }).join('');
+  }
+  if (doUploadBtn) doUploadBtn.style.display = pendingUploads.length ? '' : 'none';
+  if (doUploadBtn) doUploadBtn.textContent = '\u2191 Upload ' + pendingUploads.length + ' Image' + (pendingUploads.length !== 1 ? 's' : '');
+}
+
+/* Browser WebP conversion */
+function toWebP(file) {
+  return new Promise(function(resolve) {
+    var img  = new Image();
+    var url  = URL.createObjectURL(file);
+    img.onload = function() {
+      var canvas = document.createElement('canvas');
+      canvas.width  = img.width;
+      canvas.height = img.height;
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      canvas.toBlob(function(blob) {
+        URL.revokeObjectURL(url);
+        resolve(blob);
+      }, 'image/webp', 0.85);
+    };
+    img.onerror = function() { URL.revokeObjectURL(url); resolve(file); };
+    img.src = url;
+  });
+}
+
+/* Upload to Cloudinary using unsigned preset */
+async function uploadToCloudinary(blob, folder, baseName) {
+  var CLOUD_NAME = 'dfiskvjbl';
+  var PRESET     = 'azzura';
+  var fd = new FormData();
+  fd.append('file',         blob);
+  fd.append('upload_preset', PRESET);
+  fd.append('folder',       'azzura_products/' + (folder || 'uncategorized'));
+  fd.append('public_id',    (folder || 'uncategorized') + '/' + baseName);
+  fd.append('format',       'webp');
+  var res  = await fetch('https://api.cloudinary.com/v1_1/' + CLOUD_NAME + '/image/upload', { method: 'POST', body: fd });
+  var data = await res.json();
+  if (!res.ok || data.error) throw new Error(data.error ? data.error.message : 'Upload failed');
+  return 'https://res.cloudinary.com/' + CLOUD_NAME + '/image/upload/f_auto,q_auto/' + data.public_id;
+}
+
+if (doUploadBtn) doUploadBtn.addEventListener('click', async function() {
+  if (!pendingUploads.length) return;
+  var progressEl = document.getElementById('upload-progress');
+  this.disabled  = true;
+  var folder = (function() {
+    if (currentEditId) {
+      var p = allProducts.find(function(x) { return x.id === currentEditId; });
+      return p ? (p.image_folder || '') : '';
+    }
+    var el = document.getElementById('form-image-folder');
+    return el ? el.value.trim() : '';
+  }());
+
+  var succeeded = 0;
+  for (var i = 0; i < pendingUploads.length; i++) {
+    var file = pendingUploads[i];
+    if (progressEl) progressEl.textContent = 'Uploading ' + (i+1) + '/' + pendingUploads.length + '\u2026';
+    try {
+      var blob = await toWebP(file);
+      var baseName = file.name.replace(/\.[^.]+$/, '') + '_' + Date.now();
+      var url  = await uploadToCloudinary(blob, folder, baseName);
+      currentImgs.push(url);
+      succeeded++;
+    } catch(err) {
+      showToast('Upload failed: ' + err.message, 'error');
+    }
+  }
+  pendingUploads = [];
+  if (uploadInput) uploadInput.value = '';
+  var previews = document.getElementById('upload-previews');
+  if (previews) previews.innerHTML = '';
+  if (progressEl) progressEl.textContent = '\u2713 ' + succeeded + ' image' + (succeeded !== 1 ? 's' : '') + ' uploaded';
+  this.style.display = 'none';
+  this.disabled = false;
+  renderImgEditor();
+  var saveBtn = document.getElementById('btn-save-images');
+  if (saveBtn) saveBtn.classList.add('has-changes');
 });
 
 window.openEditPanel = function(id) {
@@ -1000,24 +1348,29 @@ window.openEditPanel = function(id) {
     if (el) el.checked = !!val;
   }
 
+  currentEditId  = p.id;
+  currentImgs    = parseImgsAdmin(p.images);
+  pendingUploads = [];
+  imgRotations   = {};
+
   setVal('form-product-id',  p.id);
   setVal('form-name',        p.name);
   setVal('form-series',      p.series);
   setVal('form-flavour',     p.flavour);
-  setVal('form-price',       p.price_inr);  // correct column: price_inr
+  setVal('form-price',       p.price_inr);
   setVal('form-short-desc',  p.short_description);
   setVal('form-tags',        p.tags);
-  setVal('form-benefits',    p.benefits);   // correct column: benefits
+  setVal('form-benefits',    p.benefits);
   setVal('form-ingredients', p.ingredients);
   setVal('form-how-to-use',  p.how_to_use);
   setVal('form-nutrition',   p.nutrition_facts);
   setVal('form-warnings',    p.warnings);
   setVal('form-image-folder',p.image_folder);
-  setVal('form-images',      p.images);
   setChk('form-in-stock',    p.in_stock);
   setChk('form-featured',    p.is_featured);
   var ptEl = document.getElementById('panel-title');
-  if (ptEl) ptEl.textContent = 'Edit Product';
+  if (ptEl) ptEl.textContent = 'Edit: ' + (p.name || 'Product');
+  renderImgEditor();
   openPanel();
 };
 
@@ -1035,9 +1388,10 @@ if (productForm) productForm.addEventListener('submit', async function(e) {
   function getV(elId) { var el = document.getElementById(elId); return el ? el.value.trim() || null : null; }
   function getC(elId) { var el = document.getElementById(elId); return el ? el.checked : false; }
 
-  // Column names aligned with the NEW schema (price_inr, benefits, short_description)
+  // Column names aligned with schema (price_inr, benefits, short_description)
+  // Images are managed separately in the Images tab using currentImgs
   var payload = {
-    name,
+    name:              name,
     price_inr:         parseFloat(price) || 0,
     series:            getV('form-series'),
     flavour:           getV('form-flavour'),
@@ -1049,10 +1403,11 @@ if (productForm) productForm.addEventListener('submit', async function(e) {
     nutrition_facts:   getV('form-nutrition'),
     warnings:          getV('form-warnings'),
     image_folder:      getV('form-image-folder'),
-    images:            getV('form-images'),
     in_stock:          getC('form-in-stock'),
     is_featured:       getC('form-featured'),
   };
+  // Include current images from editor if available (new product or after upload)
+  if (currentImgs.length > 0) payload.images = JSON.stringify(currentImgs);
   try {
     var idEl = document.getElementById('form-product-id');
     var id   = idEl ? idEl.value : '';
@@ -1074,17 +1429,31 @@ if (importBtn) importBtn.addEventListener('click', async function() {
   importBtn.disabled = true; importBtn.textContent = 'Loading\u2026';
   try {
     var res = await fetch('./cloudinary-products-map.json');
-    if (!res.ok) throw new Error('Could not load cloudinary-products-map.json — run npm run upload-new-images first');
+    if (!res.ok) throw new Error('Could not load cloudinary-products-map.json — run npm run upload-images first');
     var mapData = await res.json();
     var existR  = await sb.from('products').select('image_folder');
     var existingFolders = new Set((existR.data || []).map(function(p) { return p.image_folder; }).filter(Boolean));
     var newItems = [];
-    for (var seriesKey in mapData) {
-      var products = mapData[seriesKey];
-      for (var productKey in products) {
-        var urls   = products[productKey];
-        var folder = seriesKey + '/' + productKey;
-        if (!existingFolders.has(folder)) newItems.push({ seriesKey, productKey, folder, urls });
+
+    // Handle BOTH flat map { productFolder: [urls] } and old nested { series: { product: [urls] } }
+    var firstVal = mapData[Object.keys(mapData)[0]];
+    var isFlat   = Array.isArray(firstVal);
+
+    if (isFlat) {
+      // New flat structure from upload-to-cloudinary.js
+      for (var folder in mapData) {
+        var urls = mapData[folder];
+        if (!existingFolders.has(folder)) newItems.push({ seriesKey: 'Unknown', productKey: folder, folder: folder, urls: urls });
+      }
+    } else {
+      // Legacy nested structure
+      for (var seriesKey in mapData) {
+        var seriesProducts = mapData[seriesKey];
+        for (var productKey in seriesProducts) {
+          var urls2  = seriesProducts[productKey];
+          var folder2 = seriesKey + '/' + productKey;
+          if (!existingFolders.has(folder2)) newItems.push({ seriesKey: seriesKey, productKey: productKey, folder: folder2, urls: urls2 });
+        }
       }
     }
     showImportModal(newItems);
