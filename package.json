@@ -10,6 +10,8 @@
     "migrate": "node db/migrate.js",
     "upload-images": "node scripts/upload-to-cloudinary.js",
     "upload-new-images": "node scripts/upload-new-images.js",
+    "sync-products": "node scripts/sync-to-supabase.js",
+    "upload-and-sync": "node scripts/upload-to-cloudinary.js && node scripts/sync-to-supabase.js",
     "seed-products": "node scripts/seed-products.js"
   },
   "dependencies": {
