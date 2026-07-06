@@ -619,6 +619,27 @@
   background: var(--color-primary-light);
 }
 
+/* Thumbnail used in azzura-main admin products table */
+.table-thumb {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  border-radius: 8px;
+  background: var(--color-primary-light);
+  display: block;
+}
+
+.table-thumb-placeholder {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  background: var(--color-primary-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
 /* Toggle switch in table */
 .table-toggle {
   position: relative;

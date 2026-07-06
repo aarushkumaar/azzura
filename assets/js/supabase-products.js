@@ -132,6 +132,7 @@
         'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
         'Accept':        'application/json',
       },
+      cache:  'no-store',
       signal: AbortSignal.timeout(8000),
     })
       .then(function (res) {
@@ -172,6 +173,7 @@
         'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
         'Accept':        'application/json',
       },
+      cache:  'no-store',
       signal: AbortSignal.timeout(6000),
     })
       .then(function (res) {

@@ -518,9 +518,21 @@
     const tbody = document.getElementById('productsTableBody');
 
     tbody.innerHTML = products.map((p, idx) => {
-      const imgSrc    = p.image_folder
-        ? `../assets/products/${encodeURIComponent(p.image_folder)}/IMAGES/1.jpg`
-        : null;
+      // Prefer Cloudinary URL from `images` JSON; fall back to local image_folder path
+      let imgSrc = null;
+      if (p.images) {
+        try {
+          const parsed = typeof p.images === 'string' ? JSON.parse(p.images) : p.images;
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            imgSrc = parsed[0];
+          } else if (typeof parsed === 'string' && parsed.startsWith('http')) {
+            imgSrc = parsed;
+          }
+        } catch (_) {}
+      }
+      if (!imgSrc && p.image_folder) {
+        imgSrc = `../assets/products/${encodeURIComponent(p.image_folder)}/IMAGES/1.jpg`;
+      }
       const shortId   = p.id?.toString().slice(0, 8) ?? idx + 1;
 
       return `

@@ -121,6 +121,7 @@ async function fetchProductsFromSupabase() {
         'Content-Type':  'application/json',
         'Accept':        'application/json'
       },
+      cache: 'no-store',
       // Timeout after 5 seconds — don't block the shop page too long
       signal: AbortSignal.timeout(5000)
     });
