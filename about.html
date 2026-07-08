@@ -24,6 +24,7 @@
       <li><a href="science.html"   class="navbar__link">Science</a></li>
       <li><a href="productss.html" class="navbar__link navbar__link--shop">Shop</a></li>
       <li><a href="contact.html"   class="navbar__link">Contact</a></li>
+      <li><a href="customer-auth.html" class="navbar__account-link navbar__link" aria-label="My Account" title="My Account">&#128100;</a></li>
     </ul>
 
     <button class="navbar__hamburger" id="navbar-hamburger" aria-label="Open menu" aria-expanded="false">
@@ -32,6 +33,7 @@
   </nav>
 
   <div class="navbar__overlay" id="navbar-overlay"></div>
+
   <nav class="navbar__drawer" id="navbar-drawer" aria-label="Mobile navigation">
     <button class="navbar__drawer-close" id="drawer-close" aria-label="Close menu">&times;</button>
     <a href="index.html"     class="navbar__drawer-link">Home</a>
@@ -39,7 +41,9 @@
     <a href="science.html"   class="navbar__drawer-link">Science</a>
     <a href="productss.html" class="navbar__drawer-link" style="color:var(--color-primary);font-weight:700;">Shop</a>
     <a href="contact.html"   class="navbar__drawer-link">Contact</a>
+    <a href="customer-auth.html" class="navbar__drawer-link">&#128100; My Account</a>
   </nav>
+
 
 
   <!-- ========================================================
@@ -466,6 +470,9 @@
     </div>
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="assets/js/customer-auth.js"></script>
   <script src="assets/js/main.js"></script>
 </body>
 </html>

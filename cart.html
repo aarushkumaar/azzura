@@ -33,6 +33,7 @@
           <span class="navbar__cart-badge" id="navbar-cart-badge">0</span>
         </a>
       </li>
+      <li><a href="customer-auth.html" class="navbar__account-link navbar__link" aria-label="My Account" title="My Account">&#128100;</a></li>
       <li><a href="productss.html" class="navbar__link navbar__link--shop">Shop</a></li>
     </ul>
 
@@ -51,6 +52,7 @@
     <a href="productss.html" class="navbar__drawer-link">Shop</a>
     <a href="contact.html"   class="navbar__drawer-link">Contact</a>
     <a href="cart.html"      class="navbar__drawer-link" style="color:var(--color-primary);font-weight:700;">🛒 Cart</a>
+    <a href="customer-auth.html" class="navbar__drawer-link">&#128100; My Account</a>
   </nav>
 
   <!-- ========================================================
@@ -148,6 +150,9 @@
   <!-- Back to Top -->
   <button id="back-to-top" aria-label="Back to top" title="Back to top">↑</button>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="assets/js/customer-auth.js"></script>
   <script src="assets/js/main.js"></script>
   <script>
   /* ============================================================

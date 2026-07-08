@@ -207,17 +207,64 @@
     // Validate message
     setError('cf-message', 'err-message', !message || message.value.trim().length < 10);
 
-    // If all valid, show success message
+    // If all valid, show success message and submit to Supabase
     if (isValid) {
       var success = document.getElementById('form-success');
-      if (success) {
-        success.classList.add('show');
-        form.reset();
-        // Hide success after 5 seconds
-        setTimeout(function() {
-          success.classList.remove('show');
-        }, 5000);
+      var submitBtn = document.getElementById('submit-btn');
+      
+      var nameVal = name.value.trim();
+      var emailVal = email.value.trim();
+      var phoneVal = document.getElementById('cf-phone') ? document.getElementById('cf-phone').value.trim() : '';
+      var messageVal = message.value.trim();
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Sending...';
       }
+
+      var url = (typeof SUPABASE_URL !== 'undefined' ? SUPABASE_URL : 'https://ilduyhuvpiqhvbnocqxf.supabase.co') + '/rest/v1/contact_messages';
+      var key = (typeof SUPABASE_ANON_KEY !== 'undefined' ? SUPABASE_ANON_KEY : 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlsZHV5aHV2cGlxaHZibm9jcXhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4MTMxNTUsImV4cCI6MjA5NjM4OTE1NX0.uuC8dKajsnSSaiTx_wxNeapKPl4EV20s5phcRS-TaZg');
+
+      fetch(url, {
+        method: 'POST',
+        headers: {
+          'apikey':        key,
+          'Authorization': 'Bearer ' + key,
+          'Content-Type':  'application/json',
+          'Prefer':        'return=minimal'
+        },
+        body: JSON.stringify({
+          name:    nameVal,
+          email:   emailVal,
+          phone:   phoneVal,
+          subject: 'General Enquiry',
+          message: messageVal
+        })
+      })
+      .then(function(res) {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Send Message';
+        }
+        if (res.ok) {
+          if (success) {
+            success.classList.add('show');
+            form.reset();
+            setTimeout(function() {
+              success.classList.remove('show');
+            }, 5000);
+          }
+        } else {
+          alert('Failed to send message. Please try again.');
+        }
+      })
+      .catch(function(err) {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Send Message';
+        }
+        alert('Error: ' + err.message);
+      });
     }
   });
 

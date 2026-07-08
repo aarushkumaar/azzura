@@ -123,7 +123,6 @@
     var url = SUPABASE_URL +
       '/rest/v1/products' +
       '?select=*' +
-      '&in_stock=eq.true' +
       '&order=is_featured.desc,name.asc';
 
     return fetch(url, {
@@ -163,7 +162,6 @@
       '/rest/v1/products' +
       '?select=*' +
       '&is_featured=eq.true' +
-      '&in_stock=eq.true' +
       '&order=name.asc' +
       '&limit=' + n;
 
@@ -262,6 +260,40 @@
                          : JSON.stringify(info.cart_activity || []),
       }),
     }).catch(function () { /* non-critical, swallow silently */ });
+  };
+
+  /**
+   * Submit a "Notify Me" request for an out-of-stock product.
+   * @param {number|string} productId  — Supabase product ID
+   * @param {string}        productName — product display name
+   * @param {string}        email       — customer email
+   * @returns {Promise<boolean>}
+   */
+  window.submitNotifyMe = function (productId, productName, email) {
+    var url = SUPABASE_URL + '/rest/v1/notify_me_requests';
+    return fetch(url, {
+      method: 'POST',
+      headers: {
+        'apikey':        SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+        'Content-Type':  'application/json',
+        'Accept':        'application/json',
+        'Prefer':        'return=minimal',
+      },
+      body: JSON.stringify({
+        product_id:   Number(productId),
+        product_name: productName || '',
+        email:        email,
+      }),
+    })
+      .then(function (res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return true;
+      })
+      .catch(function (err) {
+        console.warn('[Azzurra] Notify Me submission failed:', err.message);
+        return false;
+      });
   };
 
 })();

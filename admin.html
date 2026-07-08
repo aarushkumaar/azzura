@@ -457,6 +457,10 @@
       <button class="sidebar-link" data-section="products"><span class="nav-icon">&#129516;</span> Products</button>
       <button class="sidebar-link" data-section="orders"><span class="nav-icon">&#128230;</span> Orders</button>
       <button class="sidebar-link" data-section="customers"><span class="nav-icon">&#128101;</span> Customers</button>
+      <button class="sidebar-link" data-section="coupons"><span class="nav-icon">🎟️</span> Coupons</button>
+      <button class="sidebar-link" data-section="notify_me"><span class="nav-icon">🔔</span> Notify Me</button>
+      <button class="sidebar-link" data-section="enquiries"><span class="nav-icon">✉️</span> Enquiries</button>
+      <button class="sidebar-link" data-section="banners"><span class="nav-icon">🖼️</span> Banners</button>
       <button class="sidebar-link" data-section="settings"><span class="nav-icon">&#9881;&#65039;</span> Settings</button>
     </nav>
     <div class="sidebar-bottom">
@@ -613,6 +617,84 @@
         </div>
       </section>
 
+      <!-- SECTION: COUPONS -->
+      <section class="admin-section" id="section-coupons">
+        <div class="section-toolbar">
+          <h2>Coupons</h2>
+          <button class="btn-primary" id="btn-add-coupon">+ Add Coupon</button>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Code</th><th>Type</th><th>Value</th><th>Min Order (₹)</th><th>Limit</th><th>Used</th><th>Expiry</th><th>Status</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="coupons-tbody">
+              <tr class="loading-row"><td colspan="9"><div class="spinner"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- SECTION: NOTIFY ME -->
+      <section class="admin-section" id="section-notify_me">
+        <div class="section-toolbar">
+          <h2>Notify Me Requests</h2>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Product Name</th><th>Customer Email</th><th>Requested At</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="notify-me-tbody">
+              <tr class="loading-row"><td colspan="4"><div class="spinner"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- SECTION: ENQUIRIES -->
+      <section class="admin-section" id="section-enquiries">
+        <div class="section-toolbar">
+          <h2>Customer Enquiries</h2>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th><th>Email</th><th>Phone</th><th>Message</th><th>Status</th><th>Submitted At</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="enquiries-tbody">
+              <tr class="loading-row"><td colspan="7"><div class="spinner"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- SECTION: BANNERS -->
+      <section class="admin-section" id="section-banners">
+        <div class="section-toolbar">
+          <h2>Homepage Banners</h2>
+          <button class="btn-primary" id="btn-add-banner">+ Add Banner</button>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Display Order</th><th>Image Preview</th><th>Title</th><th>Link URL</th><th>Status</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="banners-tbody">
+              <tr class="loading-row"><td colspan="6"><div class="spinner"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
     </div>
   </div>
 </div>
@@ -749,6 +831,106 @@
   </div>
 </div>
 
+<!-- SLIDE-IN PANEL: COUPON -->
+<div class="slide-panel" id="coupon-panel">
+  <div class="panel-header">
+    <h3 id="coupon-panel-title">Add Coupon</h3>
+    <button class="btn-close-panel" id="btn-close-coupon-panel">&times;</button>
+  </div>
+  <div class="panel-body">
+    <form id="coupon-form" novalidate>
+      <input type="hidden" id="form-coupon-id" />
+      <div class="form-group">
+        <label class="form-label">Coupon Code <span class="req">*</span></label>
+        <input type="text" id="form-coupon-code" required placeholder="e.g. WELCOME10" style="text-transform:uppercase;" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Discount Type</label>
+        <select id="form-coupon-type">
+          <option value="percentage">Percentage (%)</option>
+          <option value="flat">Flat Amount (₹)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Discount Value <span class="req">*</span></label>
+        <input type="number" id="form-coupon-value" required placeholder="e.g. 10" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Min. Order Value (₹)</label>
+        <input type="number" id="form-coupon-min" placeholder="0 = No minimum" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Usage Limit (Total)</label>
+        <input type="number" id="form-coupon-limit" placeholder="Leave blank for unlimited" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Expiry Date</label>
+        <input type="date" id="form-coupon-expiry" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" style="display:flex;align-items:center;gap:12px;">
+          <span>One-time per customer</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="form-coupon-per-customer" />
+            <span class="toggle-slider"></span>
+          </label>
+        </label>
+      </div>
+      <div class="form-group">
+        <label class="form-label" style="display:flex;align-items:center;gap:12px;">
+          <span>Is Active</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="form-coupon-active" checked />
+            <span class="toggle-slider"></span>
+          </label>
+        </label>
+      </div>
+      <button type="submit" class="btn-primary full-width" id="btn-save-coupon">Save Coupon</button>
+      <button type="button" class="btn-secondary full-width" id="btn-cancel-coupon-panel">Cancel</button>
+    </form>
+  </div>
+</div>
+
+<!-- SLIDE-IN PANEL: BANNER -->
+<div class="slide-panel" id="banner-panel">
+  <div class="panel-header">
+    <h3 id="banner-panel-title">Add Banner</h3>
+    <button class="btn-close-panel" id="btn-close-banner-panel">&times;</button>
+  </div>
+  <div class="panel-body">
+    <form id="banner-form" novalidate>
+      <input type="hidden" id="form-banner-id" />
+      <div class="form-group">
+        <label class="form-label">Title / Heading</label>
+        <input type="text" id="form-banner-title" placeholder="e.g. Clinical Nutrition Offer" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Image URL <span class="req">*</span></label>
+        <input type="text" id="form-banner-image" required placeholder="Paste Cloudinary URL" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Link URL</label>
+        <input type="text" id="form-banner-link" placeholder="e.g. productss.html?series=Essential" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Display Order</label>
+        <input type="number" id="form-banner-order" value="0" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" style="display:flex;align-items:center;gap:12px;">
+          <span>Is Enabled</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="form-banner-enabled" checked />
+            <span class="toggle-slider"></span>
+          </label>
+        </label>
+      </div>
+      <button type="submit" class="btn-primary full-width" id="btn-save-banner">Save Banner</button>
+      <button type="button" class="btn-secondary full-width" id="btn-cancel-banner-panel">Cancel</button>
+    </form>
+  </div>
+</div>
+
 <!-- TOAST CONTAINER -->
 <div id="toast-container"></div>
 <!-- IMPORT MODAL CONTAINER -->
@@ -803,7 +985,7 @@ window.showToast = function(message, type, autoDismiss) {
 
 /* ── NAVIGATION ── */
 var sectionLoaded = {};
-var sectionTitles = { dashboard:'Dashboard', products:'Products', orders:'Orders', customers:'Customers', settings:'Settings' };
+var sectionTitles = { dashboard:'Dashboard', products:'Products', orders:'Orders', customers:'Customers', settings:'Settings', coupons:'Coupons', notify_me:'Notify Me Requests', enquiries:'Customer Enquiries', banners:'Homepage Banners' };
 
 window.showSection = function(name) {
   document.querySelectorAll('.admin-section').forEach(function(s) { s.classList.remove('active'); });
@@ -1778,5 +1960,6 @@ showSection('dashboard');
 } // end initAdmin
 </script>
 
+<script src="assets/js/admin-addons.js"></script>
 </body>
 </html>

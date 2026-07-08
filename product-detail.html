@@ -477,6 +477,61 @@
       .pd-related-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
       .pd-tab-btn { padding: 12px 14px; font-size: 13px; }
     }
+    
+    /* Notify Me styles */
+    .pd-btn-notify {
+      width: 100%;
+      padding: 14px;
+      background: #4A5568;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.2s ease;
+      margin-bottom: 12px;
+    }
+    .pd-btn-notify:hover { background: #2D3748; transform: translateY(-1px); }
+    .pd-notify-form-wrap {
+      padding: 18px;
+      background: #f8fbff;
+      border: 1.5px solid var(--pd-border);
+      border-radius: 12px;
+      margin-bottom: 24px;
+    }
+    .pd-notify-input {
+      width: 100%;
+      padding: 12px;
+      border: 1.5px solid var(--pd-border);
+      border-radius: 8px;
+      box-sizing: border-box;
+      margin-bottom: 10px;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+    }
+    .pd-notify-input:focus { border-color: var(--color-primary); }
+    .pd-notify-submit {
+      width: 100%;
+      padding: 12px;
+      background: var(--color-primary);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 700;
+      font-family: inherit;
+      transition: background 0.2s;
+    }
+    .pd-notify-submit:hover { background: var(--color-primary-dark); }
+    .pd-notify-msg {
+      font-size: 13px;
+      margin-top: 8px;
+      min-height: 18px;
+      font-weight: 600;
+    }
   </style>
 </head>
 <body>
@@ -499,6 +554,7 @@
           <span class="navbar__cart-badge" id="navbar-cart-badge">0</span>
         </a>
       </li>
+      <li><a href="customer-auth.html" class="navbar__account-link navbar__link" aria-label="My Account" title="My Account">&#128100;</a></li>
     </ul>
     <button class="navbar__hamburger" id="navbar-hamburger" aria-label="Open menu" aria-expanded="false">
       <span></span><span></span><span></span>
@@ -513,6 +569,7 @@
     <a href="productss.html" class="navbar__drawer-link" style="color:var(--color-primary);font-weight:700;">Shop</a>
     <a href="contact.html"   class="navbar__drawer-link">Contact</a>
     <a href="cart.html"      class="navbar__drawer-link">🛒 Cart</a>
+    <a href="customer-auth.html" class="navbar__drawer-link">&#128100; My Account</a>
   </nav>
 
   <!-- ── MAIN ── -->
@@ -578,6 +635,8 @@
   <!-- ── SCRIPTS ── -->
   <script src="assets/js/cart-utils.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase-products.js"></script>
+  <script src="assets/js/customer-auth.js"></script>
   <script>
   (function() {
     'use strict';
@@ -838,18 +897,25 @@
               '<a class="pd-review-link" onclick="document.getElementById(\'tab-reviews\').click();">(38 reviews)</a>' +
             '</div>' +
             '<div class="pd-price-block">' + priceHtml + '</div>' +
-            '<div class="pd-qty-row">' +
-              '<span class="pd-qty-label">Quantity</span>' +
-              '<div class="pd-qty-ctrl">' +
-                '<button class="pd-qty-btn" id="pd-qty-minus" aria-label="Decrease quantity">−</button>' +
-                '<input class="pd-qty-input" id="pd-qty" type="number" value="1" min="1" max="10" readonly />' +
-                '<button class="pd-qty-btn" id="pd-qty-plus"  aria-label="Increase quantity">+</button>' +
-              '</div>' +
-            '</div>' +
-            '<div class="pd-btn-row">' +
-              '<button class="pd-btn-cart" id="pd-cart-btn">🛒 Add to Cart</button>' +
-              '<button class="pd-btn-now" id="pd-buynow-btn">Buy Now</button>' +
-            '</div>' +
+            (p.in_stock === false
+              ? '<button class="pd-btn-notify" id="pd-notify-btn">Notify Me</button>' +
+                '<div class="pd-notify-form-wrap" id="pd-notify-form" style="display:none;">' +
+                  '<input class="pd-notify-input" id="pd-notify-email" type="email" placeholder="Enter your email" />' +
+                  '<button class="pd-notify-submit" id="pd-notify-submit">Submit</button>' +
+                  '<div class="pd-notify-msg" id="pd-notify-msg"></div>' +
+                '</div>'
+              : '<div class="pd-qty-row">' +
+                  '<span class="pd-qty-label">Quantity</span>' +
+                  '<div class="pd-qty-ctrl">' +
+                    '<button class="pd-qty-btn" id="pd-qty-minus" aria-label="Decrease quantity">−</button>' +
+                    '<input class="pd-qty-input" id="pd-qty" type="number" value="1" min="1" max="10" readonly />' +
+                    '<button class="pd-qty-btn" id="pd-qty-plus"  aria-label="Increase quantity">+</button>' +
+                  '</div>' +
+                '</div>' +
+                '<div class="pd-btn-row">' +
+                  '<button class="pd-btn-cart" id="pd-cart-btn">🛒 Add to Cart</button>' +
+                  '<button class="pd-btn-now" id="pd-buynow-btn">Buy Now</button>' +
+                '</div>') +
             (p.short_description ? '<p class="pd-short-desc">' + esc(p.short_description) + '</p>' : '') +
             '<div class="pd-trust">' +
               '<div class="pd-trust-badge"><span>✓</span> Clinically Tested</div>' +
@@ -977,7 +1043,74 @@
         addToCartAndToast(parseInt(qtyInput ? qtyInput.value : 1, 10) || 1);
         setTimeout(function() { window.location.href = 'cart.html'; }, 300);
       });
+
+      var notifyBtn = document.getElementById('pd-notify-btn');
+      var notifyForm = document.getElementById('pd-notify-form');
+      var notifySubmit = document.getElementById('pd-notify-submit');
+      var notifyEmail = document.getElementById('pd-notify-email');
+      var notifyMsg = document.getElementById('pd-notify-msg');
+
+      if (notifyBtn && notifyForm) {
+        notifyBtn.addEventListener('click', function() {
+          var isHidden = notifyForm.style.display === 'none';
+          notifyForm.style.display = isHidden ? 'block' : 'none';
+          if (isHidden && notifyEmail) notifyEmail.focus();
+        });
+      }
+      if (notifySubmit && notifyEmail && notifyMsg) {
+        notifySubmit.addEventListener('click', async function() {
+          var email = notifyEmail.value.trim();
+          if (!email || email.indexOf('@') === -1) {
+            notifyMsg.textContent = 'Please enter a valid email.';
+            notifyMsg.style.color = '#FC8181';
+            return;
+          }
+          notifySubmit.disabled = true;
+          notifySubmit.textContent = 'Sending...';
+          notifyMsg.textContent = '';
+          
+          var success = false;
+          if (window.submitNotifyMe) {
+            success = await window.submitNotifyMe(product.id, product.name, email);
+          } else {
+            try {
+              var res = await fetch(SUPABASE_URL + '/rest/v1/notify_me_requests', {
+                method: 'POST',
+                headers: {
+                  'apikey':        SUPABASE_ANON_KEY,
+                  'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+                  'Content-Type':  'application/json',
+                  'Accept':        'application/json'
+                },
+                body: JSON.stringify({
+                  product_id:   product.id,
+                  product_name: product.name,
+                  email:        email
+                })
+              });
+              success = res.ok;
+            } catch(_) {}
+          }
+          
+          if (success) {
+            notifyMsg.textContent = '✓ Notification request saved!';
+            notifyMsg.style.color = '#48BB78';
+            notifyEmail.value = '';
+            setTimeout(function() {
+              notifyForm.style.display = 'none';
+              notifyBtn.textContent = '✓ Notified';
+              notifyBtn.disabled = true;
+            }, 1500);
+          } else {
+            notifyMsg.textContent = 'Failed to submit. Please try again.';
+            notifyMsg.style.color = '#FC8181';
+            notifySubmit.disabled = false;
+            notifySubmit.textContent = 'Submit';
+          }
+        });
+      }
     }
+
 
     /* ─── Tabs ───────────────────────────────────────────── */
     function wireTabs() {

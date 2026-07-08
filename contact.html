@@ -24,6 +24,7 @@
       <li><a href="science.html"   class="navbar__link">Science</a></li>
       <li><a href="productss.html" class="navbar__link navbar__link--shop">Shop</a></li>
       <li><a href="contact.html"   class="navbar__link active">Contact</a></li>
+      <li><a href="customer-auth.html" class="navbar__account-link navbar__link" aria-label="My Account" title="My Account">&#128100;</a></li>
     </ul>
 
     <button class="navbar__hamburger" id="navbar-hamburger" aria-label="Open menu" aria-expanded="false">
@@ -32,6 +33,7 @@
   </nav>
 
   <div class="navbar__overlay" id="navbar-overlay"></div>
+
   <nav class="navbar__drawer" id="navbar-drawer" aria-label="Mobile navigation">
     <button class="navbar__drawer-close" id="drawer-close" aria-label="Close menu">&times;</button>
     <a href="index.html"     class="navbar__drawer-link">Home</a>
@@ -39,7 +41,9 @@
     <a href="science.html"   class="navbar__drawer-link">Science</a>
     <a href="productss.html" class="navbar__drawer-link" style="color:var(--color-primary);font-weight:700;">Shop</a>
     <a href="contact.html"   class="navbar__drawer-link">Contact</a>
+    <a href="customer-auth.html" class="navbar__drawer-link">&#128100; My Account</a>
   </nav>
+
 
 
   <!-- ========================================================
@@ -304,6 +308,87 @@
     </div>
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
   <script src="assets/js/main.js"></script>
+  <script>
+    (function() {
+      if (typeof window.supabase === 'undefined') {
+        console.error('Supabase client failed to load.');
+        return;
+      }
+      
+      var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      var form = document.getElementById('contact-form');
+      var successMsg = document.getElementById('form-success');
+      var submitBtn = document.getElementById('submit-btn');
+
+      if (!form) return;
+
+      form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        if (successMsg) successMsg.classList.remove('show');
+
+        var errName = document.getElementById('err-name');
+        var errEmail = document.getElementById('err-email');
+        var errMessage = document.getElementById('err-message');
+
+        if (errName) errName.classList.remove('show');
+        if (errEmail) errEmail.classList.remove('show');
+        if (errMessage) errMessage.classList.remove('show');
+
+        var name = document.getElementById('cf-name').value.trim();
+        var email = document.getElementById('cf-email').value.trim();
+        var phone = document.getElementById('cf-phone').value.trim();
+        var message = document.getElementById('cf-message').value.trim();
+
+        var hasError = false;
+
+        if (name.length < 2) {
+          if (errName) errName.classList.add('show');
+          hasError = true;
+        }
+
+        var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailPattern.test(email)) {
+          if (errEmail) errEmail.classList.add('show');
+          hasError = true;
+        }
+
+        if (message.length < 10) {
+          if (errMessage) errMessage.classList.add('show');
+          hasError = true;
+        }
+
+        if (hasError) return;
+
+        submitBtn.disabled = true;
+        var origText = submitBtn.textContent;
+        submitBtn.textContent = 'Sending...';
+
+        try {
+          var payload = {
+            name: name,
+            email: email,
+            phone: phone || null,
+            message: message,
+            created_at: new Date().toISOString()
+          };
+
+          var r = await sb.from('contact_messages').insert([payload]);
+          if (r.error) throw r.error;
+
+          if (successMsg) successMsg.classList.add('show');
+          form.reset();
+        } catch (err) {
+          alert('Failed to send message: ' + err.message);
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = origText;
+        }
+      });
+    })();
+  </script>
 </body>
 </html>

@@ -1,0 +1,268 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign In / Create Account — Azzurra Pharmaconutrition</title>
+  <meta name="description" content="Sign in or create your Azzurra account to track orders, manage your wishlist and save your cart." />
+  <meta name="robots" content="noindex" />
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/customer-auth.js"></script>
+  <style>
+    .auth-page { min-height: 80vh; display: flex; align-items: center; justify-content: center; padding: 60px 20px; }
+    .auth-card { background: #fff; border-radius: 20px; padding: 40px 36px; max-width: 440px; width: 100%; box-shadow: 0 4px 32px rgba(26,95,168,0.10); border: 1.5px solid #D1E3F8; }
+    .auth-logo { text-align: center; margin-bottom: 28px; }
+    .auth-logo-name { font-size: 22px; font-weight: 800; color: var(--color-primary); letter-spacing: 0.10em; display: block; }
+    .auth-logo-tag  { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: #C9A84C; font-weight: 600; display: block; margin-top: 2px; }
+    .auth-tabs { display: flex; border-bottom: 2px solid #D1E3F8; margin-bottom: 28px; }
+    .auth-tab { flex: 1; padding: 10px 0; text-align: center; border: none; background: none; font-size: 14px; font-weight: 600; color: #6B7280; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: color 0.2s, border-color 0.2s; }
+    .auth-tab.active { color: var(--color-primary); border-bottom-color: var(--color-primary); }
+    .auth-panel { display: none; }
+    .auth-panel.active { display: block; }
+    .auth-title { font-size: 20px; font-weight: 700; color: #1A1A2E; margin-bottom: 6px; }
+    .auth-sub   { font-size: 13px; color: #6B7280; margin-bottom: 24px; }
+    .auth-form-group { display: flex; flex-direction: column; gap: 5px; margin-bottom: 16px; }
+    .auth-label { font-size: 13px; font-weight: 600; color: #1A1A2E; }
+    .auth-input { border: 1.5px solid #D1E3F8; border-radius: 8px; padding: 11px 14px; font-size: 14px; width: 100%; box-sizing: border-box; transition: border-color 0.2s; outline: none; font-family: inherit; }
+    .auth-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(26,95,168,0.10); }
+    .auth-btn { width: 100%; background: var(--color-primary); color: #fff; border: none; border-radius: 100px; padding: 12px; font-size: 15px; font-weight: 700; cursor: pointer; transition: background 0.2s, transform 0.2s; margin-top: 4px; font-family: inherit; }
+    .auth-btn:hover { background: #134a87; transform: scale(1.02); }
+    .auth-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .auth-error   { background: #FFF5F5; border: 1.5px solid #FC8181; color: #C62828; border-radius: 8px; padding: 10px 14px; font-size: 13px; margin-bottom: 16px; display: none; }
+    .auth-success { background: #F0FFF4; border: 1.5px solid #48BB78; color: #2E7D32; border-radius: 8px; padding: 10px 14px; font-size: 13px; margin-bottom: 16px; display: none; }
+    .auth-error.show, .auth-success.show { display: block; }
+    .auth-switch { text-align: center; font-size: 13px; color: #6B7280; margin-top: 20px; }
+    .auth-switch a { color: var(--color-primary); text-decoration: none; font-weight: 600; cursor: pointer; }
+    .auth-divider { height: 1px; background: #D1E3F8; margin: 20px 0; }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar navbar--solid" id="navbar" aria-label="Main navigation">
+    <a href="index.html" class="navbar__logo" aria-label="Azzurra Home">
+      <span class="navbar__logo-name">AZZURRA</span>
+      <span class="navbar__logo-tag">Nurturing Human Lives</span>
+    </a>
+    <ul class="navbar__links" role="list">
+      <li><a href="index.html"     class="navbar__link">Home</a></li>
+      <li><a href="about.html"     class="navbar__link">About</a></li>
+      <li><a href="science.html"   class="navbar__link">Science</a></li>
+      <li><a href="productss.html" class="navbar__link navbar__link--shop">Shop</a></li>
+      <li><a href="contact.html"   class="navbar__link">Contact</a></li>
+    </ul>
+    <button class="navbar__hamburger" id="navbar-hamburger" aria-label="Open menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+  <div class="navbar__overlay" id="navbar-overlay"></div>
+  <nav class="navbar__drawer" id="navbar-drawer" aria-label="Mobile navigation">
+    <button class="navbar__drawer-close" id="drawer-close" aria-label="Close menu">&times;</button>
+    <a href="index.html"     class="navbar__drawer-link">Home</a>
+    <a href="about.html"     class="navbar__drawer-link">About</a>
+    <a href="science.html"   class="navbar__drawer-link">Science</a>
+    <a href="productss.html" class="navbar__drawer-link" style="color:var(--color-primary);font-weight:700;">Shop</a>
+    <a href="contact.html"   class="navbar__drawer-link">Contact</a>
+  </nav>
+
+  <div class="auth-page">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <span class="auth-logo-name">AZZURRA</span>
+        <span class="auth-logo-tag">My Account</span>
+      </div>
+
+      <!-- Tab navigation -->
+      <div class="auth-tabs" role="tablist">
+        <button class="auth-tab active" id="tab-login"  role="tab" aria-selected="true"  aria-controls="panel-login">Sign In</button>
+        <button class="auth-tab"        id="tab-signup" role="tab" aria-selected="false" aria-controls="panel-signup">Create Account</button>
+        <button class="auth-tab"        id="tab-forgot" role="tab" aria-selected="false" aria-controls="panel-forgot">Forgot Password</button>
+      </div>
+
+      <!-- LOGIN PANEL -->
+      <div class="auth-panel active" id="panel-login" role="tabpanel" aria-labelledby="tab-login">
+        <p class="auth-title">Welcome back</p>
+        <p class="auth-sub">Sign in to access your orders and account.</p>
+        <div class="auth-error"   id="login-error"></div>
+        <div class="auth-success" id="login-success"></div>
+        <form id="login-form" novalidate>
+          <div class="auth-form-group">
+            <label class="auth-label" for="login-email">Email Address</label>
+            <input class="auth-input" type="email" id="login-email" name="email" placeholder="you@example.com" autocomplete="email" required />
+          </div>
+          <div class="auth-form-group">
+            <label class="auth-label" for="login-password">Password</label>
+            <input class="auth-input" type="password" id="login-password" name="password" placeholder="Your password" autocomplete="current-password" required />
+          </div>
+          <button type="submit" class="auth-btn" id="login-btn">Sign In</button>
+        </form>
+        <div class="auth-switch">
+          <span>Don't have an account? </span><a id="switch-to-signup">Create one</a>
+          &nbsp;·&nbsp;
+          <a id="switch-to-forgot">Forgot password?</a>
+        </div>
+      </div>
+
+      <!-- SIGNUP PANEL -->
+      <div class="auth-panel" id="panel-signup" role="tabpanel" aria-labelledby="tab-signup">
+        <p class="auth-title">Create your account</p>
+        <p class="auth-sub">Join Azzurra to save your cart, track orders, and more.</p>
+        <div class="auth-error"   id="signup-error"></div>
+        <div class="auth-success" id="signup-success"></div>
+        <form id="signup-form" novalidate>
+          <div class="auth-form-group">
+            <label class="auth-label" for="signup-name">Full Name</label>
+            <input class="auth-input" type="text" id="signup-name" name="name" placeholder="Dr. Priya Sharma" autocomplete="name" required />
+          </div>
+          <div class="auth-form-group">
+            <label class="auth-label" for="signup-email">Email Address</label>
+            <input class="auth-input" type="email" id="signup-email" name="email" placeholder="you@example.com" autocomplete="email" required />
+          </div>
+          <div class="auth-form-group">
+            <label class="auth-label" for="signup-password">Password <span style="font-weight:400;color:#6B7280;">(min. 6 characters)</span></label>
+            <input class="auth-input" type="password" id="signup-password" name="password" placeholder="Create a password" autocomplete="new-password" required minlength="6" />
+          </div>
+          <button type="submit" class="auth-btn" id="signup-btn">Create Account</button>
+        </form>
+        <div class="auth-switch">Already have an account? <a id="switch-to-login">Sign in</a></div>
+      </div>
+
+      <!-- FORGOT PASSWORD PANEL -->
+      <div class="auth-panel" id="panel-forgot" role="tabpanel" aria-labelledby="tab-forgot">
+        <p class="auth-title">Reset your password</p>
+        <p class="auth-sub">Enter your email and we'll send you a reset link.</p>
+        <div class="auth-error"   id="forgot-error"></div>
+        <div class="auth-success" id="forgot-success"></div>
+        <form id="forgot-form" novalidate>
+          <div class="auth-form-group">
+            <label class="auth-label" for="forgot-email">Email Address</label>
+            <input class="auth-input" type="email" id="forgot-email" name="email" placeholder="you@example.com" autocomplete="email" required />
+          </div>
+          <button type="submit" class="auth-btn" id="forgot-btn">Send Reset Link</button>
+        </form>
+        <div class="auth-switch"><a id="switch-to-login2">Back to Sign In</a></div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="assets/js/main.js"></script>
+  <script>
+  (function () {
+    /* ── Tab switching ── */
+    function showPanel(name) {
+      ['login','signup','forgot'].forEach(function(n) {
+        var tab   = document.getElementById('tab-' + n);
+        var panel = document.getElementById('panel-' + n);
+        if (!tab || !panel) return;
+        var active = n === name;
+        tab.classList.toggle('active', active);
+        tab.setAttribute('aria-selected', String(active));
+        panel.classList.toggle('active', active);
+      });
+    }
+    document.getElementById('tab-login') .addEventListener('click', function(){ showPanel('login'); });
+    document.getElementById('tab-signup').addEventListener('click', function(){ showPanel('signup'); });
+    document.getElementById('tab-forgot').addEventListener('click', function(){ showPanel('forgot'); });
+    document.getElementById('switch-to-signup') .addEventListener('click', function(){ showPanel('signup'); });
+    document.getElementById('switch-to-login')  .addEventListener('click', function(){ showPanel('login'); });
+    document.getElementById('switch-to-forgot') .addEventListener('click', function(){ showPanel('forgot'); });
+    document.getElementById('switch-to-login2') .addEventListener('click', function(){ showPanel('login'); });
+
+    /* ── Check URL for mode=reset (password reset redirect) ── */
+    var urlParams = new URLSearchParams(window.location.search);
+    var mode = urlParams.get('mode');
+    if (mode === 'reset') showPanel('forgot');
+
+    /* ── Redirect if already logged in ── */
+    window.getCustomerSession && window.getCustomerSession().then(function(session) {
+      if (session) {
+        var returnTo = urlParams.get('returnTo') || 'customer-dashboard.html';
+        window.location.replace(returnTo);
+      }
+    });
+
+    /* ── Helpers ── */
+    function showMsg(elId, msg, isError) {
+      var el = document.getElementById(elId);
+      if (!el) return;
+      el.textContent = msg;
+      el.className = 'auth-' + (isError ? 'error' : 'success') + ' show';
+    }
+    function clearMsgs(prefix) {
+      var e = document.getElementById(prefix + '-error');
+      var s = document.getElementById(prefix + '-success');
+      if (e) { e.textContent = ''; e.className = 'auth-error'; }
+      if (s) { s.textContent = ''; s.className = 'auth-success'; }
+    }
+    function setLoading(btnId, loading, defaultText) {
+      var btn = document.getElementById(btnId);
+      if (!btn) return;
+      btn.disabled = loading;
+      btn.textContent = loading ? 'Please wait\u2026' : defaultText;
+    }
+
+    /* ── LOGIN ── */
+    document.getElementById('login-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      clearMsgs('login');
+      var email    = document.getElementById('login-email').value.trim();
+      var password = document.getElementById('login-password').value;
+      if (!email || !password) { showMsg('login-error', 'Please fill in all fields.', true); return; }
+      setLoading('login-btn', true, 'Sign In');
+      try {
+        await window.customerSignIn(email, password);
+        showMsg('login-success', '\u2713 Signed in! Redirecting\u2026', false);
+        var returnTo = new URLSearchParams(window.location.search).get('returnTo') || 'customer-dashboard.html';
+        setTimeout(function(){ window.location.href = returnTo; }, 800);
+      } catch(err) {
+        showMsg('login-error', err.message || 'Sign in failed. Please try again.', true);
+        setLoading('login-btn', false, 'Sign In');
+      }
+    });
+
+    /* ── SIGN UP ── */
+    document.getElementById('signup-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      clearMsgs('signup');
+      var name     = document.getElementById('signup-name').value.trim();
+      var email    = document.getElementById('signup-email').value.trim();
+      var password = document.getElementById('signup-password').value;
+      if (!name || !email || !password) { showMsg('signup-error', 'Please fill in all fields.', true); return; }
+      if (password.length < 6) { showMsg('signup-error', 'Password must be at least 6 characters.', true); return; }
+      setLoading('signup-btn', true, 'Create Account');
+      try {
+        var res = await window.customerSignUp(email, password, name);
+        if (res && res.session) {
+          showMsg('signup-success', '\u2713 Account created! Redirecting\u2026', false);
+          setTimeout(function(){ window.location.href = 'customer-dashboard.html'; }, 800);
+        } else {
+          showMsg('signup-success', '\u2713 Account created! Please check your email to confirm your account, then sign in.', false);
+          setLoading('signup-btn', false, 'Create Account');
+        }
+      } catch(err) {
+        showMsg('signup-error', err.message || 'Sign up failed. Please try again.', true);
+        setLoading('signup-btn', false, 'Create Account');
+      }
+    });
+
+    /* ── FORGOT PASSWORD ── */
+    document.getElementById('forgot-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      clearMsgs('forgot');
+      var email = document.getElementById('forgot-email').value.trim();
+      if (!email) { showMsg('forgot-error', 'Please enter your email address.', true); return; }
+      setLoading('forgot-btn', true, 'Send Reset Link');
+      try {
+        await window.customerForgotPassword(email);
+        showMsg('forgot-success', '\u2713 Reset link sent! Check your email inbox.', false);
+      } catch(err) {
+        showMsg('forgot-error', err.message || 'Failed to send reset email.', true);
+      }
+      setLoading('forgot-btn', false, 'Send Reset Link');
+    });
+  })();
+  </script>
+</body>
+</html>

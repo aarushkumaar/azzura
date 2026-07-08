@@ -8,6 +8,16 @@
   <link rel="stylesheet" href="assets/css/style.css" />
   <link rel="stylesheet" href="assets/css/shop-new.css" />
   <link rel="stylesheet" href="assets/css/cart.css" />
+  <style>
+    /* Notify Me inline form styles */
+    .shop-card__notify-btn { width:100%;padding:10px;background:#E2E8F0;color:#4A5568;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:13px;font-family:inherit; }
+    .shop-card__notify-btn:hover { background:#CBD5E0; }
+    .shop-card__notify-form { padding-top:8px; }
+    .shop-card__notify-email { width:100%;padding:8px 10px;border:1.5px solid #D1E3F8;border-radius:5px;box-sizing:border-box;margin-bottom:6px;font-size:13px;font-family:inherit;outline:none; }
+    .shop-card__notify-email:focus { border-color:#1A5FA8; }
+    .shop-card__notify-submit { width:100%;padding:8px;background:#1A5FA8;color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:13px;font-weight:600;font-family:inherit; }
+    .shop-card__notify-msg { display:block;font-size:12px;margin-top:5px;min-height:16px; }
+  </style>
 </head>
 <body>
 
@@ -34,6 +44,7 @@
           <span class="navbar__cart-badge" id="navbar-cart-badge">0</span>
         </a>
       </li>
+      <li><a href="customer-auth.html" class="navbar__account-link navbar__link" aria-label="My Account" title="My Account">&#128100;</a></li>
       <li><a href="productss.html" class="navbar__link navbar__link--shop active" aria-current="page">Shop</a></li>
     </ul>
 
@@ -52,6 +63,7 @@
     <a href="productss.html" class="navbar__drawer-link" style="color:var(--color-primary);font-weight:700;">Shop</a>
     <a href="contact.html"   class="navbar__drawer-link">Contact</a>
     <a href="cart.html"      class="navbar__drawer-link">🛒 Cart</a>
+    <a href="customer-auth.html" class="navbar__drawer-link">&#128100; My Account</a>
   </nav>
 
   <!-- ========================================================
@@ -332,6 +344,8 @@
   <script src="assets/js/cart-utils.js"></script>
   <script src="assets/js/products-data.js"></script>
   <script src="assets/js/supabase-products.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/customer-auth.js"></script>
   <script src="assets/js/main.js"></script>
   <script>
   /* ============================================================
@@ -477,7 +491,14 @@
         : '<span class="shop-card__badge">In Stock</span>';
 
       var addBtnHtml = outOfStock
-        ? '<span class="shop-card__out-of-stock">Out of stock</span>'
+        ? '<div class="shop-card__notify-container">' +
+            '<button class="shop-card__notify-btn" id="' + addBtnId + '" aria-label="Notify me when ' + product.name + ' is back in stock">Notify Me</button>' +
+            '<div class="shop-card__notify-form" id="notify-form-' + product.id + '" style="display:none;" onclick="event.stopPropagation();">' +
+              '<input type="email" class="shop-card__notify-email" placeholder="Enter email" onclick="event.stopPropagation();" />' +
+              '<button class="shop-card__notify-submit" onclick="event.stopPropagation();">Submit</button>' +
+              '<div class="shop-card__notify-msg"></div>' +
+            '</div>' +
+          '</div>'
         : '<button class="shop-card__add-btn" id="' + addBtnId + '" aria-label="Add ' + product.name + ' to cart">🛒 Add to Cart</button>';
 
       div.innerHTML =
@@ -503,13 +524,16 @@
           '</div>' +
         '</div>';
 
-      /* Navigate to detail on card click (not on add-to-cart) */
+      /* Navigate to detail on card click (not on add-to-cart, notify-me button or notify-me form) */
       div.addEventListener('click', function(e) {
-        if (e.target.closest('.shop-card__add-btn') || e.target.closest('.shop-card__quick-view')) return;
+        if (e.target.closest('.shop-card__add-btn') || 
+            e.target.closest('.shop-card__quick-view') || 
+            e.target.closest('.shop-card__notify-btn') || 
+            e.target.closest('.shop-card__notify-form')) return;
         location.href = product.detailPage;
       });
 
-      /* Add to cart logic */
+      /* Add to cart or Notify Me logic */
       if (!outOfStock) {
         var btn = div.querySelector('#' + addBtnId);
         if (btn) {
@@ -532,6 +556,57 @@
               btn.classList.remove('added');
             }, 1500);
           });
+        }
+      } else {
+        var notifyBtn = div.querySelector('#' + addBtnId);
+        var notifyForm = div.querySelector('#notify-form-' + product.id);
+        if (notifyBtn && notifyForm) {
+          notifyBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var isHidden = notifyForm.style.display === 'none';
+            notifyForm.style.display = isHidden ? 'block' : 'none';
+          });
+
+          var submitBtn = notifyForm.querySelector('.shop-card__notify-submit');
+          var emailInput = notifyForm.querySelector('.shop-card__notify-email');
+          var msgEl = notifyForm.querySelector('.shop-card__notify-msg');
+
+          if (submitBtn) {
+            submitBtn.addEventListener('click', async function(e) {
+              e.stopPropagation();
+              var email = emailInput.value.trim();
+              if (!email || email.indexOf('@') === -1) {
+                msgEl.textContent = 'Please enter a valid email.';
+                msgEl.style.color = '#FC8181';
+                return;
+              }
+              submitBtn.disabled = true;
+              submitBtn.textContent = 'Sending...';
+              msgEl.textContent = '';
+              
+              var success = false;
+              if (window.submitNotifyMe) {
+                var pId = product._supabaseId || product.id;
+                success = await window.submitNotifyMe(pId, product.name, email);
+              }
+              
+              if (success) {
+                msgEl.textContent = '✓ Notification saved!';
+                msgEl.style.color = '#48BB78';
+                emailInput.value = '';
+                setTimeout(function() {
+                  notifyForm.style.display = 'none';
+                  notifyBtn.textContent = '✓ Notified';
+                  notifyBtn.disabled = true;
+                }, 1500);
+              } else {
+                msgEl.textContent = 'Failed. Try again.';
+                msgEl.style.color = '#FC8181';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit';
+              }
+            });
+          }
         }
       }
 

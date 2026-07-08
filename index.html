@@ -6,6 +6,33 @@
   <title>Azzurra Pharmaconutrition Pvt. Ltd. — Nurturing Human Lives</title>
   <meta name="description" content="Azzurra Pharmaconutrition — clinically formulated, research-backed nutrition solutions. Precision Nutrition. Purposeful Recovery. Based in Faridabad, India, in technical collaboration with Azzurra Pharmaconutrition, USA." />
   <link rel="stylesheet" href="assets/css/style.css" />
+  <style>
+    /* Homepage Banners Slider */
+    .hero-banner-slider {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      border-radius: 20px;
+    }
+    .hero-banner-slide {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.8s ease;
+      z-index: 1;
+    }
+    .hero-banner-slide.active {
+      opacity: 1;
+      z-index: 2;
+    }
+    .hero-banner-slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
 
@@ -19,7 +46,6 @@
       <span class="navbar__logo-name">AZZURRA</span>
       <span class="navbar__logo-tag">Nurturing Human Lives</span>
     </a>
-
     <!-- Desktop links -->
     <ul class="navbar__links" role="list">
       <li><a href="index.html"    class="navbar__link active">Home</a></li>
@@ -27,6 +53,7 @@
       <li><a href="science.html"  class="navbar__link">Science</a></li>
       <li><a href="productss.html" class="navbar__link navbar__link--shop">Shop</a></li>
       <li><a href="contact.html"  class="navbar__link">Contact</a></li>
+      <li><a href="customer-auth.html" class="navbar__account-link navbar__link" aria-label="My Account" title="My Account">&#128100;</a></li>
     </ul>
 
     <!-- Mobile hamburger button -->
@@ -37,6 +64,7 @@
 
   <!-- Mobile drawer -->
   <div class="navbar__overlay" id="navbar-overlay"></div>
+
   <nav class="navbar__drawer" id="navbar-drawer" aria-label="Mobile navigation">
     <button class="navbar__drawer-close" id="drawer-close" aria-label="Close menu">&times;</button>
     <a href="index.html"     class="navbar__drawer-link">Home</a>
@@ -44,7 +72,9 @@
     <a href="science.html"   class="navbar__drawer-link">Science</a>
     <a href="productss.html" class="navbar__drawer-link" style="color:var(--color-primary);font-weight:700;">Shop</a>
     <a href="contact.html"   class="navbar__drawer-link">Contact</a>
+    <a href="customer-auth.html" class="navbar__drawer-link">&#128100; My Account</a>
   </nav>
+
 
 
   <!-- ========================================================
@@ -729,7 +759,9 @@
       <a href="#" class="footer__legal">Privacy Policy</a>
     </div>
   </footer>
-
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="assets/js/customer-auth.js"></script>
   <script src="assets/js/products-data.js"></script>
   <script src="assets/js/supabase-products.js"></script>
   <script src="assets/js/main.js"></script>
@@ -814,8 +846,57 @@
       renderCards(featured);
     }
 
+    async function loadBanners() {
+      try {
+        var url = 'https://ilduyhuvpiqhvbnocqxf.supabase.co/rest/v1/homepage_banners?is_enabled=eq.true&order=display_order.asc';
+        var key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlsZHV5aHV2cGlxaHZibm9jcXhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4MTMxNTUsImV4cCI6MjA5NjM4OTE1NX0.uuC8dKajsnSSaiTx_wxNeapKPl4EV20s5phcRS-TaZg';
+        var res = await fetch(url, {
+          headers: {
+            'apikey':        key,
+            'Authorization': 'Bearer ' + key,
+            'Accept':        'application/json'
+          }
+        });
+        if (!res.ok) return;
+        var banners = await res.json();
+        if (banners && banners.length > 0) {
+          renderBanners(banners);
+        }
+      } catch(e) {
+        console.warn('[Azzurra] Banners load error:', e);
+      }
+    }
+
+    function renderBanners(banners) {
+      var col = document.querySelector('.hero__visual-col');
+      if (!col) return;
+      
+      var slidesHtml = banners.map(function(b, i) {
+        var linkOpen = b.link_url ? '<a href="' + b.link_url + '">' : '';
+        var linkClose = b.link_url ? '</a>' : '';
+        return '<div class="hero-banner-slide' + (i === 0 ? ' active' : '') + '">' +
+          linkOpen +
+          '<img src="' + b.image_url + '" alt="' + (b.title || 'Special Offer') + '" />' +
+          linkClose +
+          '</div>';
+      }).join('');
+      
+      col.innerHTML = '<div class="hero-banner-slider">' + slidesHtml + '</div>';
+      
+      if (banners.length > 1) {
+        var current = 0;
+        setInterval(function() {
+          var slides = col.querySelectorAll('.hero-banner-slide');
+          if (slides.length === 0) return;
+          slides[current].classList.remove('active');
+          current = (current + 1) % slides.length;
+          slides[current].classList.add('active');
+        }, 5000);
+      }
+    }
+
     async function boot() {
-      // Try Supabase first
+      loadBanners();
       if (typeof window.loadFeaturedProductsFromSupabase === 'function') {
         try {
           var sbProducts = await window.loadFeaturedProductsFromSupabase(6);
@@ -827,7 +908,6 @@
           console.warn('[Azzurra] Featured fetch failed, using static fallback:', e.message);
         }
       }
-      // Fallback: use the static PRODUCTS array
       renderFromStatic();
     }
 
