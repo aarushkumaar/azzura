@@ -1,4 +1,4 @@
-﻿-- ============================================================
+-- ============================================================
 -- AZZURRA PHARMACONUTRITION — New Features Migration
 -- Run this entire script in: Supabase Dashboard → SQL Editor
 -- ============================================================
@@ -48,14 +48,14 @@ CREATE TABLE IF NOT EXISTS public.customer_addresses (
 -- ============================================================
 CREATE TABLE IF NOT EXISTS public.notify_me_requests (
   id            BIGSERIAL PRIMARY KEY,
-  product_id    BIGINT NOT NULL REFERENCES public.products(id) ON DELETE CASCADE,
+  product_id    UUID NOT NULL REFERENCES public.products(id) ON DELETE CASCADE,
   product_name  TEXT,
   email         TEXT NOT NULL,
   created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- ============================================================
--- TABLE: contact_messages
+-- TABLE: public.contact_messages
 -- ============================================================
 CREATE TABLE IF NOT EXISTS public.contact_messages (
   id            BIGSERIAL PRIMARY KEY,
@@ -93,7 +93,7 @@ CREATE TABLE IF NOT EXISTS public.coupon_usage (
   id             BIGSERIAL PRIMARY KEY,
   coupon_id      BIGINT NOT NULL REFERENCES public.coupons(id) ON DELETE CASCADE,
   coupon_code    TEXT NOT NULL,
-  order_id       BIGINT REFERENCES public.orders(id) ON DELETE SET NULL,
+  order_id       UUID REFERENCES public.orders(id) ON DELETE SET NULL,
   customer_email TEXT,
   user_id        UUID REFERENCES auth.users(id) ON DELETE SET NULL,
   used_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
