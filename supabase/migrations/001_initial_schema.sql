@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS products (
 -- id matches auth.uid() from Supabase Auth so RLS can filter by user
 -- ============================================================
 CREATE TABLE IF NOT EXISTS customers (
-  id                  BIGSERIAL     PRIMARY KEY,
+  id                  UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
   -- Email used for identification
   email               TEXT          NOT NULL UNIQUE,
   full_name           TEXT,
@@ -75,8 +75,8 @@ CREATE TABLE IF NOT EXISTS customers (
 -- payment_intent_id holds the Razorpay/Stripe order/intent ID.
 -- ============================================================
 CREATE TABLE IF NOT EXISTS orders (
-  id                 BIGSERIAL    PRIMARY KEY,
-  customer_id        BIGINT       REFERENCES customers(id) ON DELETE SET NULL,
+  id                 UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+  customer_id        UUID         REFERENCES customers(id) ON DELETE SET NULL,
   status             order_status NOT NULL DEFAULT 'pending',
   total_amount       NUMERIC(12,2) NOT NULL,
   payment_intent_id  TEXT,        -- Razorpay order_id or Stripe payment_intent_id
@@ -105,8 +105,8 @@ CREATE TRIGGER orders_updated_at_trigger
 -- (important: product price may change later).
 -- ============================================================
 CREATE TABLE IF NOT EXISTS order_items (
-  id           BIGSERIAL     PRIMARY KEY,
-  order_id     BIGINT        NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  id           UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
+  order_id     UUID          NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
   product_id   BIGINT        NOT NULL REFERENCES products(id) ON DELETE RESTRICT,
   quantity     INTEGER       NOT NULL CHECK (quantity > 0),
   unit_price   NUMERIC(10,2) NOT NULL, -- Price at time of purchase
@@ -119,8 +119,8 @@ CREATE TABLE IF NOT EXISTS order_items (
 -- metadata stores raw gateway response (JSONB).
 -- ============================================================
 CREATE TABLE IF NOT EXISTS payments (
-  id                  BIGSERIAL       PRIMARY KEY,
-  order_id            BIGINT          NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  id                  UUID            PRIMARY KEY DEFAULT gen_random_uuid(),
+  order_id            UUID            NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
   gateway             payment_gateway NOT NULL,
   gateway_payment_id  TEXT,           -- Razorpay payment_id or Stripe charge_id
   amount              NUMERIC(12,2)   NOT NULL,

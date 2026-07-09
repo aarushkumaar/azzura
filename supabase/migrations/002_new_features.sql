@@ -93,7 +93,7 @@ CREATE TABLE IF NOT EXISTS public.coupon_usage (
   id             BIGSERIAL PRIMARY KEY,
   coupon_id      BIGINT NOT NULL REFERENCES public.coupons(id) ON DELETE CASCADE,
   coupon_code    TEXT NOT NULL,
-  order_id       BIGINT REFERENCES public.orders(id) ON DELETE SET NULL,
+  order_id       UUID REFERENCES public.orders(id) ON DELETE SET NULL,
   customer_email TEXT,
   user_id        UUID REFERENCES auth.users(id) ON DELETE SET NULL,
   used_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -124,42 +124,67 @@ ALTER TABLE public.coupon_usage       ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.homepage_banners   ENABLE ROW LEVEL SECURITY;
 
 -- customer_profiles policies
+DROP POLICY IF EXISTS "customer_profiles: owner read" ON public.customer_profiles;
 CREATE POLICY "customer_profiles: owner read"   ON public.customer_profiles FOR SELECT USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "customer_profiles: owner insert" ON public.customer_profiles;
 CREATE POLICY "customer_profiles: owner insert" ON public.customer_profiles FOR INSERT WITH CHECK (auth.uid() = user_id);
+DROP POLICY IF EXISTS "customer_profiles: owner update" ON public.customer_profiles;
 CREATE POLICY "customer_profiles: owner update" ON public.customer_profiles FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+DROP POLICY IF EXISTS "customer_profiles: owner delete" ON public.customer_profiles;
 CREATE POLICY "customer_profiles: owner delete" ON public.customer_profiles FOR DELETE USING (auth.uid() = user_id);
 
 -- customer_addresses policies
+DROP POLICY IF EXISTS "customer_addresses: owner read" ON public.customer_addresses;
 CREATE POLICY "customer_addresses: owner read"   ON public.customer_addresses FOR SELECT USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "customer_addresses: owner insert" ON public.customer_addresses;
 CREATE POLICY "customer_addresses: owner insert" ON public.customer_addresses FOR INSERT WITH CHECK (auth.uid() = user_id);
+DROP POLICY IF EXISTS "customer_addresses: owner update" ON public.customer_addresses;
 CREATE POLICY "customer_addresses: owner update" ON public.customer_addresses FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+DROP POLICY IF EXISTS "customer_addresses: owner delete" ON public.customer_addresses;
 CREATE POLICY "customer_addresses: owner delete" ON public.customer_addresses FOR DELETE USING (auth.uid() = user_id);
 
 -- notify_me_requests policies
+DROP POLICY IF EXISTS "notify_me: public insert" ON public.notify_me_requests;
 CREATE POLICY "notify_me: public insert" ON public.notify_me_requests FOR INSERT WITH CHECK (true);
+DROP POLICY IF EXISTS "notify_me: auth read" ON public.notify_me_requests;
 CREATE POLICY "notify_me: auth read"     ON public.notify_me_requests FOR SELECT TO authenticated USING (true);
+DROP POLICY IF EXISTS "notify_me: auth delete" ON public.notify_me_requests;
 CREATE POLICY "notify_me: auth delete"   ON public.notify_me_requests FOR DELETE TO authenticated USING (true);
 
 -- contact_messages policies
+DROP POLICY IF EXISTS "contact_messages: public insert" ON public.contact_messages;
 CREATE POLICY "contact_messages: public insert" ON public.contact_messages FOR INSERT WITH CHECK (true);
+DROP POLICY IF EXISTS "contact_messages: auth read" ON public.contact_messages;
 CREATE POLICY "contact_messages: auth read"     ON public.contact_messages FOR SELECT TO authenticated USING (true);
+DROP POLICY IF EXISTS "contact_messages: auth update" ON public.contact_messages;
 CREATE POLICY "contact_messages: auth update"   ON public.contact_messages FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "contact_messages: auth delete" ON public.contact_messages;
 CREATE POLICY "contact_messages: auth delete"   ON public.contact_messages FOR DELETE TO authenticated USING (true);
 
 -- coupons policies
+DROP POLICY IF EXISTS "coupons: public read" ON public.coupons;
 CREATE POLICY "coupons: public read"  ON public.coupons FOR SELECT USING (true);
+DROP POLICY IF EXISTS "coupons: auth insert" ON public.coupons;
 CREATE POLICY "coupons: auth insert"  ON public.coupons FOR INSERT TO authenticated WITH CHECK (true);
+DROP POLICY IF EXISTS "coupons: auth update" ON public.coupons;
 CREATE POLICY "coupons: auth update"  ON public.coupons FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "coupons: auth delete" ON public.coupons;
 CREATE POLICY "coupons: auth delete"  ON public.coupons FOR DELETE TO authenticated USING (true);
 
 -- coupon_usage policies
+DROP POLICY IF EXISTS "coupon_usage: public insert" ON public.coupon_usage;
 CREATE POLICY "coupon_usage: public insert" ON public.coupon_usage FOR INSERT WITH CHECK (true);
+DROP POLICY IF EXISTS "coupon_usage: auth read" ON public.coupon_usage;
 CREATE POLICY "coupon_usage: auth read"     ON public.coupon_usage FOR SELECT TO authenticated USING (true);
 
 -- homepage_banners policies
+DROP POLICY IF EXISTS "homepage_banners: public read" ON public.homepage_banners;
 CREATE POLICY "homepage_banners: public read"  ON public.homepage_banners FOR SELECT USING (true);
+DROP POLICY IF EXISTS "homepage_banners: auth insert" ON public.homepage_banners;
 CREATE POLICY "homepage_banners: auth insert"  ON public.homepage_banners FOR INSERT TO authenticated WITH CHECK (true);
+DROP POLICY IF EXISTS "homepage_banners: auth update" ON public.homepage_banners;
 CREATE POLICY "homepage_banners: auth update"  ON public.homepage_banners FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "homepage_banners: auth delete" ON public.homepage_banners;
 CREATE POLICY "homepage_banners: auth delete"  ON public.homepage_banners FOR DELETE TO authenticated USING (true);
 
 -- INDEXES

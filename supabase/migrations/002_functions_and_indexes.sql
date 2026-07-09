@@ -9,7 +9,7 @@
 -- to keep customers.total_lifetime_value accurate.
 -- ============================================================
 CREATE OR REPLACE FUNCTION increment_customer_ltv(
-  customer_id BIGINT,
+  customer_id UUID,
   amount      NUMERIC
 )
 RETURNS VOID
@@ -24,7 +24,7 @@ END;
 $$;
 
 -- Grant execute to the service role (Edge Functions)
-GRANT EXECUTE ON FUNCTION increment_customer_ltv(BIGINT, NUMERIC) TO service_role;
+GRANT EXECUTE ON FUNCTION increment_customer_ltv(UUID, NUMERIC) TO service_role;
 
 -- ============================================================
 -- INDEX: speed up common queries used by admin dashboard
