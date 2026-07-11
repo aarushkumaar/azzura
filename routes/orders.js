@@ -92,7 +92,7 @@ router.post('/create', async (req, res) => {
 
       // Insert Order
       await client.query(
-        `INSERT INTO orders (id, razorpay_order_id, customer_id, subtotal, discount, shipping, tax, total, coupon_code, shipping_address, shipping_city, shipping_state, shipping_pincode)
+        `INSERT INTO orders (id, razorpay_order_id, customer_id, subtotal, discount, shipping, tax, total_amount, coupon_code, shipping_address, shipping_city, shipping_state, shipping_pincode)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
         [internalOrderId, rzpOrder.id, customerId, pricing.subtotal, pricing.discount, pricing.shipping, pricing.tax, pricing.total, coupon || null, customer.address, customer.city, customer.state, customer.pincode]
       );
@@ -162,7 +162,7 @@ router.post('/verify', async (req, res) => {
         // Record payment
         await client.query(
           `INSERT INTO payments (order_id, razorpay_payment_id, razorpay_signature, amount, status)
-           SELECT id, $2, $3, total, 'captured' FROM orders WHERE razorpay_order_id = $1
+           SELECT id, $2, $3, total_amount, 'captured' FROM orders WHERE razorpay_order_id = $1
            ON CONFLICT (razorpay_payment_id) DO NOTHING`,
           [razorpay_order_id, razorpay_payment_id, razorpay_signature]
         );
