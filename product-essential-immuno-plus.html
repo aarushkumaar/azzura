@@ -1,6 +1,7 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
+  <base href="./">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Essential Immuno-Plus — Azzurra Pharmaconutrition</title>
@@ -152,8 +153,9 @@
       transition: width 0.1s linear;
     }
   </style>
+  <script src="assets/js/env-config.js"></script>
 </head>
-<body>
+<body class="has-main-nav">
 
   <!-- Scroll progress bar -->
   <div id="scroll-progress" aria-hidden="true"></div>
@@ -161,39 +163,47 @@
   <!-- ========================================================
        NAVBAR — consistent with main site, active: Shop
        ======================================================== -->
-  <nav class="navbar navbar--solid" id="navbar" aria-label="Main navigation">
-    <a href="index.html" class="navbar__logo" aria-label="Azzurra Home">
-      <span class="navbar__logo-name">AZZURRA</span>
-      <span class="navbar__logo-tag">Nurturing Human Lives</span>
-    </a>
-    <ul class="navbar__links" role="list">
-      <li><a href="index.html"    class="navbar__link">Home</a></li>
-      <li><a href="about.html"    class="navbar__link">About</a></li>
-      <li><a href="science.html"  class="navbar__link">Science</a></li>
-      <li><a href="contact.html"  class="navbar__link">Contact</a></li>
-      <li>
-        <a href="cart.html" class="navbar__cart-icon" aria-label="Your cart">
-          🛒
-          <span class="navbar__cart-badge" id="navbar-cart-badge">0</span>
-        </a>
-      </li>
-      <li><a href="productss.html" class="navbar__link navbar__link--shop active" aria-current="page">Shop</a></li>
-    </ul>
-    <button class="navbar__hamburger" id="navbar-hamburger" aria-label="Open menu" aria-expanded="false">
-      <span></span><span></span><span></span>
-    </button>
-  </nav>
-
-  <!-- Mobile drawer -->
-  <div class="navbar__overlay" id="navbar-overlay"></div>
-  <nav class="navbar__drawer" id="navbar-drawer" aria-label="Mobile navigation">
-    <button class="navbar__drawer-close" id="drawer-close" aria-label="Close menu">&times;</button>
-    <a href="index.html"     class="navbar__drawer-link">Home</a>
-    <a href="about.html"     class="navbar__drawer-link">About</a>
-    <a href="science.html"   class="navbar__drawer-link">Science</a>
-    <a href="productss.html" class="navbar__drawer-link" style="color:var(--color-primary);font-weight:700;">Shop</a>
-    <a href="contact.html"   class="navbar__drawer-link">Contact</a>
-    <a href="cart.html"      class="navbar__drawer-link">🛒 Cart</a>
+  <nav class="main-nav" id="mainNav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">
+        <div class="logo-text">AZZURRA</div>
+        <div class="logo-tagline">NURTURING HUMAN LIVES</div>
+      </a>
+      <div class="nav-right">
+        <ul class="nav-links" id="navLinks">
+          <li><a href="index.html" data-page="home">Home</a></li>
+          <li><a href="about.html" data-page="about">About</a></li>
+          <li><a href="science.html" data-page="science">Science</a></li>
+          <li><a href="events.html" data-page="events">Events</a></li>
+          <li><a href="contact.html" data-page="contact">Contact</a></li>
+        </ul>
+        <div class="nav-actions">
+          <a href="cart.html" class="nav-icon-btn nav-cart" aria-label="Cart">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+            <span class="cart-badge" id="cartBadge">0</span>
+          </a>
+          <a href="customer-auth.html" class="nav-icon-btn nav-profile" id="navProfileBtn" aria-label="My Account">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </a>
+          <a href="productss.html" class="nav-shop-btn active">Shop</a>
+        </div>
+        <button class="nav-hamburger" id="navHamburger" aria-label="Menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+    <div class="nav-mobile-menu" id="navMobileMenu">
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="science.html">Science</a></li>
+        <li><a href="events.html">Events</a></li>
+        <li><a href="contact.html">Contact</a></li>
+        <li><a href="productss.html" class="active">Shop</a></li>
+        <li><a href="customer-auth.html">My Account</a></li>
+        <li><a href="cart.html">Cart</a></li>
+      </ul>
+    </div>
   </nav>
 
   <!-- Breadcrumb -->

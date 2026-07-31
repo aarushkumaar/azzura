@@ -1,6 +1,7 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
+  <base href="./">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Checkout — Azzurra Pharmaconutrition</title>
@@ -8,34 +9,128 @@
   <link rel="stylesheet" href="assets/css/style.css" />
   <link rel="stylesheet" href="assets/css/shop.css" />
   <link rel="stylesheet" href="assets/css/checkout.css" />
+  <!-- Load order: 1. Razorpay SDK  2. Supabase  3. config.js  4. app scripts -->
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <style>
+    /* Order success card */
+    #order-success {
+      display: none;
+      min-height: 60vh;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 20px 40px;
+    }
+    #order-success.show { display: flex; }
+    .success-card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 48px 40px;
+      max-width: 480px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 8px 40px rgba(26,95,168,0.10);
+      border: 1px solid #E8F1FB;
+    }
+    .success-icon {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: #22C55E;
+      color: #fff;
+      font-size: 36px;
+      line-height: 72px;
+      margin: 0 auto 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .success-card h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 26px;
+      color: #1A1A2E;
+      margin-bottom: 12px;
+      font-weight: 400;
+    }
+    .success-card .order-id {
+      font-size: 15px;
+      color: #1A5FA8;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .success-card .payment-id {
+      font-size: 13px;
+      color: #6B7280;
+      margin-bottom: 16px;
+      word-break: break-all;
+    }
+    .success-card .thank-you {
+      font-size: 15px;
+      color: #6B7280;
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
+    .btn-continue-shopping {
+      display: inline-block;
+      background: #1A5FA8;
+      color: #fff;
+      padding: 13px 32px;
+      border-radius: 100px;
+      font-size: 14px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: background 0.2s ease, transform 0.2s ease;
+    }
+    .btn-continue-shopping:hover {
+      background: #134a87;
+      transform: scale(1.03);
+    }
+  </style>
+  <script src="assets/js/env-config.js"></script>
 </head>
-<body>
-
-  <!-- NAVBAR -->
-  <nav class="navbar navbar--solid" id="navbar" aria-label="Main navigation">
-    <a href="index.html" class="navbar__logo" aria-label="Azzurra Home">
-      <span class="navbar__logo-name">AZZURRA</span>
-      <span class="navbar__logo-tag">Nurturing Human Lives</span>
-    </a>
-    <ul class="navbar__links" role="list">
-      <li><a href="index.html"     class="navbar__link">Home</a></li>
-      <li><a href="about.html"     class="navbar__link">About</a></li>
-      <li><a href="science.html"   class="navbar__link">Science</a></li>
-      <li><a href="productss.html" class="navbar__link navbar__link--shop">Shop</a></li>
-      <li><a href="contact.html"   class="navbar__link">Contact</a></li>
-      <li><a href="customer-auth.html" class="navbar__account-link navbar__link" aria-label="My Account" title="My Account">&#128100;</a></li>
-    </ul>
-    <button class="navbar__hamburger" id="navbar-hamburger" aria-label="Open menu"><span></span><span></span><span></span></button>
-  </nav>
-  <div class="navbar__overlay" id="navbar-overlay"></div>
-  <nav class="navbar__drawer" id="navbar-drawer" aria-label="Mobile navigation">
-    <button class="navbar__drawer-close" id="drawer-close">&times;</button>
-    <a href="index.html"     class="navbar__drawer-link">Home</a>
-    <a href="about.html"     class="navbar__drawer-link">About</a>
-    <a href="science.html"   class="navbar__drawer-link">Science</a>
-    <a href="productss.html" class="navbar__drawer-link">Shop</a>
-    <a href="contact.html"   class="navbar__drawer-link">Contact</a>
-    <a href="customer-auth.html" class="navbar__drawer-link">&#128100; My Account</a>
+<body class="has-main-nav">
+  <nav class="main-nav" id="mainNav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">
+        <div class="logo-text">AZZURRA</div>
+        <div class="logo-tagline">NURTURING HUMAN LIVES</div>
+      </a>
+      <div class="nav-right">
+        <ul class="nav-links" id="navLinks">
+          <li><a href="index.html" data-page="home">Home</a></li>
+          <li><a href="about.html" data-page="about">About</a></li>
+          <li><a href="science.html" data-page="science">Science</a></li>
+          <li><a href="events.html" data-page="events">Events</a></li>
+          <li><a href="contact.html" data-page="contact">Contact</a></li>
+        </ul>
+        <div class="nav-actions">
+          <a href="cart.html" class="nav-icon-btn nav-cart" aria-label="Cart">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+            <span class="cart-badge" id="cartBadge">0</span>
+          </a>
+          <a href="customer-auth.html" class="nav-icon-btn nav-profile" id="navProfileBtn" aria-label="My Account">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </a>
+          <a href="productss.html" class="nav-shop-btn">Shop</a>
+        </div>
+        <button class="nav-hamburger" id="navHamburger" aria-label="Menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+    <div class="nav-mobile-menu" id="navMobileMenu">
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="science.html">Science</a></li>
+        <li><a href="events.html">Events</a></li>
+        <li><a href="contact.html">Contact</a></li>
+        <li><a href="productss.html">Shop</a></li>
+        <li><a href="customer-auth.html">My Account</a></li>
+        <li><a href="cart.html">Cart</a></li>
+      </ul>
+    </div>
   </nav>
 
   <!-- CHECKOUT MAIN -->
@@ -185,6 +280,20 @@
     </div><!-- /checkout-inner -->
   </main>
 
+  <!-- ORDER SUCCESS SCREEN (hidden; shown by showOrderSuccess()) -->
+  <div id="order-success" role="alert" aria-live="polite">
+    <div class="success-card">
+      <div class="success-icon" aria-hidden="true">✓</div>
+      <h2>Order Placed Successfully!</h2>
+      <p class="order-id">Order #<span id="success-order-id"></span></p>
+      <p class="payment-id" id="success-payment-row">
+        Payment ID: <span id="success-payment-id"></span>
+      </p>
+      <p class="thank-you">Thank you for your order. We'll send a confirmation to your email shortly.</p>
+      <a href="productss.html" class="btn-continue-shopping">Continue Shopping →</a>
+    </div>
+  </div>
+
   <!-- FOOTER (simplified) -->
   <footer class="footer" role="contentinfo" style="margin-top: 0;">
     <div class="footer__bottom" style="max-width:1200px;margin:0 auto;padding:24px 40px;">
@@ -193,10 +302,6 @@
     </div>
   </footer>
 
-  <!-- Razorpay checkout SDK -->
-  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="config.js"></script>
   <script src="assets/js/customer-auth.js"></script>
   <script src="assets/js/main.js"></script>
   <script src="assets/js/shop.js"></script>

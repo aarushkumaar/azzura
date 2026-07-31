@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    AZZURRA — Customer Authentication (customer-auth.js)
    Handles customer sign-up, sign-in, sign-out, session mgmt.
    Uses Supabase Auth — same project as admin but separate flow.
@@ -89,7 +89,7 @@
   window.customerForgotPassword = async function (email) {
     var sb = getClient();
     if (!sb) throw new Error('Auth not available');
-    var redirectUrl = window.location.origin + '/customer-auth.html?mode=reset';
+    var redirectUrl = new URL('customer-auth.html?mode=reset', window.location.href).href;
     var res = await sb.auth.resetPasswordForEmail(email, { redirectTo: redirectUrl });
     if (res.error) throw res.error;
     return true;

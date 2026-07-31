@@ -237,9 +237,23 @@
   /* ── Main init function ───────────────────────────────────── */
   function init(config) {
     injectCSS();
+    config = config || {};
+    var rawImages = config.images || (config.product ? config.product.images : []);
+    var images = [];
+    if (typeof rawImages === 'string') {
+      try { images = JSON.parse(rawImages || '[]'); }
+      catch(_) { if (rawImages.trim().startsWith('http')) images = [rawImages.trim()]; }
+    } else if (Array.isArray(rawImages)) {
+      images = rawImages;
+    }
+    if ((!images || !images.length) && config.product) {
+      if (config.product.imagePath) images = [config.product.imagePath];
+      else if (config.product.image_url) images = [config.product.image_url];
+    }
+    if (!Array.isArray(images)) images = [];
+    images = images.filter(Boolean);
 
-    var images      = config.images      || [];
-    var productName = config.productName || 'Product';
+    var productName = config.productName || (config.product ? config.product.name : 'Product') || 'Product';
     var containerId = config.containerId || 'az-gallery-root';
 
     var container = document.getElementById(containerId);

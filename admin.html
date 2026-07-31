@@ -1,6 +1,7 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
+  <base href="./">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex, nofollow" />
@@ -455,6 +456,7 @@
     <nav class="sidebar-nav">
       <button class="sidebar-link active" data-section="dashboard"><span class="nav-icon">&#128202;</span> Dashboard</button>
       <button class="sidebar-link" data-section="products"><span class="nav-icon">&#129516;</span> Products</button>
+      <button class="sidebar-link" data-section="events"><span class="nav-icon">🗓️</span> Events</button>
       <button class="sidebar-link" data-section="orders"><span class="nav-icon">&#128230;</span> Orders</button>
       <button class="sidebar-link" data-section="customers"><span class="nav-icon">&#128101;</span> Customers</button>
       <button class="sidebar-link" data-section="coupons"><span class="nav-icon">🎟️</span> Coupons</button>
@@ -550,6 +552,27 @@
         <div class="pagination" id="products-pagination"></div>
       </section>
 
+      <!-- SECTION: EVENTS -->
+      <section class="admin-section" id="section-events">
+        <div class="section-toolbar">
+          <h2>Events <span id="events-count" style="font-size:14px;font-weight:400;color:var(--color-grey);"></span></h2>
+          <button class="btn-primary" id="btn-add-event">+ Add New Event</button>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th><th>Banner</th><th>Title</th><th>Type</th>
+                <th>Date</th><th>Location</th><th>Active</th><th>Featured</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="events-tbody">
+              <tr class="loading-row"><td colspan="9"><div class="spinner"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
       <!-- SECTION: ORDERS -->
       <section class="admin-section" id="section-orders">
         <div class="section-toolbar"><h2>Orders</h2></div>
@@ -566,11 +589,11 @@
             <thead>
               <tr>
                 <th>Order ID</th><th>Customer</th><th>Items</th>
-                <th>Total (&#8377;)</th><th>Status</th><th>Date</th><th>View</th>
+                <th>Total (&#8377;)</th><th>Status</th><th>Payment</th><th>Date</th><th>View</th>
               </tr>
             </thead>
             <tbody id="orders-tbody">
-              <tr class="loading-row"><td colspan="7"><div class="spinner"></div></td></tr>
+              <tr class="loading-row"><td colspan="8"><div class="spinner"></div></td></tr>
             </tbody>
           </table>
         </div>
@@ -1043,8 +1066,22 @@ function fmtDate(ts) {
 }
 function statusBadge(status) {
   var s = (status || 'pending').toLowerCase();
-  var cls = { pending:'badge-pending', confirmed:'badge-confirmed', shipped:'badge-shipped', delivered:'badge-delivered', cancelled:'badge-cancelled' }[s] || 'badge-pending';
-  return '<span class="badge ' + cls + '">' + esc(s) + '</span>';
+  var cls = { pending:'badge-pending', confirmed:'badge-confirmed', shipped:'badge-shipped', delivered:'badge-delivered', cancelled:'badge-cancelled', payment_failed:'badge-cancelled' }[s] || 'badge-pending';
+  return '<span class="badge ' + cls + '">' + esc(s.replace(/_/g,' ')) + '</span>';
+}
+function paymentBadge(payStatus, payMethod) {
+  var ps = (payStatus || 'pending').toLowerCase();
+  var pm = (payMethod  || 'razorpay').toLowerCase();
+  if (ps === 'paid') {
+    return '<span class="badge badge-instock" style="background:#22C55E;color:#fff;">✓ Paid</span>';
+  }
+  if (ps === 'cod_pending' || pm === 'cod') {
+    return '<span class="badge" style="background:#F59E0B;color:#fff;">COD</span>';
+  }
+  if (ps === 'failed') {
+    return '<span class="badge badge-outofstock">Failed</span>';
+  }
+  return '<span class="badge" style="background:#E5E7EB;color:#6B7280;">Pending</span>';
 }
 function getFirstImage(imagesField) {
   if (!imagesField) return null;
@@ -1732,7 +1769,7 @@ var ordersFilter = 'all';
 
 async function loadOrders() {
   var tbody = document.getElementById('orders-tbody');
-  if (tbody) tbody.innerHTML = '<tr class="loading-row"><td colspan="7"><div class="spinner"></div></td></tr>';
+  if (tbody) tbody.innerHTML = '<tr class="loading-row"><td colspan="8"><div class="spinner"></div></td></tr>';
   try {
     var r = await sb.from('orders').select('*').order('created_at',{ascending:false});
     if (r.error) throw r.error;
@@ -1740,7 +1777,7 @@ async function loadOrders() {
     renderOrders();
   } catch(err) {
     var t2 = document.getElementById('orders-tbody');
-    if (t2) t2.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">&#128230;</div><p>No orders yet</p></div></td></tr>';
+    if (t2) t2.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">&#128230;</div><p>No orders yet</p></div></td></tr>';
     showToast('Orders load error: ' + err.message, 'error');
   }
 }
@@ -1750,21 +1787,22 @@ function renderOrders() {
   if (!tbody) return;
   var filtered = ordersFilter === 'all' ? allOrders : allOrders.filter(function(o) { return (o.status||'').toLowerCase() === ordersFilter; });
   if (!filtered.length) {
-    tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">&#128230;</div><p>No ' + (ordersFilter!=='all'?ordersFilter+' ':'') + 'orders found</p></div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">&#128230;</div><p>No ' + (ordersFilter!=='all'?ordersFilter+' ':'') + 'orders found</p></div></td></tr>';
     return;
   }
   tbody.innerHTML = filtered.map(function(o) {
     var itemCount = countItems(o.items);
-    return '<tr id="order-row-' + o.id + '" class="order-main-row" style="cursor:pointer;" onclick="toggleOrderDetail(' + o.id + ')">'
+    return '<tr id="order-row-' + o.id + '" class="order-main-row" style="cursor:pointer;" onclick="toggleOrderDetail(' + o.id + ')">' 
       + '<td style="font-size:12px;color:var(--color-grey);font-family:monospace;">#' + String(o.id).slice(-8) + '</td>'
       + '<td style="font-weight:600;">' + esc(o.customer_name||'&mdash;') + '</td>'
       + '<td>' + itemCount + ' item' + (itemCount!==1?'s':'') + '</td>'
       + '<td>&#8377;' + Number(o.total_amount||0).toLocaleString('en-IN') + '</td>'
       + '<td>' + statusBadge(o.status) + '</td>'
+      + '<td>' + paymentBadge(o.payment_status, o.payment_method) + '</td>'
       + '<td style="font-size:13px;color:var(--color-grey);">' + fmtDate(o.created_at) + '</td>'
       + '<td><button class="btn-icon" onclick="event.stopPropagation();toggleOrderDetail(' + o.id + ')" title="View">&#128065;</button></td>'
       + '</tr>'
-      + '<tr id="order-detail-' + o.id + '" class="order-detail-row" style="display:none;"><td colspan="7">' + buildOrderDetail(o) + '</td></tr>';
+      + '<tr id="order-detail-' + o.id + '" class="order-detail-row" style="display:none;"><td colspan="8">' + buildOrderDetail(o) + '</td></tr>';
   }).join('');
 }
 
@@ -1781,9 +1819,33 @@ function buildOrderDetail(o) {
     }
   } catch(_) { itemsHtml = '<p style="font-size:13px;color:var(--color-grey);">Unable to parse items.</p>'; }
 
+  /* ── Payment info block ── */
+  var payMethod  = o.payment_method  || 'razorpay';
+  var payStatus  = o.payment_status  || 'pending';
+  var payId      = o.razorpay_payment_id || '';
+  var coupon     = o.coupon_code     || '';
+  var discount   = Number(o.discount_amount || 0);
+
+  var payIdHtml = payId
+    ? '<a href="https://dashboard.razorpay.com/app/payments/' + payId + '" target="_blank" rel="noopener" style="color:#1A5FA8;font-size:12px;font-family:monospace;text-decoration:underline;">' + payId + ' ↗</a>'
+    : '<span style="color:var(--color-grey);font-size:12px;">—</span>';
+
+  var couponHtml = coupon
+    ? '<p style="font-size:13px;">Coupon: <strong>' + esc(coupon) + '</strong> &nbsp; Discount: <strong>&#8377;' + discount.toLocaleString('en-IN') + '</strong></p>'
+    : '';
+
+  var paymentBlock = '<div class="order-detail-group">'
+    + '<h4>Payment</h4>'
+    + '<p style="font-size:13px;">Method: <strong>' + esc(payMethod.toUpperCase()) + '</strong></p>'
+    + '<p style="font-size:13px;">Status: ' + paymentBadge(payStatus, payMethod) + '</p>'
+    + '<p style="font-size:13px;">Razorpay ID: ' + payIdHtml + '</p>'
+    + couponHtml
+    + '</div>';
+
   return '<div class="order-detail-grid">'
     + '<div class="order-detail-group"><h4>Customer</h4><p>' + esc(o.customer_name||'&mdash;') + '</p><p style="font-size:13px;color:var(--color-grey);">' + esc(o.customer_email||'&mdash;') + '</p><p style="font-size:13px;color:var(--color-grey);">' + esc(o.customer_phone||'&mdash;') + '</p></div>'
     + '<div class="order-detail-group"><h4>Delivery Address</h4><p style="font-size:13px;">' + esc(o.address||'&mdash;') + '</p></div>'
+    + paymentBlock
     + '</div>' + itemsHtml
     + '<div style="display:flex;align-items:center;gap:12px;margin-top:8px;"><span style="font-size:13px;font-weight:600;">Update Status:</span>'
     + '<select class="status-select" onchange="updateOrderStatus(' + o.id + ',this.value)">'
@@ -1958,6 +2020,299 @@ if (clearSessionsBtn) clearSessionsBtn.addEventListener('click', async function(
 showSection('dashboard');
 
 } // end initAdmin
+</script>
+
+<!-- ========================================================
+     EVENTS ADMIN PANEL (HTML + Script)
+     ======================================================== -->
+
+<!-- Events slide panel -->
+<div class="slide-panel" id="event-panel" style="width:520px;">
+  <div class="panel-header">
+    <h3 id="event-panel-title">Add Event</h3>
+    <button class="btn-close-panel" id="btn-close-event-panel">&times;</button>
+  </div>
+  <div class="panel-body">
+    <form id="event-form" novalidate>
+      <input type="hidden" id="ev-id" />
+      <div class="form-group">
+        <label class="form-label">Event Title <span class="req">*</span></label>
+        <input type="text" id="ev-title" placeholder="e.g. Critical Care Nutrition Conference 2025" required />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Event Type</label>
+        <select id="ev-type">
+          <option value="Conference">Conference</option>
+          <option value="CME">CME</option>
+          <option value="Workshop">Workshop</option>
+          <option value="Symposium">Symposium</option>
+          <option value="Product Launch">Product Launch</option>
+          <option value="Exhibition">Exhibition</option>
+          <option value="Webinar">Webinar</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Short Description</label>
+        <textarea id="ev-short-description" rows="2" placeholder="Brief description shown in cards…"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Full Description</label>
+        <textarea id="ev-description" rows="4" placeholder="Full event details…"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Event Date <span class="req">*</span></label>
+        <input type="date" id="ev-date" required />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Time (optional)</label>
+        <input type="text" id="ev-time" placeholder="e.g. 9:00 AM – 5:00 PM" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Location / Venue</label>
+        <input type="text" id="ev-location" placeholder="e.g. Hotel Taj, Hall A" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">City</label>
+        <input type="text" id="ev-city" placeholder="e.g. New Delhi" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Registration / Info URL</label>
+        <input type="url" id="ev-registration-url" placeholder="https://…" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Banner Image URL</label>
+        <input type="url" id="ev-banner-image-url" placeholder="https://res.cloudinary.com/…" />
+      </div>
+      <div style="display:flex;gap:24px;margin-bottom:16px;">
+        <label class="toggle-switch">
+          <input type="checkbox" id="ev-is-active" checked />
+          <span class="toggle-slider"></span>
+          Active (visible on site)
+        </label>
+        <label class="toggle-switch">
+          <input type="checkbox" id="ev-is-featured" />
+          <span class="toggle-slider"></span>
+          Featured on Homepage
+        </label>
+      </div>
+      <div style="display:flex;gap:12px;margin-top:8px;">
+        <button type="submit" class="btn-primary" id="ev-save-btn">Save Event</button>
+        <button type="button" class="btn-secondary" id="ev-delete-btn" style="display:none;color:#FC8181;border-color:#FC8181;">Delete</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   EVENTS ADMIN — CRUD
+   Uses the shared adminSupabase client set up by authGuard.
+============================================================ */
+(function initEventsAdmin() {
+  var sb = window.adminSupabase;
+  if (!sb) { console.warn('[Admin] No adminSupabase client'); return; }
+
+  /* ── Helpers ── */
+  function showToastEv(msg, type) {
+    if (window.showToast) window.showToast(msg, type || 'info');
+    else console.log('[Events Admin]', msg);
+  }
+
+  function openEventPanel(title) {
+    var overlay = document.getElementById('panel-overlay');
+    var panel   = document.getElementById('event-panel');
+    if (overlay) overlay.classList.add('open');
+    if (panel)   panel.classList.add('open');
+    document.getElementById('event-panel-title').textContent = title;
+  }
+
+  function closeEventPanel() {
+    var overlay = document.getElementById('panel-overlay');
+    var panel   = document.getElementById('event-panel');
+    if (overlay) overlay.classList.remove('open');
+    if (panel)   panel.classList.remove('open');
+  }
+
+  function clearEventForm() {
+    document.getElementById('ev-id').value = '';
+    document.getElementById('ev-title').value = '';
+    document.getElementById('ev-type').value = 'Conference';
+    document.getElementById('ev-short-description').value = '';
+    document.getElementById('ev-description').value = '';
+    document.getElementById('ev-date').value = '';
+    document.getElementById('ev-time').value = '';
+    document.getElementById('ev-location').value = '';
+    document.getElementById('ev-city').value = '';
+    document.getElementById('ev-registration-url').value = '';
+    document.getElementById('ev-banner-image-url').value = '';
+    document.getElementById('ev-is-active').checked = true;
+    document.getElementById('ev-is-featured').checked = false;
+    document.getElementById('ev-delete-btn').style.display = 'none';
+    document.getElementById('ev-save-btn').textContent = 'Save Event';
+  }
+
+  function fillEventForm(ev) {
+    document.getElementById('ev-id').value = ev.id || '';
+    document.getElementById('ev-title').value = ev.title || '';
+    document.getElementById('ev-type').value = ev.event_type || 'Conference';
+    document.getElementById('ev-short-description').value = ev.short_description || '';
+    document.getElementById('ev-description').value = ev.description || '';
+    document.getElementById('ev-date').value = ev.date || '';
+    document.getElementById('ev-time').value = ev.time || '';
+    document.getElementById('ev-location').value = ev.location || '';
+    document.getElementById('ev-city').value = ev.city || '';
+    document.getElementById('ev-registration-url').value = ev.registration_url || '';
+    document.getElementById('ev-banner-image-url').value = ev.banner_image_url || '';
+    document.getElementById('ev-is-active').checked = ev.is_active !== false;
+    document.getElementById('ev-is-featured').checked = !!ev.is_featured;
+    document.getElementById('ev-delete-btn').style.display = '';
+  }
+
+  function formatShortDate(d) {
+    if (!d) return '—';
+    var dt = new Date(d + 'T00:00:00');
+    return dt.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  /* ── Load events table ── */
+  async function loadEventsTable() {
+    var tbody = document.getElementById('events-tbody');
+    var countEl = document.getElementById('events-count');
+    if (!tbody) return;
+    tbody.innerHTML = '<tr class="loading-row"><td colspan="9"><div class="spinner"></div></td></tr>';
+
+    try {
+      var { data, error } = await sb.from('events').select('*').order('date', { ascending: false });
+      if (error) throw error;
+      if (countEl) countEl.textContent = '(' + (data ? data.length : 0) + ')';
+      if (!data || data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9"><div class="empty-state"><div class="empty-icon">🗓️</div><p>No events yet. Click "Add New Event" to create one.</p></div></td></tr>';
+        return;
+      }
+      tbody.innerHTML = data.map(function(ev, i) {
+        var img = ev.banner_image_url
+          ? '<img src="' + ev.banner_image_url + '" class="prod-thumb" alt="" />'
+          : '<div class="prod-thumb-placeholder">🗓️</div>';
+        var activeBadge  = ev.is_active   ? '<span class="badge badge-instock">Active</span>'   : '<span class="badge badge-outofstock">Inactive</span>';
+        var featuredBadge = ev.is_featured ? '<span class="badge badge-confirmed">Yes</span>'   : '<span style="color:var(--color-grey);font-size:12px;">—</span>';
+        return '<tr>' +
+          '<td style="font-size:13px;color:var(--color-grey);">' + (i + 1) + '</td>' +
+          '<td>' + img + '</td>' +
+          '<td style="font-weight:600;max-width:200px;">' + (ev.title || '') + '</td>' +
+          '<td><span class="badge" style="background:#f0f4ff;color:#4A6FA5;">' + (ev.event_type || '—') + '</span></td>' +
+          '<td>' + formatShortDate(ev.date) + '</td>' +
+          '<td style="font-size:13px;">' + (ev.city || ev.location || '—') + '</td>' +
+          '<td>' + activeBadge + '</td>' +
+          '<td>' + featuredBadge + '</td>' +
+          '<td><button class="btn-icon ev-edit-btn" data-id="' + ev.id + '" title="Edit">✏️</button></td>' +
+        '</tr>';
+      }).join('');
+
+      tbody.querySelectorAll('.ev-edit-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var id = this.dataset.id;
+          var ev = data.find(function(e) { return String(e.id) === String(id); });
+          if (!ev) return;
+          clearEventForm();
+          fillEventForm(ev);
+          openEventPanel('Edit Event');
+        });
+      });
+
+    } catch(err) {
+      tbody.innerHTML = '<tr><td colspan="9" style="padding:24px;color:var(--color-red);text-align:center;">Failed to load: ' + err.message + '</td></tr>';
+    }
+  }
+
+  /* ── Add button ── */
+  var addBtn = document.getElementById('btn-add-event');
+  if (addBtn) {
+    addBtn.addEventListener('click', function() {
+      clearEventForm();
+      openEventPanel('Add New Event');
+    });
+  }
+
+  /* ── Close button ── */
+  var closeBtn = document.getElementById('btn-close-event-panel');
+  if (closeBtn) closeBtn.addEventListener('click', closeEventPanel);
+
+  /* ── Save form ── */
+  var form = document.getElementById('event-form');
+  if (form) {
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      var saveBtn = document.getElementById('ev-save-btn');
+      if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Saving…'; }
+
+      try {
+        var id = document.getElementById('ev-id').value;
+        var payload = {
+          title:             document.getElementById('ev-title').value.trim(),
+          event_type:        document.getElementById('ev-type').value,
+          short_description: document.getElementById('ev-short-description').value.trim(),
+          description:       document.getElementById('ev-description').value.trim(),
+          date:              document.getElementById('ev-date').value || null,
+          time:              document.getElementById('ev-time').value.trim() || null,
+          location:          document.getElementById('ev-location').value.trim() || null,
+          city:              document.getElementById('ev-city').value.trim() || null,
+          registration_url:  document.getElementById('ev-registration-url').value.trim() || null,
+          banner_image_url:  document.getElementById('ev-banner-image-url').value.trim() || null,
+          is_active:         document.getElementById('ev-is-active').checked,
+          is_featured:       document.getElementById('ev-is-featured').checked
+        };
+
+        var r;
+        if (id) {
+          r = await sb.from('events').update(payload).eq('id', id);
+        } else {
+          r = await sb.from('events').insert(payload);
+        }
+        if (r.error) throw r.error;
+
+        showToastEv('✓ Event saved', 'success');
+        closeEventPanel();
+        loadEventsTable();
+      } catch(err) {
+        showToastEv('Failed: ' + err.message, 'error');
+      } finally {
+        if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Save Event'; }
+      }
+    });
+  }
+
+  /* ── Delete ── */
+  var deleteBtn = document.getElementById('ev-delete-btn');
+  if (deleteBtn) {
+    deleteBtn.addEventListener('click', async function() {
+      var id = document.getElementById('ev-id').value;
+      if (!id) return;
+      if (!window.confirm('Delete this event? This cannot be undone.')) return;
+
+      try {
+        var { error } = await sb.from('events').delete().eq('id', id);
+        if (error) throw error;
+        showToastEv('✓ Event deleted', 'success');
+        closeEventPanel();
+        loadEventsTable();
+      } catch(err) {
+        showToastEv('Delete failed: ' + err.message, 'error');
+      }
+    });
+  }
+
+  /* ── Expose load function for sidebar navigation ── */
+  window._loadEventsTable = loadEventsTable;
+
+  /* ── Hook into sidebar nav so table loads when tab is clicked ── */
+  document.querySelectorAll('.sidebar-link[data-section="events"]').forEach(function(link) {
+    link.addEventListener('click', function() {
+      setTimeout(loadEventsTable, 50); // slight delay so section is visible
+    });
+  });
+
+}());
 </script>
 
 <script src="assets/js/admin-addons.js"></script>

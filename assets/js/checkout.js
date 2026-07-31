@@ -1,19 +1,37 @@
 /* ============================================================
    AZZURRA — CHECKOUT JAVASCRIPT
-   checkout.js — Form validation, cart display, Supabase order save.
-   Supports Razorpay and Cash on Delivery payments.
-   Supports Coupon Code lifecycle management.
+   checkout.js — Form validation, cart display, Supabase order
+   save via JS client, Razorpay and Cash on Delivery payments,
+   and Coupon Code lifecycle management.
    ============================================================ */
 
-/* ── Supabase credentials ─────────────────────────────────── */
+/* ── Initialise Supabase JS client (uses config.js constants) ── */
+var _checkoutSb = (function() {
+  try {
+    if (window.supabase && typeof SUPABASE_URL !== 'undefined' && typeof SUPABASE_ANON_KEY !== 'undefined') {
+      return window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+  } catch(e) { console.warn('[Checkout] Supabase init failed:', e); }
+  return null;
+}());
+
+/* ── Fallback REST credentials (identical to config.js values) ── */
 var _CHECKOUT_SUPABASE_URL      = 'https://ilduyhuvpiqhvbnocqxf.supabase.co';
 var _CHECKOUT_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlsZHV5aHV2cGlxaHZibm9jcXhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4MTMxNTUsImV4cCI6MjA5NjM4OTE1NX0.uuC8dKajsnSSaiTx_wxNeapKPl4EV20s5phcRS-TaZg';
 
-/* ── Coupon States ── */
-var appliedCoupon = null;
+/* ── Coupon state ── */
+var appliedCoupon  = null;
 var discountAmount = 0;
 
-/* ── Cart helpers (work with both cart key naming conventions) ─ */
+/* ── Currency symbol ── */
+var CURRENCY_SYMBOL = '₹';
+if (typeof SITE_CONFIG !== 'undefined' && SITE_CONFIG.currencySymbol) {
+  CURRENCY_SYMBOL = SITE_CONFIG.currencySymbol;
+}
+
+/* ============================================================
+   CART HELPERS
+   ============================================================ */
 function getCartFromStorage() {
   var raw = localStorage.getItem('azzurra_cart') || localStorage.getItem('azzurra_cart_v1');
   if (!raw) return [];
@@ -31,19 +49,12 @@ function clearCart() {
   localStorage.removeItem('azzurra_cart_v1');
 }
 
-/* ── Currency symbol ──────────────────────────────────────── */
-var CURRENCY_SYMBOL = '₹';
-if (typeof SITE_CONFIG !== 'undefined' && SITE_CONFIG.currencySymbol) {
-  CURRENCY_SYMBOL = SITE_CONFIG.currencySymbol;
-}
-
 /* ============================================================
    RENDER ORDER SUMMARY (right column)
    ============================================================ */
 function renderOrderSummary() {
   var cart = getCartFromStorage();
 
-  // Redirect to shop if cart is empty
   if (cart.length === 0) {
     window.location.href = 'productss.html';
     return;
@@ -113,12 +124,13 @@ function validateCheckoutForm(data) {
 }
 
 /* ============================================================
-   SAVE ORDER TO SUPABASE
+   SAVE ORDER TO SUPABASE (uses JS SDK client)
+   Full payload — all columns now exist in the orders table.
    ============================================================ */
 async function saveOrderToSupabase(formData, paymentMethod, couponCode, discountAmt, userId) {
-  var cart  = getCartFromStorage();
+  var cart     = getCartFromStorage();
   var subtotal = getCartTotal(cart);
-  var total = subtotal - (discountAmt || 0);
+  var total    = subtotal - (discountAmt || 0);
   if (total < 0) total = 0;
 
   var fullAddress = [
@@ -130,28 +142,44 @@ async function saveOrderToSupabase(formData, paymentMethod, couponCode, discount
 
   var items = cart.map(function(item) {
     return {
-      id:           item.id,
-      name:         item.name || 'Product',
-      quantity:     Number(item.quantity || item.qty || 1),
-      price:        Number(item.price || item.unit_price || 0),
-      image_url:    item.image_url || item.imagePath || ''
+      id:        item.id,
+      name:      item.name || 'Product',
+      quantity:  Number(item.quantity || item.qty || 1),
+      price:     Number(item.price || item.unit_price || 0),
+      image_url: item.image_url || item.imagePath || ''
     };
   });
 
+  /* ── Full payload — all these columns now exist in public.orders ── */
   var payload = {
-    customer_name:   formData.name,
-    customer_email:  formData.email,
-    customer_phone:  formData.phone,
-    address:         fullAddress,
-    items:           JSON.stringify(items),
-    total_amount:    total,
-    status:          'pending',
-    payment_method:  paymentMethod || 'razorpay',
-    coupon_code:     couponCode || null,
-    discount_amount: discountAmt || 0,
-    customer_user_id: userId || null
+    customer_name:        formData.name,
+    customer_email:       formData.email,
+    customer_phone:       formData.phone,
+    address:              fullAddress,
+    items:                JSON.stringify(items),
+    total_amount:         total,
+    status:               'pending',
+    payment_method:       paymentMethod || 'razorpay',
+    coupon_code:          couponCode    || null,
+    discount_amount:      discountAmt   || 0,
+    customer_user_id:     userId        || null,
+    payment_status:       'pending',
+    razorpay_order_id:    null,
+    razorpay_payment_id:  null
   };
 
+  /* ── Use Supabase JS client (avoids 406 header issues) ── */
+  if (_checkoutSb) {
+    var r = await _checkoutSb
+      .from('orders')
+      .insert([payload])
+      .select()
+      .single();
+    if (r.error) throw new Error('Order save failed: ' + r.error.message);
+    return r.data;
+  }
+
+  /* ── Fallback: raw fetch (same result, different client) ── */
   var res = await fetch(_CHECKOUT_SUPABASE_URL + '/rest/v1/orders', {
     method:  'POST',
     headers: {
@@ -173,10 +201,26 @@ async function saveOrderToSupabase(formData, paymentMethod, couponCode, discount
   return Array.isArray(data) ? data[0] : data;
 }
 
-/* ── Record Coupon Usage in DB ── */
+/* ── Update order after payment outcome ── */
+async function updateOrderPayment(orderId, fields) {
+  if (_checkoutSb) {
+    await _checkoutSb.from('orders').update(fields).eq('id', orderId);
+    return;
+  }
+  await fetch(_CHECKOUT_SUPABASE_URL + '/rest/v1/orders?id=eq.' + orderId, {
+    method: 'PATCH',
+    headers: {
+      'apikey':        _CHECKOUT_SUPABASE_ANON_KEY,
+      'Authorization': 'Bearer ' + _CHECKOUT_SUPABASE_ANON_KEY,
+      'Content-Type':  'application/json'
+    },
+    body: JSON.stringify(fields)
+  });
+}
+
+/* ── Record coupon usage ── */
 async function recordCouponUsage(coupon, orderId, email, userId) {
   try {
-    // 1. Increment usage count
     await fetch(_CHECKOUT_SUPABASE_URL + '/rest/v1/coupons?id=eq.' + coupon.id, {
       method: 'PATCH',
       headers: {
@@ -187,7 +231,6 @@ async function recordCouponUsage(coupon, orderId, email, userId) {
       body: JSON.stringify({ used_count: (coupon.used_count || 0) + 1 })
     });
 
-    // 2. Insert record
     await fetch(_CHECKOUT_SUPABASE_URL + '/rest/v1/coupon_usage', {
       method: 'POST',
       headers: {
@@ -209,20 +252,20 @@ async function recordCouponUsage(coupon, orderId, email, userId) {
 }
 
 /* ============================================================
-   COUPON CODES LOGIC
+   COUPON CODES
    ============================================================ */
 async function applyCoupon(code) {
-  var msgEl = document.getElementById('coupon-message');
+  var msgEl     = document.getElementById('coupon-message');
   var codeInput = document.getElementById('coupon-code-input');
-  var subtotal = getCartTotal(getCartFromStorage());
+  var subtotal  = getCartTotal(getCartFromStorage());
 
   if (!code) {
     if (msgEl) { msgEl.textContent = 'Please enter a coupon code.'; msgEl.style.color = '#FC8181'; }
     return;
   }
-  
+
   if (msgEl) { msgEl.textContent = 'Checking...'; msgEl.style.color = 'inherit'; }
-  
+
   try {
     var res = await fetch(_CHECKOUT_SUPABASE_URL + '/rest/v1/coupons?code=eq.' + encodeURIComponent(code.toUpperCase().trim()) + '&is_active=eq.true', {
       headers: {
@@ -231,31 +274,31 @@ async function applyCoupon(code) {
         'Accept':        'application/json'
       }
     });
-    
+
     if (!res.ok) throw new Error('Validation failed');
-    var data = await res.json();
+    var data   = await res.json();
     var coupon = data && data.length ? data[0] : null;
-    
+
     if (!coupon) {
       if (msgEl) { msgEl.textContent = 'Invalid or inactive coupon.'; msgEl.style.color = '#FC8181'; }
       return;
     }
-    
+
     if (coupon.expiry_date) {
       var expiry = new Date(coupon.expiry_date);
-      var today = new Date();
+      var today  = new Date();
       today.setHours(0,0,0,0);
       if (expiry < today) {
         if (msgEl) { msgEl.textContent = 'Coupon has expired.'; msgEl.style.color = '#FC8181'; }
         return;
       }
     }
-    
+
     if (coupon.usage_limit && coupon.used_count >= coupon.usage_limit) {
       if (msgEl) { msgEl.textContent = 'Coupon usage limit reached.'; msgEl.style.color = '#FC8181'; }
       return;
     }
-    
+
     var minVal = Number(coupon.min_order_value) || 0;
     if (subtotal < minVal) {
       if (msgEl) { msgEl.textContent = 'Min. order for this coupon is ₹' + minVal.toLocaleString('en-IN') + '.'; msgEl.style.color = '#FC8181'; }
@@ -264,7 +307,7 @@ async function applyCoupon(code) {
 
     if (coupon.per_customer) {
       var session = window.getCustomerSession ? await window.getCustomerSession() : null;
-      var email = '';
+      var email   = '';
       if (session && session.user) email = session.user.email;
       else {
         var emailEl = document.getElementById('ch-email');
@@ -287,30 +330,25 @@ async function applyCoupon(code) {
         }
       }
     }
-    
-    appliedCoupon = coupon;
-    if (coupon.discount_type === 'percentage') {
-      discountAmount = Math.round(subtotal * (Number(coupon.discount_value) / 100));
-    } else {
-      discountAmount = Number(coupon.discount_value) || 0;
-    }
-    
+
+    appliedCoupon  = coupon;
+    discountAmount = coupon.discount_type === 'percentage'
+      ? Math.round(subtotal * (Number(coupon.discount_value) / 100))
+      : Number(coupon.discount_value) || 0;
     if (discountAmount > subtotal) discountAmount = subtotal;
-    
-    var discRow = document.getElementById('summary-discount-row');
+
+    var discRow  = document.getElementById('summary-discount-row');
     var discCode = document.getElementById('summary-discount-code');
-    var discAmt = document.getElementById('summary-discount-amount');
-    var totalEl = document.getElementById('summary-total');
-    
+    var discAmt  = document.getElementById('summary-discount-amount');
+    var totalEl  = document.getElementById('summary-total');
+
     if (discRow && discCode && discAmt && totalEl) {
       discCode.textContent = coupon.code;
-      discAmt.textContent = '-₹' + discountAmount.toLocaleString('en-IN');
+      discAmt.textContent  = '-₹' + discountAmount.toLocaleString('en-IN');
       discRow.style.display = 'flex';
-      
-      var newTotal = subtotal - discountAmount;
-      totalEl.textContent = CURRENCY_SYMBOL + newTotal.toLocaleString('en-IN');
+      totalEl.textContent = CURRENCY_SYMBOL + (subtotal - discountAmount).toLocaleString('en-IN');
     }
-    
+
     if (msgEl) { msgEl.textContent = 'Coupon applied successfully!'; msgEl.style.color = '#48BB78'; }
     if (codeInput) codeInput.disabled = true;
     var applyBtn = document.getElementById('coupon-apply-btn');
@@ -325,20 +363,20 @@ async function applyCoupon(code) {
 }
 
 function removeCoupon() {
-  appliedCoupon = null;
+  appliedCoupon  = null;
   discountAmount = 0;
-  
-  var discRow = document.getElementById('summary-discount-row');
+
+  var discRow   = document.getElementById('summary-discount-row');
   var codeInput = document.getElementById('coupon-code-input');
-  var msgEl = document.getElementById('coupon-message');
-  var applyBtn = document.getElementById('coupon-apply-btn');
-  var totalEl = document.getElementById('summary-total');
-  var subtotal = getCartTotal(getCartFromStorage());
-  
-  if (discRow) discRow.style.display = 'none';
+  var msgEl     = document.getElementById('coupon-message');
+  var applyBtn  = document.getElementById('coupon-apply-btn');
+  var totalEl   = document.getElementById('summary-total');
+  var subtotal  = getCartTotal(getCartFromStorage());
+
+  if (discRow)   discRow.style.display = 'none';
   if (codeInput) { codeInput.value = ''; codeInput.disabled = false; }
-  if (msgEl) msgEl.textContent = '';
-  if (totalEl) totalEl.textContent = CURRENCY_SYMBOL + subtotal.toLocaleString('en-IN');
+  if (msgEl)     msgEl.textContent = '';
+  if (totalEl)   totalEl.textContent = CURRENCY_SYMBOL + subtotal.toLocaleString('en-IN');
   if (applyBtn) {
     applyBtn.textContent = 'Apply';
     applyBtn.style.background = 'var(--color-primary)';
@@ -354,16 +392,11 @@ function removeCoupon() {
    ============================================================ */
 function upsertCustomer(formData) {
   if (typeof window.upsertCustomerInSupabase === 'function') {
-    window.upsertCustomerInSupabase({
-      name:  formData.name,
-      email: formData.email,
-      phone: formData.phone
-    });
+    window.upsertCustomerInSupabase({ name: formData.name, email: formData.email, phone: formData.phone });
     return;
   }
-
   fetch(_CHECKOUT_SUPABASE_URL + '/rest/v1/customers', {
-    method:  'POST',
+    method: 'POST',
     headers: {
       'apikey':        _CHECKOUT_SUPABASE_ANON_KEY,
       'Authorization': 'Bearer ' + _CHECKOUT_SUPABASE_ANON_KEY,
@@ -381,32 +414,26 @@ function upsertCustomer(formData) {
 }
 
 /* ============================================================
-   SHOW ORDER CONFIRMATION
+   SHOW ORDER SUCCESS SCREEN
+   Hides checkout UI; shows the success card with order details.
    ============================================================ */
-function showOrderConfirmation(orderId) {
-  var formSection = document.querySelector('.checkout-form-section');
-  var summary     = document.querySelector('.checkout-summary');
-  var heading     = document.querySelector('.checkout-heading');
-  var sub         = document.querySelector('.checkout-sub');
+function showOrderSuccess(orderId, paymentId) {
+  /* Hide checkout content */
+  var checkoutPage = document.querySelector('.checkout-page');
+  if (checkoutPage) checkoutPage.style.display = 'none';
 
-  if (heading) heading.textContent  = '✅ Order Placed Successfully!';
-  if (sub)     sub.textContent      = 'Thank you for your order. We will contact you shortly.';
+  /* Populate and reveal success screen */
+  var successDiv   = document.getElementById('order-success');
+  var orderIdEl    = document.getElementById('success-order-id');
+  var paymentIdEl  = document.getElementById('success-payment-id');
+  var paymentRow   = document.getElementById('success-payment-row');
 
-  if (formSection) {
-    formSection.innerHTML =
-      '<div style="text-align:center;padding:40px 20px;">'
-      + '<div style="font-size:64px;margin-bottom:16px;">🎉</div>'
-      + '<h2 style="font-size:22px;font-weight:700;color:#1A1A2E;margin-bottom:8px;">Order Confirmed!</h2>'
-      + '<p style="color:#6B7280;margin-bottom:24px;">Your order ID is:</p>'
-      + '<div style="background:#E8F1FB;border-radius:12px;padding:16px 24px;display:inline-block;margin-bottom:24px;">'
-      + '<span style="font-family:monospace;font-size:18px;font-weight:700;color:#1A5FA8;">#' + String(orderId).padStart(6, '0') + '</span>'
-      + '</div>'
-      + '<p style="color:#6B7280;margin-bottom:32px;">We have received your order and will process it shortly. Our team will call you to confirm delivery details.</p>'
-      + '<a href="productss.html" style="display:inline-block;background:#1A5FA8;color:#fff;padding:12px 28px;border-radius:100px;text-decoration:none;font-weight:700;">Continue Shopping</a>'
-      + '</div>';
-  }
+  if (orderIdEl)   orderIdEl.textContent = String(orderId).padStart(6, '0');
+  if (paymentIdEl) paymentIdEl.textContent = paymentId || '';
+  if (paymentRow)  paymentRow.style.display = paymentId ? '' : 'none';
+  if (successDiv)  successDiv.classList.add('show');
 
-  if (summary) summary.style.display = 'none';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 /* ============================================================
@@ -418,6 +445,11 @@ function showCheckoutError(msg) {
   errEl.textContent = msg;
   errEl.classList.add('show');
   errEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  /* Auto-dismiss after 6 seconds */
+  setTimeout(function() {
+    if (errEl) errEl.classList.remove('show');
+  }, 6000);
 }
 
 function hideCheckoutError() {
@@ -430,15 +462,13 @@ function setSubmitLoading(isLoading) {
   if (!btn) return;
   btn.disabled = isLoading;
   btn.classList.toggle('loading', isLoading);
-  
+
   var radioCod = document.getElementById('pay-cod');
-  var isCod = radioCod && radioCod.checked;
-  
-  if (isLoading) {
-    btn.textContent = 'Processing…';
-  } else {
-    btn.textContent = isCod ? 'Place Order (COD)' : 'Place Order & Pay';
-  }
+  var isCod    = radioCod && radioCod.checked;
+
+  btn.textContent = isLoading
+    ? 'Processing…'
+    : (isCod ? 'Place Order (COD)' : 'Place Order & Pay');
 }
 
 /* ============================================================
@@ -447,18 +477,18 @@ function setSubmitLoading(isLoading) {
 function initCheckout() {
   renderOrderSummary();
 
-  // 1. Pre-fill address if logged in
+  /* 1. Pre-fill address if logged in */
   if (window.getCustomerSession) {
     window.getCustomerSession().then(async function(session) {
       if (session && session.user) {
         var user = session.user;
-        var sb = window.getCustomerSupabase();
-        
-        var pr = await sb.from('customer_profiles').select('*').eq('user_id', user.id).single();
+        var sb   = window.getCustomerSupabase();
+
+        var pr   = await sb.from('customer_profiles').select('*').eq('user_id', user.id).single();
         var profile = pr.data || {};
-        
+
         var addrRes = await sb.from('customer_addresses').select('*').eq('user_id', user.id).eq('is_default', true).single();
-        var addr = addrRes.data || {};
+        var addr    = addrRes.data || {};
 
         var nameEl    = document.getElementById('ch-name');
         var phoneEl   = document.getElementById('ch-phone');
@@ -468,23 +498,23 @@ function initCheckout() {
         var stateEl   = document.getElementById('ch-state');
         var pincodeEl = document.getElementById('ch-pincode');
 
-        if (emailEl) emailEl.value = user.email || '';
-        if (nameEl && !nameEl.value)   nameEl.value = profile.full_name || (user.user_metadata && user.user_metadata.full_name) || '';
-        if (phoneEl && !phoneEl.value) phoneEl.value = profile.phone || addr.phone || '';
+        if (emailEl)   emailEl.value   = user.email || '';
+        if (nameEl    && !nameEl.value)    nameEl.value    = profile.full_name || (user.user_metadata && user.user_metadata.full_name) || '';
+        if (phoneEl   && !phoneEl.value)   phoneEl.value   = profile.phone || addr.phone || '';
         if (addressEl && !addressEl.value) addressEl.value = addr.address_line || '';
-        if (cityEl && !cityEl.value) cityEl.value = addr.city || '';
-        if (stateEl && !stateEl.value) stateEl.value = addr.state || '';
+        if (cityEl    && !cityEl.value)    cityEl.value    = addr.city || '';
+        if (stateEl   && !stateEl.value)   stateEl.value   = addr.state || '';
         if (pincodeEl && !pincodeEl.value) pincodeEl.value = addr.pincode || '';
       }
     });
   }
 
-  // 2. Wire Payment Option selection highlights
-  var radioPay = document.getElementById('pay-razorpay');
-  var radioCod = document.getElementById('pay-cod');
-  var labelPay = document.getElementById('label-pay-razorpay');
-  var labelCod = document.getElementById('label-pay-cod');
-  var submitBtn = document.getElementById('checkout-submit-btn');
+  /* 2. Payment option highlight on radio change */
+  var radioPay   = document.getElementById('pay-razorpay');
+  var radioCod   = document.getElementById('pay-cod');
+  var labelPay   = document.getElementById('label-pay-razorpay');
+  var labelCod   = document.getElementById('label-pay-cod');
+  var submitBtn  = document.getElementById('checkout-submit-btn');
 
   function updatePaymentOptionUI() {
     if (radioPay && radioPay.checked) {
@@ -501,17 +531,16 @@ function initCheckout() {
   if (radioPay) radioPay.addEventListener('change', updatePaymentOptionUI);
   if (radioCod) radioCod.addEventListener('change', updatePaymentOptionUI);
 
-  // 3. Wire Coupon Code Apply Button
-  var applyBtn = document.getElementById('coupon-apply-btn');
+  /* 3. Coupon apply button */
+  var applyBtn  = document.getElementById('coupon-apply-btn');
   var codeInput = document.getElementById('coupon-code-input');
   if (applyBtn) {
     applyBtn.onclick = function() {
-      var val = codeInput ? codeInput.value : '';
-      applyCoupon(val);
+      applyCoupon(codeInput ? codeInput.value : '');
     };
   }
 
-  // 4. Form Submit
+  /* 4. Form submit */
   var form = document.getElementById('checkout-form');
   if (!form) return;
 
@@ -539,82 +568,124 @@ function initCheckout() {
 
     if (!validateCheckoutForm(formData)) return;
 
-    var gateway = 'razorpay';
+    var gateway    = 'razorpay';
     var radioCodEl = document.getElementById('pay-cod');
     if (radioCodEl && radioCodEl.checked) gateway = 'cod';
 
     setSubmitLoading(true);
 
     var session = window.getCustomerSession ? await window.getCustomerSession() : null;
-    var userId = session && session.user ? session.user.id : null;
+    var userId  = session && session.user ? session.user.id : null;
+
+    var couponCode = appliedCoupon ? appliedCoupon.code : null;
 
     try {
+      /* ── Save order to Supabase first (status = 'pending') ── */
+      var order = await saveOrderToSupabase(formData, gateway, couponCode, discountAmount, userId);
+      var savedOrderId = order.id;
+
+      /* ── COD Flow ── */
       if (gateway === 'cod') {
-        var order = await saveOrderToSupabase(formData, 'cod', appliedCoupon ? appliedCoupon.code : null, discountAmount, userId);
-        if (appliedCoupon) {
-          await recordCouponUsage(appliedCoupon, order.id, formData.email, userId);
-        }
+        await updateOrderPayment(savedOrderId, {
+          status:         'confirmed',
+          payment_status: 'cod_pending'
+        });
+        if (appliedCoupon) await recordCouponUsage(appliedCoupon, savedOrderId, formData.email, userId);
         upsertCustomer(formData);
         clearCart();
-        showOrderConfirmation(order.id || '');
-      } else {
-        // Razorpay checkout flow
-        var order = await saveOrderToSupabase(formData, 'razorpay', appliedCoupon ? appliedCoupon.code : null, discountAmount, userId);
-        var finalAmount = getCartTotal(getCartFromStorage()) - discountAmount;
-        if (finalAmount < 0) finalAmount = 0;
-
-        var options = {
-          "key": (typeof RAZORPAY_KEY_ID !== 'undefined' && RAZORPAY_KEY_ID !== 'rzp_test_REPLACE_ME') ? RAZORPAY_KEY_ID : 'rzp_test_REPLACE_ME',
-          "amount": finalAmount * 100,
-          "currency": "INR",
-          "name": "Azzurra",
-          "description": "Payment for Order #" + order.id,
-          "handler": async function (response) {
-            try {
-              // Update order status to 'confirmed' and save transaction id
-              await fetch(_CHECKOUT_SUPABASE_URL + '/rest/v1/orders?id=eq.' + order.id, {
-                method: 'PATCH',
-                headers: {
-                  'apikey':        _CHECKOUT_SUPABASE_ANON_KEY,
-                  'Authorization': 'Bearer ' + _CHECKOUT_SUPABASE_ANON_KEY,
-                  'Content-Type':  'application/json'
-                },
-                body: JSON.stringify({ status: 'confirmed', transaction_id: response.razorpay_payment_id })
-              });
-              if (appliedCoupon) {
-                await recordCouponUsage(appliedCoupon, order.id, formData.email, userId);
-              }
-              upsertCustomer(formData);
-              clearCart();
-              showOrderConfirmation(order.id);
-            } catch(err) {
-              alert('Payment succeeded but order confirmation failed. Please contact support. Ref: ' + response.razorpay_payment_id);
-            }
-          },
-          "prefill": {
-            "name": formData.name,
-            "email": formData.email,
-            "contact": formData.phone
-          },
-          "theme": {
-            "color": "#1A5FA8"
-          },
-          "modal": {
-            "ondismiss": function() {
-              setSubmitLoading(false);
-            }
-          }
-        };
-        var rzp = new Razorpay(options);
-        rzp.open();
+        if (typeof updateCartBadge === 'function') updateCartBadge();
+        showOrderSuccess(savedOrderId, null);
+        return;
       }
-    } catch (err) {
+
+      /* ── Razorpay Flow ── */
+      var finalAmount = getCartTotal(getCartFromStorage()) - discountAmount;
+      if (finalAmount < 0) finalAmount = 0;
+
+      /* Safety: RAZORPAY_KEY_ID must be defined in config.js */
+      var rzpKey = (typeof RAZORPAY_KEY_ID !== 'undefined' && RAZORPAY_KEY_ID && RAZORPAY_KEY_ID !== 'rzp_test_REPLACE_ME')
+        ? RAZORPAY_KEY_ID
+        : null;
+
+      if (!rzpKey) {
+        throw new Error('Razorpay Key ID is not configured. Open config.js and set RAZORPAY_KEY_ID.');
+      }
+
+      if (typeof Razorpay === 'undefined') {
+        throw new Error('Razorpay SDK failed to load. Please check your internet connection and try again.');
+      }
+
+      var options = {
+        key:         rzpKey,
+        amount:      Math.round(finalAmount * 100),   /* paise */
+        currency:    'INR',
+        name:        'Azzurra Pharmaconutrition',
+        description: 'Clinical Nutrition Products',
+        prefill: {
+          name:    formData.name,
+          email:   formData.email,
+          contact: formData.phone
+        },
+        theme: {
+          color: '#1A5FA8'
+        },
+        handler: async function(response) {
+          /* Payment succeeded */
+          try {
+            await updateOrderPayment(savedOrderId, {
+              status:              'confirmed',
+              payment_status:      'paid',
+              razorpay_payment_id: response.razorpay_payment_id
+            });
+            if (appliedCoupon) await recordCouponUsage(appliedCoupon, savedOrderId, formData.email, userId);
+            upsertCustomer(formData);
+            clearCart();
+            if (typeof updateCartBadge === 'function') updateCartBadge();
+            showOrderSuccess(savedOrderId, response.razorpay_payment_id);
+          } catch(err) {
+            /* Payment went through but DB update failed — show partial success */
+            showOrderSuccess(savedOrderId, response.razorpay_payment_id);
+            console.error('[Checkout] Post-payment update failed:', err);
+          }
+        },
+        modal: {
+          ondismiss: async function() {
+            /* User closed the modal without paying */
+            try {
+              await updateOrderPayment(savedOrderId, {
+                status:         'cancelled',
+                payment_status: 'failed'
+              });
+            } catch(_) { /* non-critical */ }
+            setSubmitLoading(false);
+            showCheckoutError('Payment cancelled. Your order was not placed.');
+          }
+        }
+      };
+
+      var rzp = new Razorpay(options);
+
+      rzp.on('payment.failed', async function(response) {
+        try {
+          await updateOrderPayment(savedOrderId, {
+            status:         'payment_failed',
+            payment_status: 'failed'
+          });
+        } catch(_) { /* non-critical */ }
+        setSubmitLoading(false);
+        showCheckoutError('Payment failed: ' + (response.error && response.error.description ? response.error.description : 'Unknown error'));
+      });
+
+      rzp.open();
+      /* Note: setSubmitLoading(false) is handled inside handler / ondismiss / payment.failed */
+
+    } catch(err) {
       showCheckoutError('Could not place order: ' + err.message + '. Please try again or contact us.');
       setSubmitLoading(false);
     }
   });
 
-  // Clear field errors on input
+  /* 5. Clear field error styling on input */
   form.querySelectorAll('.form-input').forEach(function(input) {
     input.addEventListener('input', function() {
       this.classList.remove('error');

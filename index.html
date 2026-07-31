@@ -1,6 +1,7 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
+  <base href="./">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Azzurra Pharmaconutrition Pvt. Ltd. — Nurturing Human Lives</title>
@@ -33,46 +34,55 @@
       cursor: pointer;
     }
   </style>
+  <script src="assets/js/env-config.js"></script>
 </head>
-<body>
+<body class="has-main-nav">
 
   <!-- ========================================================
        NAVBAR
        Fixed, transparent on hero; white + shadow on scroll
        ======================================================== -->
-  <nav class="navbar" id="navbar" aria-label="Main navigation">
-    <!-- Logo -->
-    <a href="index.html" class="navbar__logo" aria-label="Azzurra Home">
-      <span class="navbar__logo-name">AZZURRA</span>
-      <span class="navbar__logo-tag">Nurturing Human Lives</span>
-    </a>
-    <!-- Desktop links -->
-    <ul class="navbar__links" role="list">
-      <li><a href="index.html"    class="navbar__link active">Home</a></li>
-      <li><a href="about.html"    class="navbar__link">About</a></li>
-      <li><a href="science.html"  class="navbar__link">Science</a></li>
-      <li><a href="productss.html" class="navbar__link navbar__link--shop">Shop</a></li>
-      <li><a href="contact.html"  class="navbar__link">Contact</a></li>
-      <li><a href="customer-auth.html" class="navbar__account-link navbar__link" aria-label="My Account" title="My Account">&#128100;</a></li>
-    </ul>
-
-    <!-- Mobile hamburger button -->
-    <button class="navbar__hamburger" id="navbar-hamburger" aria-label="Open menu" aria-expanded="false">
-      <span></span><span></span><span></span>
-    </button>
-  </nav>
-
-  <!-- Mobile drawer -->
-  <div class="navbar__overlay" id="navbar-overlay"></div>
-
-  <nav class="navbar__drawer" id="navbar-drawer" aria-label="Mobile navigation">
-    <button class="navbar__drawer-close" id="drawer-close" aria-label="Close menu">&times;</button>
-    <a href="index.html"     class="navbar__drawer-link">Home</a>
-    <a href="about.html"     class="navbar__drawer-link">About</a>
-    <a href="science.html"   class="navbar__drawer-link">Science</a>
-    <a href="productss.html" class="navbar__drawer-link" style="color:var(--color-primary);font-weight:700;">Shop</a>
-    <a href="contact.html"   class="navbar__drawer-link">Contact</a>
-    <a href="customer-auth.html" class="navbar__drawer-link">&#128100; My Account</a>
+  <nav class="main-nav" id="mainNav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">
+        <div class="logo-text">AZZURRA</div>
+        <div class="logo-tagline">NURTURING HUMAN LIVES</div>
+      </a>
+      <div class="nav-right">
+        <ul class="nav-links" id="navLinks">
+          <li><a href="index.html" data-page="home" class="active">Home</a></li>
+          <li><a href="about.html" data-page="about">About</a></li>
+          <li><a href="science.html" data-page="science">Science</a></li>
+          <li><a href="events.html" data-page="events">Events</a></li>
+          <li><a href="contact.html" data-page="contact">Contact</a></li>
+        </ul>
+        <div class="nav-actions">
+          <a href="cart.html" class="nav-icon-btn nav-cart" aria-label="Cart">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+            <span class="cart-badge" id="cartBadge">0</span>
+          </a>
+          <a href="customer-auth.html" class="nav-icon-btn nav-profile" id="navProfileBtn" aria-label="My Account">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </a>
+          <a href="productss.html" class="nav-shop-btn">Shop</a>
+        </div>
+        <button class="nav-hamburger" id="navHamburger" aria-label="Menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+    <div class="nav-mobile-menu" id="navMobileMenu">
+      <ul>
+        <li><a href="index.html" class="active">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="science.html">Science</a></li>
+        <li><a href="events.html">Events</a></li>
+        <li><a href="contact.html">Contact</a></li>
+        <li><a href="productss.html">Shop</a></li>
+        <li><a href="customer-auth.html">My Account</a></li>
+        <li><a href="cart.html">Cart</a></li>
+      </ul>
+    </div>
   </nav>
 
 
@@ -182,6 +192,20 @@
   </section>
 
   <div class="section-divider"></div>
+
+  <!-- ========================================================
+       UPCOMING EVENTS BANNER (shown only if featured events exist)
+       Fetched from Supabase: events WHERE is_featured=true AND is_active=true AND date >= today
+       Hidden by default; JS reveals it only when data exists.
+       ======================================================== -->
+  <section id="homepage-events-banner" class="events-banner-strip" style="display:none;" aria-label="Upcoming Events">
+    <div class="events-banner-inner">
+      <div id="events-banner-carousel">
+        <!-- Slides injected by JS -->
+      </div>
+      <div class="events-banner-dots" id="events-banner-dots" aria-hidden="true"></div>
+    </div>
+  </section>
 
   <!-- ========================================================
        SECTION 2 — STATS BAR
@@ -918,5 +942,96 @@
     }
   }());
   </script>
+
+  <script>
+  /* ============================================================
+     HOMEPAGE EVENTS BANNER
+     Fetch featured events and render the banner strip.
+     Hidden completely if no featured events exist.
+  ============================================================ */
+  (async function loadFeaturedEvents() {
+    var SUPA_URL = 'https://ilduyhuvpiqhvbnocqxf.supabase.co';
+    var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlsZHV5aHV2cGlxaHZibm9jcXhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4MTMxNTUsImV4cCI6MjA5NjM4OTE1NX0.uuC8dKajsnSSaiTx_wxNeapKPl4EV20s5phcRS-TaZg';
+
+    try {
+      var today = new Date().toISOString().split('T')[0];
+      var url = SUPA_URL + '/rest/v1/events?is_featured=eq.true&is_active=eq.true&date=gte.' + today + '&order=date.asc&limit=3';
+      var res = await fetch(url, {
+        headers: {
+          'apikey': SUPA_KEY,
+          'Authorization': 'Bearer ' + SUPA_KEY,
+          'Accept': 'application/json'
+        }
+      });
+      if (!res.ok) return;
+      var events = await res.json();
+      if (!events || events.length === 0) return;
+
+      // Render slides
+      var carousel = document.getElementById('events-banner-carousel');
+      var dotsContainer = document.getElementById('events-banner-dots');
+      var strip = document.getElementById('homepage-events-banner');
+      if (!carousel || !strip) return;
+
+      function formatDate(d) {
+        if (!d) return '';
+        var dt = new Date(d + 'T00:00:00');
+        return dt.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+      }
+
+      events.forEach(function(ev, i) {
+        var slide = document.createElement('div');
+        slide.className = 'events-banner-slide' + (i === 0 ? ' active' : '');
+        slide.innerHTML =
+          '<span class="events-banner-label">🗓 UPCOMING EVENT</span>' +
+          '<div class="events-banner-title">' + (ev.title || '') + '</div>' +
+          '<div class="events-banner-meta">' +
+          (ev.date ? '📅 ' + formatDate(ev.date) : '') +
+          (ev.city ? ' &nbsp;·&nbsp; 📍 ' + ev.city : '') +
+          '</div>' +
+          '<a href="events.html" class="events-banner-btn">Learn More →</a>';
+        carousel.appendChild(slide);
+
+        // Dot
+        if (events.length > 1) {
+          var dot = document.createElement('button');
+          dot.className = 'events-banner-dot' + (i === 0 ? ' active' : '');
+          dot.setAttribute('aria-label', 'Event ' + (i + 1));
+          dot.dataset.idx = i;
+          dotsContainer.appendChild(dot);
+        }
+      });
+
+      // Show the banner
+      strip.style.display = '';
+
+      // Auto-rotate if multiple events
+      if (events.length > 1) {
+        var current = 0;
+        var slides = carousel.querySelectorAll('.events-banner-slide');
+        var dots = dotsContainer.querySelectorAll('.events-banner-dot');
+
+        function goTo(idx) {
+          slides[current].classList.remove('active');
+          dots[current] && dots[current].classList.remove('active');
+          current = idx;
+          slides[current].classList.add('active');
+          dots[current] && dots[current].classList.add('active');
+        }
+
+        dots.forEach(function(dot) {
+          dot.addEventListener('click', function() { goTo(parseInt(this.dataset.idx, 10)); });
+        });
+
+        setInterval(function() {
+          goTo((current + 1) % slides.length);
+        }, 5000);
+      }
+    } catch(e) {
+      console.warn('[Azzurra] Events banner load error:', e);
+    }
+  }());
+  </script>
+
 </body>
 </html>
