@@ -1,19 +1,16 @@
 // ============================================================
 // AZZURRA — Site Configuration
-// All credentials are loaded from assets/js/env-config.js
-// which is gitignored. Copy env-config.example.js → env-config.js
-// and fill in your real values.
+// Credentials are hardcoded here (anon key is safe in frontend).
+// This is a personal static site — no server-side env available.
 // ============================================================
 
-// Keys are loaded from assets/js/env-config.js (gitignored)
-// Copy env-config.example.js to env-config.js and fill in your values.
-const SUPABASE_URL      = (window.__ENV__ && window.__ENV__.SUPABASE_URL)      || '';
-const SUPABASE_ANON_KEY = (window.__ENV__ && window.__ENV__.SUPABASE_ANON_KEY) || '';
-const RAZORPAY_KEY_ID   = (window.__ENV__ && window.__ENV__.RAZORPAY_KEY_ID)   || '';
+const SUPABASE_URL      = 'https://ilduyhuvpiqhvbnocqxf.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlsZHV5aHV2cGlxaHZibm9jcXhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4MTMxNTUsImV4cCI6MjA5NjM4OTE1NX0.uuC8dKajsnSSaiTx_wxNeapKPl4EV20s5phcRS-TaZg';
+const RAZORPAY_KEY_ID   = 'rzp_live_toPP8p3jJHt4KU';
 
 const SITE_CONFIG = {
   currency:       'INR',
   currencySymbol: '₹',
   checkoutUrl:    'checkout.html',
-  siteName:       'Azzurra Pharmaconutrition',
+  siteName:       'Azzurra Pharmaconutrition'
 };

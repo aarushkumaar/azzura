@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <base href="./">
@@ -8,6 +8,8 @@
   <meta name="description" content="Manage your Azzurra account, orders, addresses and wishlist." />
   <meta name="robots" content="noindex" />
   <link rel="stylesheet" href="assets/css/style.css" />
+  <!-- config.js MUST be first — defines SUPABASE_URL, SUPABASE_ANON_KEY -->
+  <script src="config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/js/customer-auth.js"></script>
   <style>
@@ -77,7 +79,7 @@
     .wishlist-grid { display: flex; flex-direction: column; gap: 12px; }
     .wishlist-card { background: #f8fbff; border: 1.5px solid #D1E3F8; border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; gap: 16px; }
   </style>
-  <script src="assets/js/env-config.js"></script>
+
 </head>
 <body class="has-main-nav">
   <nav class="main-nav" id="mainNav">
