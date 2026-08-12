@@ -459,7 +459,7 @@ select {
    Used on every public page. Old .navbar styles kept for admin.
    ============================================================ */
 body.has-main-nav {
-  padding-top: 68px;
+  padding-top: 100px;
 }
 
 .main-nav {
@@ -483,7 +483,7 @@ body.has-main-nav {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 24px;
-  height: 68px;
+  height: 100px;
   display: flex;
   align-items: center;
   justify-content: space-between;
