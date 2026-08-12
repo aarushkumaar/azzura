@@ -127,6 +127,13 @@ function validateCheckoutForm(data) {
    SAVE ORDER TO SUPABASE (uses JS SDK client)
    Full payload — all columns now exist in the orders table.
    ============================================================ */
+function generateUUID() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
 async function saveOrderToSupabase(formData, paymentMethod, couponCode, discountAmt, userId) {
   var cart     = getCartFromStorage();
   var subtotal = getCartTotal(cart);
@@ -149,7 +156,7 @@ async function saveOrderToSupabase(formData, paymentMethod, couponCode, discount
       image_url: item.image_url || item.imagePath || ''
     };
   });
-
+  
   /* ── Full payload — all these columns now exist in public.orders ── */
   var payload = {
     customer_name:        formData.name,
@@ -168,50 +175,115 @@ async function saveOrderToSupabase(formData, paymentMethod, couponCode, discount
     razorpay_payment_id:  null
   };
 
-  /* ── Use Supabase JS client (avoids 406 header issues) ── */
-  if (_checkoutSb) {
-    var r = await _checkoutSb
+  /* ── 1. Determine active client & token ── */
+  var activeSb = _checkoutSb;
+  var accessToken = _CHECKOUT_SUPABASE_ANON_KEY;
+
+  if (typeof window.getCustomerSupabase === 'function') {
+    var sb = window.getCustomerSupabase();
+    if (sb) {
+      activeSb = sb;
+      var session = await window.getCustomerSession();
+      if (session && session.access_token) {
+        accessToken = session.access_token;
+      }
+    }
+  }
+
+  var savedOrder = null;
+
+  /* ── 2. Create Order ── */
+  if (activeSb) {
+    var r = await activeSb
       .from('orders')
       .insert([payload])
       .select()
       .single();
     if (r.error) throw new Error('Order save failed: ' + r.error.message);
-    return r.data;
+    savedOrder = r.data;
+  } else {
+    /* ── Fallback: raw fetch (same result, different client) ── */
+    var res = await fetch(_CHECKOUT_SUPABASE_URL + '/rest/v1/orders', {
+      method:  'POST',
+      headers: {
+        'apikey':        _CHECKOUT_SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + accessToken,
+        'Content-Type':  'application/json',
+        'Accept':        'application/json',
+        'Prefer':        'return=representation'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      var errText = await res.text();
+      throw new Error('Order save failed (' + res.status + '): ' + errText);
+    }
+    var data = await res.json();
+    savedOrder = Array.isArray(data) ? data[0] : data;
   }
 
-  /* ── Fallback: raw fetch (same result, different client) ── */
-  var res = await fetch(_CHECKOUT_SUPABASE_URL + '/rest/v1/orders', {
-    method:  'POST',
-    headers: {
-      'apikey':        _CHECKOUT_SUPABASE_ANON_KEY,
-      'Authorization': 'Bearer ' + _CHECKOUT_SUPABASE_ANON_KEY,
-      'Content-Type':  'application/json',
-      'Accept':        'application/json',
-      'Prefer':        'return=representation'
-    },
-    body: JSON.stringify(payload)
+  if (!savedOrder) throw new Error('Order save failed: No data returned');
+
+  /* ── 3. Create Order Items ── */
+  var orderItemsPayload = cart.map(function(item) {
+    var qty = Number(item.quantity || item.qty || 1);
+    var price = Number(item.price || item.unit_price || 0);
+    return {
+      order_id:     savedOrder.id,
+      product_id:   item.id || item.product_id,
+      product_name: item.name || 'Product',
+      quantity:     qty,
+      unit_price:   price,
+      total_price:  qty * price
+    };
   });
 
-  if (!res.ok) {
-    var errText = await res.text();
-    throw new Error('Order save failed (' + res.status + '): ' + errText);
+  if (activeSb) {
+    var itemsRes = await activeSb.from('order_items').insert(orderItemsPayload);
+    if (itemsRes.error) console.error('Order items save failed:', itemsRes.error.message);
+  } else {
+    await fetch(_CHECKOUT_SUPABASE_URL + '/rest/v1/order_items', {
+      method:  'POST',
+      headers: {
+        'apikey':        _CHECKOUT_SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + accessToken,
+        'Content-Type':  'application/json'
+      },
+      body: JSON.stringify(orderItemsPayload)
+    }).catch(function(e) { console.error('Order items fallback save failed:', e); });
   }
 
-  var data = await res.json();
-  return Array.isArray(data) ? data[0] : data;
+  return savedOrder;
 }
 
 /* ── Update order after payment outcome ── */
 async function updateOrderPayment(orderId, fields) {
-  if (_checkoutSb) {
-    await _checkoutSb.from('orders').update(fields).eq('id', orderId);
+  var activeSb = _checkoutSb;
+  var accessToken = _CHECKOUT_SUPABASE_ANON_KEY;
+
+  if (typeof window.getCustomerSupabase === 'function') {
+    var sb = window.getCustomerSupabase();
+    if (sb) {
+      activeSb = sb;
+      if (typeof window.getCustomerSession === 'function') {
+        var session = await window.getCustomerSession();
+        if (session && session.access_token) {
+          accessToken = session.access_token;
+        }
+      }
+    }
+  }
+
+  if (activeSb) {
+    await activeSb.from('orders').update(fields).eq('id', orderId);
     return;
   }
   await fetch(_CHECKOUT_SUPABASE_URL + '/rest/v1/orders?id=eq.' + orderId, {
     method: 'PATCH',
     headers: {
       'apikey':        _CHECKOUT_SUPABASE_ANON_KEY,
-      'Authorization': 'Bearer ' + _CHECKOUT_SUPABASE_ANON_KEY,
+      'Authorization': 'Bearer ' + accessToken,
       'Content-Type':  'application/json'
     },
     body: JSON.stringify(fields)
@@ -221,33 +293,51 @@ async function updateOrderPayment(orderId, fields) {
 /* ── Record coupon usage ── */
 async function recordCouponUsage(coupon, orderId, email, userId) {
   try {
+    var accessToken = _CHECKOUT_SUPABASE_ANON_KEY;
+    if (typeof window.getCustomerSession === 'function') {
+      var session = await window.getCustomerSession();
+      if (session && session.access_token) accessToken = session.access_token;
+    }
+
     await fetch(_CHECKOUT_SUPABASE_URL + '/rest/v1/coupons?id=eq.' + coupon.id, {
       method: 'PATCH',
       headers: {
         'apikey':        _CHECKOUT_SUPABASE_ANON_KEY,
-        'Authorization': 'Bearer ' + _CHECKOUT_SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + accessToken,
         'Content-Type':  'application/json'
       },
       body: JSON.stringify({ used_count: (coupon.used_count || 0) + 1 })
     });
 
-    await fetch(_CHECKOUT_SUPABASE_URL + '/rest/v1/coupon_usage', {
-      method: 'POST',
-      headers: {
-        'apikey':        _CHECKOUT_SUPABASE_ANON_KEY,
-        'Authorization': 'Bearer ' + _CHECKOUT_SUPABASE_ANON_KEY,
-        'Content-Type':  'application/json'
-      },
-      body: JSON.stringify({
-        coupon_id:      coupon.id,
-        coupon_code:    coupon.code,
-        order_id:       orderId,
-        customer_email: email,
-        user_id:        userId
-      })
-    });
-  } catch(e) {
-    console.warn('[Azzurra] Coupon usage recording failed:', e);
+    var payload = {
+      coupon_id:      coupon.id,
+      coupon_code:    coupon.code,
+      order_id:       orderId,
+      customer_email: email,
+      user_id:        userId || null
+    };
+
+    var activeSb = _checkoutSb;
+    if (typeof window.getCustomerSupabase === 'function') {
+      var sb = window.getCustomerSupabase();
+      if (sb) activeSb = sb;
+    }
+
+    if (activeSb) {
+      await activeSb.from('coupon_usage').insert([payload]);
+    } else {
+      await fetch(_CHECKOUT_SUPABASE_URL + '/rest/v1/coupon_usage', {
+        method:  'POST',
+        headers: {
+          'apikey':        _CHECKOUT_SUPABASE_ANON_KEY,
+          'Authorization': 'Bearer ' + accessToken,
+          'Content-Type':  'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+    }
+  } catch (err) {
+    console.error('Failed to record coupon usage:', err);
   }
 }
 
@@ -615,10 +705,30 @@ function initCheckout() {
         throw new Error('Razorpay SDK failed to load. Please check your internet connection and try again.');
       }
 
+      /* 1. Request secure Razorpay Order ID from backend */
+      var rzpOrderRes = await fetch(_CHECKOUT_SUPABASE_URL + '/functions/v1/createRazorpayOrder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId: savedOrderId,
+          amount: finalAmount,
+          currency: 'INR'
+        })
+      });
+
+      if (!rzpOrderRes.ok) {
+        var errText = await rzpOrderRes.text();
+        throw new Error('Failed to create secure Razorpay order: ' + errText);
+      }
+      var rzpOrderData = await rzpOrderRes.json();
+      var razorpayOrderId = rzpOrderData.razorpayOrderId;
+
+      /* 2. Configure Razorpay */
       var options = {
         key:         rzpKey,
         amount:      Math.round(finalAmount * 100),   /* paise */
         currency:    'INR',
+        order_id:    razorpayOrderId,                 /* REQUIRED FOR SUCCESSFUL CHECKOUT */
         name:        'Azzurra Pharmaconutrition',
         description: 'Clinical Nutrition Products',
         prefill: {
@@ -630,22 +740,34 @@ function initCheckout() {
           color: '#1A5FA8'
         },
         handler: async function(response) {
-          /* Payment succeeded */
+          /* Payment succeeded on frontend, now verify securely on backend */
           try {
-            await updateOrderPayment(savedOrderId, {
-              status:              'confirmed',
-              payment_status:      'paid',
-              razorpay_payment_id: response.razorpay_payment_id
+            var verifyRes = await fetch(_CHECKOUT_SUPABASE_URL + '/functions/v1/verifyPayment', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id:   response.razorpay_order_id,
+                razorpay_signature:  response.razorpay_signature,
+                orderId:             savedOrderId
+              })
             });
+
+            if (!verifyRes.ok) {
+              var vErr = await verifyRes.text();
+              throw new Error('Payment verification failed: ' + vErr);
+            }
+
+            /* Signature valid & DB updated by Edge Function */
             if (appliedCoupon) await recordCouponUsage(appliedCoupon, savedOrderId, formData.email, userId);
             upsertCustomer(formData);
             clearCart();
             if (typeof updateCartBadge === 'function') updateCartBadge();
             showOrderSuccess(savedOrderId, response.razorpay_payment_id);
           } catch(err) {
-            /* Payment went through but DB update failed — show partial success */
-            showOrderSuccess(savedOrderId, response.razorpay_payment_id);
-            console.error('[Checkout] Post-payment update failed:', err);
+            console.error('[Checkout] Post-payment verification failed:', err);
+            showCheckoutError(err.message || 'Payment verification failed. Please contact support.');
+            setSubmitLoading(false);
           }
         },
         modal: {

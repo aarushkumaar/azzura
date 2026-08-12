@@ -56,37 +56,41 @@ jobs:
         uses: actions/deploy-pages@v4
 
   # ── Job 2: Deploy Supabase Edge Functions ──────────────────
-  # Uncomment and configure once you've added the secrets above.
-  # deploy-functions:
-  #   name: Deploy Edge Functions
-  #   runs-on: ubuntu-latest
-  #   needs: []   # Runs in parallel with deploy-pages
-  #
-  #   steps:
-  #     - name: Checkout repository
-  #       uses: actions/checkout@v4
-  #
-  #     - name: Setup Supabase CLI
-  #       uses: supabase/setup-cli@v1
-  #       with:
-  #         version: latest
-  #
-  #     - name: Link Supabase project
-  #       run: supabase link --project-ref ${{ secrets.SUPABASE_PROJECT_ID }}
-  #       env:
-  #         SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-  #
-  #     - name: Deploy createOrder function
-  #       run: supabase functions deploy createOrder --no-verify-jwt
-  #       env:
-  #         SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-  #
-  #     - name: Deploy verifypayment function
-  #       run: supabase functions deploy verifypayment --no-verify-jwt
-  #       env:
-  #         SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-  #
-  #     - name: Deploy initiateRefund function
-  #       run: supabase functions deploy initiateRefund --no-verify-jwt
-  #       env:
-  #         SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+  deploy-functions:
+    name: Deploy Edge Functions
+    runs-on: ubuntu-latest
+    needs: []   # Runs in parallel with deploy-pages
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Link Supabase project
+        run: supabase link --project-ref ${{ secrets.SUPABASE_PROJECT_ID }}
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      - name: Deploy createRazorpayOrder function
+        run: supabase functions deploy createRazorpayOrder --no-verify-jwt
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      - name: Deploy createOrder function
+        run: supabase functions deploy createOrder --no-verify-jwt
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      - name: Deploy verifyPayment function
+        run: supabase functions deploy verifyPayment --no-verify-jwt
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      - name: Deploy initiateRefund function
+        run: supabase functions deploy initiateRefund --no-verify-jwt
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}

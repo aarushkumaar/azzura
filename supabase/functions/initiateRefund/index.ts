@@ -134,7 +134,7 @@ serve(async (req: Request) => {
       status: 200,
     });
 
-  } catch (err) {
+  } catch (err: any) {
     console.error('[initiateRefund]', err);
     return errorResponse(err.message, 500);
   }
