@@ -30,10 +30,9 @@ file_size_limit = "50MiB"
 
 [auth]
 enabled = true
-site_url = "http://localhost:5500"
+site_url = "https://nazzura.com"
 additional_redirect_urls = [
-  "http://localhost:5500/admin.html",
-  "https://YOUR_PRODUCTION_DOMAIN/admin.html"
+  "https://nazzura.com/admin.html"
 ]
 jwt_expiry = 3600
 enable_signup = true
@@ -41,7 +40,7 @@ enable_signup = true
 [auth.email]
 enable_signup = true
 double_confirm_changes = true
-enable_confirmations = true
+enable_confirmations = false
 
 # ---- Edge Functions ----
 [functions.createOrder]

@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    AZZURRA — Customer Dashboard JavaScript (customer-dashboard.js)
    Handles all data operations for the customer dashboard page.
    Requires: supabase CDN + customer-auth.js loaded first.
@@ -29,12 +29,30 @@ window.CustomerDashboard = (function () {
       return;
     }
     _user = session.user;
+
+    // Ensure profile row exists for OAuth users (and others)
+    var name = (_user.user_metadata && _user.user_metadata.full_name) || '';
+    if (name || _user.email) {
+      try {
+        var profileRes = await _sb.from('customer_profiles').select('user_id').eq('user_id', _user.id).single();
+        if (!profileRes.data) {
+          await _sb.from('customer_profiles').insert({
+            user_id:    _user.id,
+            full_name:  name || _user.email,
+            updated_at: new Date().toISOString()
+          });
+        }
+      } catch (e) {
+        // Ignored: profile likely exists or other error
+      }
+    }
+
     var emailEl = document.getElementById('dash-user-email');
     if (emailEl) emailEl.textContent = _user.email;
     var nameEl = document.getElementById('dash-user-name');
     if (nameEl) {
-      var name = (_user.user_metadata && _user.user_metadata.full_name) || _user.email;
-      nameEl.textContent = name;
+      var displayName = (_user.user_metadata && _user.user_metadata.full_name) || _user.email;
+      nameEl.textContent = displayName;
     }
     document.body.style.opacity = '1';
     showTab('profile');

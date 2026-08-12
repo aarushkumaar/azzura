@@ -430,15 +430,10 @@
       setLoading('signup-btn', true, 'Create Account');
       try {
         var res = await window.customerSignUp(email, password, name);
-        if (res && res.session) {
-          /* Save session for navbar profile icon */
-          try { localStorage.setItem('azzurra_customer_session', JSON.stringify({ email: email, signedIn: true })); } catch(ex) {}
-          showMsg('signup-success', '\u2713 Account created! Redirecting\u2026', false);
-          setTimeout(function(){ window.location.href = 'customer-dashboard.html'; }, 800);
-        } else {
-          showMsg('signup-success', '\u2713 Account created! Please check your email to confirm your account, then sign in.', false);
-          setLoading('signup-btn', false, 'Create Account');
-        }
+        /* Save session for navbar profile icon */
+        try { localStorage.setItem('azzurra_customer_session', JSON.stringify({ email: email, signedIn: true })); } catch(ex) {}
+        showMsg('signup-success', '\u2713 Account created! Redirecting\u2026', false);
+        setTimeout(function(){ window.location.href = 'customer-dashboard.html'; }, 800);
       } catch(err) {
         var errMsg = (err && err.message) ? err.message : 'Sign up failed.';
         /* Handle Supabase 500 / SMTP not configured */
