@@ -53,10 +53,15 @@
   window.customerSignUp = async function (email, password, fullName) {
     var sb = getClient();
     if (!sb) throw new Error('Auth not available');
+    var base = window.location.href.replace(/[^/]*(\?.*)?$/, '');
+    var redirectUrl = base + 'customer-auth.html';
     var res = await sb.auth.signUp({
       email: email,
       password: password,
-      options: { data: { full_name: fullName || '' } }
+      options: { 
+        data: { full_name: fullName || '' },
+        emailRedirectTo: redirectUrl
+      }
     });
     if (res.error) {
       /* Improve 500 / SMTP error message */
