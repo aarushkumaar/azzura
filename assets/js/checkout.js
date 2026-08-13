@@ -664,8 +664,18 @@ function initCheckout() {
 
     setSubmitLoading(true);
 
-    var session = window.getCustomerSession ? await window.getCustomerSession() : null;
-    var userId  = session && session.user ? session.user.id : null;
+    var sb = typeof window.getCustomerSupabase === 'function' ? window.getCustomerSupabase() : null;
+    var userRes = sb ? await sb.auth.getUser() : null;
+    var userId = (userRes && userRes.data && userRes.data.user) ? userRes.data.user.id : null;
+
+    if (!userId) {
+      setSubmitLoading(false);
+      showCheckoutError('You must be logged in to place an order. Please sign in or create an account.');
+      setTimeout(function() {
+        window.location.href = 'customer-auth.html?returnTo=' + encodeURIComponent(window.location.href);
+      }, 3000);
+      return;
+    }
 
     var couponCode = appliedCoupon ? appliedCoupon.code : null;
 
