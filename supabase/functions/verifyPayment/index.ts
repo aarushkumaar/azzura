@@ -15,7 +15,6 @@
 
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { hmac } from 'https://deno.land/x/hmac@v2.0.1/mod.ts';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin':  '*',
@@ -44,7 +43,27 @@ serve(async (req: Request) => {
     // Razorpay signature = HMAC-SHA256(razorpay_order_id + "|" + razorpay_payment_id, key_secret)
     const secret    = Deno.env.get('RAZORPAY_KEY_SECRET')!;
     const body      = `${razorpay_order_id}|${razorpay_payment_id}`;
-    const generated = hmac('sha256', secret, body, 'utf8', 'hex');
+    
+    const encoder = new TextEncoder();
+    const keyData = encoder.encode(secret);
+    const messageData = encoder.encode(body);
+
+    const cryptoKey = await crypto.subtle.importKey(
+      'raw',
+      keyData,
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['sign']
+    );
+
+    const signatureBuffer = await crypto.subtle.sign(
+      'HMAC',
+      cryptoKey,
+      messageData
+    );
+
+    const signatureArray = Array.from(new Uint8Array(signatureBuffer));
+    const generated = signatureArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
     if (generated !== razorpay_signature) {
       console.error('[verifyPayment] Signature mismatch — possible tampered request.');
