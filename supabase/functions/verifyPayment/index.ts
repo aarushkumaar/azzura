@@ -41,7 +41,10 @@ serve(async (req: Request) => {
 
     // ---- Verify HMAC signature ----
     // Razorpay signature = HMAC-SHA256(razorpay_order_id + "|" + razorpay_payment_id, key_secret)
-    const secret    = Deno.env.get('RAZORPAY_KEY_SECRET')!;
+    const secret    = (Deno.env.get('RAZORPAY_KEY_SECRET') || '').trim();
+    if (!secret) {
+      throw new Error('Server configuration error: RAZORPAY_KEY_SECRET is missing or empty.');
+    }
     const body      = `${razorpay_order_id}|${razorpay_payment_id}`;
     
     const encoder = new TextEncoder();

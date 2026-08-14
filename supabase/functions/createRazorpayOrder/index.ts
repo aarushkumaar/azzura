@@ -36,9 +36,16 @@ serve(async (req: Request) => {
       return errorResponse('Missing required fields: orderId or amount', 400);
     }
 
-    // ---- Create Razorpay order ----
-    const razorpayKeyId     = Deno.env.get('RAZORPAY_KEY_ID')!;
-    const razorpayKeySecret = Deno.env.get('RAZORPAY_KEY_SECRET')!;
+    const razorpayKeyId     = (Deno.env.get('RAZORPAY_KEY_ID') || '').trim();
+    const razorpayKeySecret = (Deno.env.get('RAZORPAY_KEY_SECRET') || '').trim();
+
+    if (!razorpayKeyId || !razorpayKeySecret) {
+      throw new Error('Server configuration error: Razorpay Edge Function secrets are missing or empty.');
+    }
+
+    if (!razorpayKeyId.startsWith('rzp_')) {
+      throw new Error('Server configuration error: RAZORPAY_KEY_ID must start with rzp_live_ or rzp_test_.');
+    }
 
     // Amount for Razorpay is in paise (1 INR = 100 paise)
     const amountPaise = Math.round(amount * 100);
