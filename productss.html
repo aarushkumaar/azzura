@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <base href="./">
@@ -170,21 +170,8 @@
           <button class="sidebar-clear-all" id="clear-all-filters" aria-label="Clear all filters">Clear All</button>
         </div>
 
-        <!-- Category: Series -->
-        <div class="filter-category open" id="filter-series">
-          <div class="filter-category__header" role="button" tabindex="0" aria-expanded="true" aria-controls="filter-series-opts">
-            <span class="filter-category__label">Series</span>
-            <div class="filter-category__meta">
-              <span class="filter-count-badge" id="series-count-badge">5</span>
-              <span class="filter-arrow">
-                <svg viewBox="0 0 16 16"><polyline points="4,6 8,10 12,6" /></svg>
-              </span>
-            </div>
-          </div>
-          <div class="filter-options" id="filter-series-opts" role="group" aria-label="Filter by series">
-            <!-- Injected by JS -->
-          </div>
-        </div>
+
+        <!-- Availability and Clinical Use filters remain; Series is internal-only -->
 
         <!-- Category: Availability -->
         <div class="filter-category open" id="filter-stock">
@@ -262,7 +249,6 @@
                 <option value="featured">Featured First</option>
                 <option value="name-asc">Name A–Z</option>
                 <option value="name-desc">Name Z–A</option>
-                <option value="series">By Series</option>
               </select>
             </div>
             <div class="view-toggle" role="group" aria-label="View layout">
@@ -366,7 +352,7 @@
 
     /* ── State ── */
     var state = {
-      activeSeriesFilter: null,   /* null = all series */
+      /* NOTE: series is an internal field — not exposed as a public filter */
       activeStockFilter:  'all',  /* 'all' | 'instock' */
       activeTagFilter:    null,   /* null = all tags */
       sortOrder:          'featured',
@@ -386,67 +372,43 @@
     var grid       = document.getElementById('shop-grid');
     var countNumEl = document.getElementById('count-num');
 
-    /* ── Populate series filter options from PRODUCTS ── */
-    function buildSeriesFilter() {
-      var seriesSet = {};
-      PRODUCTS.forEach(function(p) {
-        seriesSet[p.series] = (seriesSet[p.series] || 0) + 1;
-      });
-
-      var container = document.getElementById('filter-series-opts');
-      var allOpt = document.createElement('div');
-      allOpt.className = 'filter-option active';
-      allOpt.setAttribute('data-filter', 'series');
-      allOpt.setAttribute('data-value', 'all');
-      allOpt.innerHTML = '<span class="filter-option__text">All Series (' + PRODUCTS.length + ')</span>';
-      container.appendChild(allOpt);
-
-      Object.keys(seriesSet).forEach(function(series) {
-        var opt = document.createElement('div');
-        opt.className = 'filter-option';
-        opt.setAttribute('data-filter', 'series');
-        opt.setAttribute('data-value', series);
-        opt.innerHTML = '<span class="filter-option__text">' + series + ' (' + seriesSet[series] + ')</span>';
-        container.appendChild(opt);
-      });
-
-      var badge = document.getElementById('series-count-badge');
-      if (badge) badge.textContent = Object.keys(seriesSet).length + 1;
-    }
+    /* Series is an internal classification — not surfaced as a public filter.
+       buildSeriesFilter() removed intentionally. */
 
     /* ── Get filtered + sorted products ── */
     function getFilteredProducts() {
       var result = PRODUCTS.slice();
 
-      if (state.activeSeriesFilter && state.activeSeriesFilter !== 'all') {
-        result = result.filter(function(p) { return p.series === state.activeSeriesFilter; });
-      }
+      /* Stock filter */
       if (state.activeStockFilter === 'instock') {
-        result = result.filter(function(p) { return p.inStock; });
+        result = result.filter(function(p) { return p.inStock || p.in_stock; });
       }
+
+      /* Tag / clinical use filter */
       if (state.activeTagFilter) {
         result = result.filter(function(p) {
           return p.tags && p.tags.indexOf(state.activeTagFilter) > -1;
         });
       }
 
-      /* Search filter */
+      /* Text search — name + description */
       if (state.searchText) {
         var q = state.searchText;
         result = result.filter(function(p) {
-          return p.name.toLowerCase().indexOf(q) > -1 ||
-                 p.series.toLowerCase().indexOf(q) > -1;
+          var desc = (p.shortDescription || p.short_description || p.description || '').toLowerCase();
+          return p.name.toLowerCase().indexOf(q) > -1 || desc.indexOf(q) > -1;
         });
       }
 
+      /* Sort */
       if (state.sortOrder === 'featured') {
-        result.sort(function(a, b) { return (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0); });
+        result.sort(function(a, b) {
+          return ((b.isFeatured || b.is_featured) ? 1 : 0) - ((a.isFeatured || a.is_featured) ? 1 : 0);
+        });
       } else if (state.sortOrder === 'name-asc') {
         result.sort(function(a, b) { return a.name.localeCompare(b.name); });
       } else if (state.sortOrder === 'name-desc') {
         result.sort(function(a, b) { return b.name.localeCompare(a.name); });
-      } else if (state.sortOrder === 'series') {
-        result.sort(function(a, b) { return a.series.localeCompare(b.series) || a.name.localeCompare(b.name); });
       }
 
       return result;
@@ -505,6 +467,16 @@
           '</div>'
         : '<button class="shop-card__add-btn" id="' + addBtnId + '" aria-label="Add ' + product.name + ' to cart">🛒 Add to Cart</button>';
 
+      /* Price display — use price_inr from Supabase mapping */
+      var priceDisplay = (product.price_inr && Number(product.price_inr) > 0)
+        ? '\u20b9' + Number(product.price_inr).toLocaleString('en-IN')
+        : (product.price && Number(product.price) > 0
+            ? '\u20b9' + Number(product.price).toLocaleString('en-IN')
+            : 'Contact for Price');
+
+      /* Description — try several field names the mapper may use */
+      var descText = product.description || product.shortDescription || product.short_description || '';
+
       div.innerHTML =
         '<div class="shop-card__img">' +
           imgAreaHtml +
@@ -514,16 +486,15 @@
           stockBadge +
         '</div>' +
         '<div class="shop-card__body">' +
-          '<p class="shop-card__series">' + product.series + '</p>' +
           '<h3 class="shop-card__name">' + product.name + '</h3>' +
-          '<p class="shop-card__desc">' + (product.shortDescription || product.shortDesc || '') + '</p>' +
+          '<p class="shop-card__desc">' + descText + '</p>' +
           (product.tags && product.tags.length
             ? '<div class="shop-card__tags">' +
                 product.tags.map(function(t) { return '<span class="shop-card__tag">' + t + '</span>'; }).join('') +
               '</div>'
             : '') +
           '<div class="shop-card__footer">' +
-            '<span class="shop-card__price">' + (product.price_inr ? '₹' + product.price_inr.toLocaleString('en-IN') : '₹ —') + '</span>' +
+            '<span class="shop-card__price">' + priceDisplay + '</span>' +
             addBtnHtml +
           '</div>' +
         '</div>';
@@ -654,16 +625,13 @@
 
     /* Exposed so empty-state button can call it */
     window.clearAllFilters = function() {
-      state.activeSeriesFilter = null;
       state.activeTagFilter    = null;
       state.activeStockFilter  = 'all';
       state.searchText         = '';
       if (searchInput) searchInput.value = '';
       document.querySelectorAll('.filter-option').forEach(function(o) { o.classList.remove('active'); });
-      var allSeries = document.querySelector('[data-filter="series"][data-value="all"]');
-      var allStock  = document.querySelector('[data-filter="stock"][data-value="all"]');
-      if (allSeries) allSeries.classList.add('active');
-      if (allStock)  allStock.classList.add('active');
+      var allStock = document.querySelector('[data-filter="stock"][data-value="all"]');
+      if (allStock) allStock.classList.add('active');
       var clearBtn2 = document.getElementById('clear-all-filters');
       if (clearBtn2) clearBtn2.classList.remove('visible');
       renderProducts();
@@ -677,12 +645,8 @@
       var filterType = opt.getAttribute('data-filter');
       var value      = opt.getAttribute('data-value');
 
-      if (filterType === 'series') {
-        state.activeSeriesFilter = value === 'all' ? null : value;
-        document.querySelectorAll('[data-filter="series"]').forEach(function(o) {
-          o.classList.toggle('active', o.getAttribute('data-value') === value);
-        });
-      } else if (filterType === 'stock') {
+      /* series filter is removed from public UI — only stock and tag remain */
+      if (filterType === 'stock') {
         state.activeStockFilter = value;
         document.querySelectorAll('[data-filter="stock"]').forEach(function(o) {
           o.classList.toggle('active', o.getAttribute('data-value') === value);
@@ -700,7 +664,7 @@
       }
 
       var clearBtn  = document.getElementById('clear-all-filters');
-      var hasFilters = state.activeSeriesFilter || state.activeTagFilter || state.activeStockFilter !== 'all';
+      var hasFilters = state.activeTagFilter || state.activeStockFilter !== 'all';
       if (clearBtn) clearBtn.classList.toggle('visible', !!hasFilters);
 
       renderProducts();
@@ -724,14 +688,11 @@
     var clearBtn = document.getElementById('clear-all-filters');
     if (clearBtn) {
       clearBtn.addEventListener('click', function() {
-        state.activeSeriesFilter = null;
         state.activeTagFilter    = null;
         state.activeStockFilter  = 'all';
         document.querySelectorAll('.filter-option').forEach(function(o) { o.classList.remove('active'); });
-        var allSeries = document.querySelector('[data-filter="series"][data-value="all"]');
-        var allStock  = document.querySelector('[data-filter="stock"][data-value="all"]');
-        if (allSeries) allSeries.classList.add('active');
-        if (allStock)  allStock.classList.add('active');
+        var allStock = document.querySelector('[data-filter="stock"][data-value="all"]');
+        if (allStock) allStock.classList.add('active');
         clearBtn.classList.remove('visible');
         renderProducts();
       });
@@ -740,12 +701,11 @@
     /* ── Sort ── */
     var sortSelect = document.getElementById('shop-sort-select');
     if (sortSelect) {
-      /* Ensure dropdown reflects new options */
+      /* Ensure dropdown reflects current options (no series) */
       sortSelect.innerHTML =
         '<option value="featured">Featured First</option>' +
         '<option value="name-asc">Name A–Z</option>' +
-        '<option value="name-desc">Name Z–A</option>' +
-        '<option value="series">By Series</option>';
+        '<option value="name-desc">Name Z–A</option>';
       sortSelect.addEventListener('change', function() {
         state.sortOrder = this.value;
         renderProducts();
@@ -776,7 +736,7 @@
     /* ── Boot sequence: load Supabase products, then render ── */
     function boot() {
       var start = function () {
-        buildSeriesFilter();
+        /* Note: buildSeriesFilter() removed — series not in public UI */
         initFilterToggles();
         setTimeout(function () {
           var skeleton = document.getElementById('skeleton-grid');

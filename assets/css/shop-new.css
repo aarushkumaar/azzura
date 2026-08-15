@@ -424,7 +424,7 @@
 
 /* Card base */
 .shop-product-card {
-  background: var(--color-white);
+  background: #ffffff;
   border-radius: 16px;
   overflow: hidden;
   border: 1.5px solid var(--color-border);
@@ -440,23 +440,30 @@
   box-shadow: 0 12px 40px rgba(26,95,168,0.15);
 }
 
-/* Image container */
+/* Image container — same background as card body for seamless look.
+   Using object-fit: contain so the full product (often a transparent PNG)
+   is always visible without cropping or distortion. */
 .shop-card__img {
   aspect-ratio: 4/3;
   overflow: hidden;
-  background: var(--color-primary-light);
+  background: #ffffff;   /* matches card body — no visible box around image */
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .shop-card__img img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  transition: transform 0.3s ease;
+  object-fit: contain;   /* show full product, never crop */
+  object-position: center;
+  transition: opacity 0.25s ease;
 }
 
+/* Subtle fade on hover instead of scale (scale + contain looks bad) */
 .shop-product-card:hover .shop-card__img img {
-  transform: scale(1.05);
+  opacity: 0.92;
 }
 
 /* Quick view overlay */
@@ -511,12 +518,15 @@
   z-index: 1;
 }
 
-/* Card body */
+/* Card body — explicit white so it is the same as the image area above.
+   This makes the card feel like one continuous surface. */
 .shop-card__body {
   padding: 20px;
   flex: 1;
   display: flex;
   flex-direction: column;
+  background: #ffffff;
+  border-top: 1px solid var(--color-border);
 }
 
 .shop-card__series {

@@ -116,10 +116,21 @@ function buildPublicId(productFolder, baseName) {
 /* ── Step 3 — Upload logic ───────────────────────────────────── */
 
 async function uploadOne(img) {
-  /* Convert to WebP in memory */
+  /* Convert to WebP in memory.
+     .rotate()  — reads EXIF orientation and physically rotates the image so
+                  the output is always the "correct" orientation, then strips
+                  the EXIF tag.  Without this, browsers that ignore EXIF show
+                  rotated images.
+     .flatten() — composites transparency onto white so PNG/WebP files with
+                  transparent backgrounds don't render as black in some contexts.
+  */
   let buffer;
   try {
-    buffer = await sharp(img.absolutePath).webp({ quality: 85 }).toBuffer();
+    buffer = await sharp(img.absolutePath)
+      .rotate()                          // normalize EXIF orientation
+      .flatten({ background: '#FFFFFF' }) // fill transparent areas with white
+      .webp({ quality: 85 })
+      .toBuffer();
   } catch (sharpErr) {
     console.warn('  Sharp failed, using original: ' + img.baseName);
     buffer = fs.readFileSync(img.absolutePath);

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <base href="./">
@@ -747,20 +747,14 @@
           <input type="text" id="form-name" required placeholder="e.g. Essential Chocolate 350g" />
         </div>
         <div class="form-group">
-          <label class="form-label">Series</label>
-          <select id="form-series">
-            <option value="">&#8212; Select Series &#8212;</option>
-            <option value="Essential Series">Essential Series</option>
-            <option value="ABC Series">ABC Series</option>
-            <option value="EG Series">EG Series</option>
-            <option value="Enpedia Series">Enpedia Series</option>
-            <option value="Glutamax Series">Glutamax Series</option>
-            <option value="Neu Series">Neu Series</option>
-            <option value="Micro Series">Micro Series</option>
-            <option value="Fibero Series">Fibero Series</option>
-            <option value="Azo Series">Azo Series</option>
-            <option value="Others">Others</option>
-          </select>
+          <label class="form-label">Series <small style="font-weight:400;color:var(--color-grey);">(internal classification)</small></label>
+          <!-- Free-text with auto-suggestions from existing products.
+               Datalist is populated dynamically after products load.
+               Type a new name to create a new classification. -->
+          <input type="text" id="form-series" list="series-datalist" placeholder="e.g. Essential Series, EG Series" autocomplete="off" />
+          <datalist id="series-datalist">
+            <!-- Populated by JS after products load -->
+          </datalist>
         </div>
         <div class="form-group">
           <label class="form-label">Flavour</label>
@@ -1186,8 +1180,33 @@ async function loadProducts() {
     var r = await sb.from('products').select('*').order('created_at',{ascending:false});
     if (r.error) throw r.error;
     allProducts = r.data || [];
+    populateSeriesDatalist(allProducts);  // keep datalist fresh after every load
     applyFilters();
   } catch(err) { showToast('Products load error: ' + err.message, 'error'); }
+}
+
+/* Rebuild the series datalist from the actual series values in Supabase.
+   This means any new series created in admin is immediately available as
+   a suggestion next time without touching code. */
+function populateSeriesDatalist(products) {
+  var dl = document.getElementById('series-datalist');
+  if (!dl) return;
+  var seen = {};
+  (products || []).forEach(function(p) {
+    if (p.series && p.series.trim() && !seen[p.series]) {
+      seen[p.series] = true;
+    }
+  });
+  // Always include known baseline options
+  var baseSeries = [
+    'Essential Series','ABC Series','EG Series','Enpedia Series',
+    'Glutamax Series','Neu Series','Micro Series','Fibero Series',
+    'Azo Series','Others'
+  ];
+  baseSeries.forEach(function(s) { seen[s] = true; });
+  dl.innerHTML = Object.keys(seen).sort().map(function(s) {
+    return '<option value="' + s.replace(/"/g,'&quot;') + '">';
+  }).join('');
 }
 
 function applyFilters() {
@@ -1478,24 +1497,53 @@ function handleFileSelect(files) {
   if (doUploadBtn) doUploadBtn.textContent = '\u2191 Upload ' + pendingUploads.length + ' Image' + (pendingUploads.length !== 1 ? 's' : '');
 }
 
-/* Browser WebP conversion */
+/* Browser image processing before upload.
+   Uses createImageBitmap() which respects EXIF orientation in modern browsers
+   (Chrome, Firefox, Safari 15+). Falls back to canvas draw if unavailable.
+   Also composites to white background for transparent PNGs. */
 function toWebP(file) {
   return new Promise(function(resolve) {
-    var img  = new Image();
-    var url  = URL.createObjectURL(file);
-    img.onload = function() {
-      var canvas = document.createElement('canvas');
-      canvas.width  = img.width;
-      canvas.height = img.height;
-      var ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0);
-      canvas.toBlob(function(blob) {
+    var url = URL.createObjectURL(file);
+
+    /* createImageBitmap respects EXIF orientation natively */
+    if (window.createImageBitmap) {
+      createImageBitmap(file).then(function(bmp) {
         URL.revokeObjectURL(url);
-        resolve(blob);
-      }, 'image/webp', 0.85);
-    };
-    img.onerror = function() { URL.revokeObjectURL(url); resolve(file); };
-    img.src = url;
+        var canvas = document.createElement('canvas');
+        canvas.width  = bmp.width;
+        canvas.height = bmp.height;
+        var ctx = canvas.getContext('2d');
+        /* White background — covers transparent PNGs */
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(bmp, 0, 0);
+        bmp.close();
+        canvas.toBlob(function(blob) {
+          resolve(blob || file);
+        }, 'image/webp', 0.88);
+      }).catch(function() {
+        /* Fallback if createImageBitmap fails */
+        resolve(file);
+      });
+    } else {
+      /* Legacy fallback: plain canvas draw (no EXIF correction) */
+      var img = new Image();
+      img.onload = function() {
+        var canvas = document.createElement('canvas');
+        canvas.width  = img.width;
+        canvas.height = img.height;
+        var ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0);
+        URL.revokeObjectURL(url);
+        canvas.toBlob(function(blob) {
+          resolve(blob || file);
+        }, 'image/webp', 0.88);
+      };
+      img.onerror = function() { URL.revokeObjectURL(url); resolve(file); };
+      img.src = url;
+    }
   });
 }
 

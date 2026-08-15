@@ -5,85 +5,12 @@
                            SITE_CONFIG, RAZORPAY_KEY_ID)
    ============================================================ */
 
-/* ============================================================
-   STATIC FALLBACK DATA
-   Used when Supabase is unreachable (offline mode).
-   Must stay in sync with the seed data in 001_initial_schema.sql
-   ============================================================ */
-const FALLBACK_PRODUCTS = [
-  {
-    id: 'f1', name: 'Luminary Molecular Serum',
-    category: 'molecular_serums',
-    need_tags: ['longevity', 'radiance'],
-    price: 4850, compare_price: 5500, rating: 4.8, review_count: 48,
-    description: 'Adaptive DNA repair complex with high-potency Vitamin C for cellular restoration.',
-    is_new_release: true, is_featured: true, stock_quantity: 42,
-    image_url: './assets/images/luminary-serum.jpg'
-  },
-  {
-    id: 'f2', name: 'CellSync Pulse Device',
-    category: 'bio_devices',
-    need_tags: ['recovery', 'longevity'],
-    price: 12999, compare_price: 15000, rating: 4.0, review_count: 124,
-    description: 'Non-invasive cellular resonance for rapid muscle recovery.',
-    is_new_release: false, is_featured: false, stock_quantity: 18,
-    image_url: './assets/images/cellsync-device.jpg'
-  },
-  {
-    id: 'f3', name: 'Neuro-Prime Catalyst',
-    category: 'advanced_supplements',
-    need_tags: ['cognition', 'longevity'],
-    price: 3120, compare_price: null, rating: 5.0, review_count: 210,
-    description: 'Advanced nootropic complex for cognitive clarity and focus.',
-    is_new_release: false, is_featured: true, stock_quantity: 65,
-    image_url: './assets/images/neuro-prime.jpg'
-  },
-  {
-    id: 'f4', name: 'The Genesis System',
-    category: 'cellular_kits',
-    need_tags: ['longevity', 'recovery', 'radiance'],
-    price: 16900, compare_price: 20000, rating: 5.0, review_count: 56,
-    description: 'Complete 30-day biological reset kit with multi-stage treatments.',
-    is_new_release: false, is_featured: true, stock_quantity: 12,
-    image_url: './assets/images/genesis-kit.jpg'
-  },
-  {
-    id: 'f5', name: 'Telomere Elixir',
-    category: 'advanced_supplements',
-    need_tags: ['longevity', 'radiance'],
-    price: 5590, compare_price: null, rating: 4.0, review_count: 34,
-    description: 'Liquid supplement targeting cellular aging markers through molecular delivery.',
-    is_new_release: false, is_featured: false, stock_quantity: 30,
-    image_url: './assets/images/telomere-elixir.jpg'
-  },
-  {
-    id: 'f6', name: 'Azzurra Bio-Patch',
-    category: 'bio_devices',
-    need_tags: ['recovery', 'cognition'],
-    price: 2310, compare_price: 2700, rating: 5.0, review_count: 18,
-    description: 'Real-time nutrient absorption monitor with AI integration.',
-    is_new_release: true, is_featured: false, stock_quantity: 55,
-    image_url: './assets/images/bio-patch.jpg'
-  },
-  {
-    id: 'f7', name: 'Radiance Cellular Kit',
-    category: 'cellular_kits',
-    need_tags: ['radiance', 'longevity'],
-    price: 8750, compare_price: 9500, rating: 4.5, review_count: 87,
-    description: 'Complete cellular kit targeting oxidative stress for visible radiance.',
-    is_new_release: false, is_featured: false, stock_quantity: 28,
-    image_url: './assets/images/radiance-kit.jpg'
-  },
-  {
-    id: 'f8', name: 'OmegaCore Vital',
-    category: 'advanced_supplements',
-    need_tags: ['recovery', 'cognition'],
-    price: 1850, compare_price: null, rating: 4.7, review_count: 156,
-    description: 'Ultra-pure omega-3 complex with phospholipid-bound DHA for neural support.',
-    is_new_release: false, is_featured: false, stock_quantity: 80,
-    image_url: './assets/images/omegacore.jpg'
-  }
-];
+/* FALLBACK DATA — intentionally empty.
+   If Supabase is unreachable we show "currently unavailable" rather than
+   silently showing fake products that don't exist in inventory.
+   Real product data comes exclusively from Supabase. */
+const FALLBACK_PRODUCTS = [];
+
 
 /* Category display names */
 const CATEGORY_LABELS = {
